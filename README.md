@@ -1,36 +1,35 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 📦 B2B WMS AI Platform (Frontend Repository)
 
-## Getting Started
+본 저장소는 물류센터(WMS) 인바운드/아웃바운드 프로세스를 제어하고 AI 검수 결과를 모니터링하는 **B2B WMS AI Platform**의 공식 프론트엔드 레포지토리입니다.
 
-First, run the development server:
+## 🚀 Tech Stack
+- **Framework:** Next.js (App Router)
+- **Language:** TypeScript
+- **Styling:** Tailwind CSS
+- **State Management:** React Context API / Zustand (협의 후 결정)
+- **Data Fetching:** SWR / React Query
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## 📡 Key Architecture (Frontend)
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 1. S3 Direct Upload (Pre-signed URL) 연동
+- 본 시스템의 가장 중요한 병목 방지 기술입니다. 모바일 기기(웹/앱)에서 중고 서적을 촬영한 5~10MB의 원본 이미지는 백엔드 서버를 거치지 않습니다.
+- 프론트엔드에서 백엔드(`POST /api/upload/url`)를 호출하여 AWS S3 Pre-signed URL을 발급받은 뒤, **브라우저에서 직접 S3로 바이너리를 PUT 업로드**합니다.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 2. 비동기 Polling 처리 (DB Queue)
+- 백엔드가 `SKIP LOCKED` 기반의 비동기 큐로 동작하므로, 검수 요청 시 `202 Accepted` 응답과 함께 `job_id`를 반환받습니다.
+- 프론트엔드는 해당 `job_id`를 기반으로 백엔드 폴링(Polling) 또는 SSE/WebSocket을 통해 최종 검수 리포트를 화면에 렌더링해야 합니다.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+## 📂 Repository Structure & Documentations
 
-To learn more about Next.js, take a look at the following resources:
+프론트엔드 개발팀은 작업 시작 전 반드시 `docs` 폴더 내의 기획 문서들을 숙지하시기 바랍니다.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- 📄 [B2B_WMS_AI_Platform_기획서_ver1.3.md](docs/B2B_WMS_AI_Platform_기획서_ver1.3.md): 전체 시스템 구조 및 기능 명세서
+- 📊 [B2B_WMS_AI_Platform_워크플로우_ver1.3.md](docs/B2B_WMS_AI_Platform_워크플로우_ver1.3.md): UI 렌더링 시퀀스 및 데이터 흐름도
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 🔒 Copyright & Authorship
+- **Project Manager & Chief Architect:** 장문경
+- 본 레포지토리의 핵심 아키텍처(S3-JSON Decoupling, UI/UX Workflow 등)의 설계 기획 및 IP는 장문경 PM에게 귀속되어 있으며, 본 레포지토리 내의 구조는 추후 논문 및 포트폴리오로 활용될 예정입니다. 참여 팀원 여러분의 구현 기여 내역은 명확히 기록되며 우수 기여 시 공동 기여자(Acknowledgement) 혜택이 주어집니다.
