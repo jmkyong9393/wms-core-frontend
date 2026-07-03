@@ -16,7 +16,7 @@
 - 프론트엔드에서 백엔드(`POST /api/upload/url`)를 호출하여 AWS S3 Pre-signed URL을 발급받은 뒤, **브라우저에서 직접 S3로 바이너리를 PUT 업로드**합니다.
 
 ### 2. 비동기 Polling 처리 (DB Queue)
-- 백엔드가 `SKIP LOCKED` 기반의 비동기 큐로 동작하므로, 검수 요청 시 `202 Accepted` 응답과 함께 `job_id`를 반환받습니다.
+- 백엔드가 `Celery 큐` 기반의 비동기 큐로 동작하므로, 검수 요청 시 `202 Accepted` 응답과 함께 `job_id`를 반환받습니다.
 - 프론트엔드는 해당 `job_id`를 기반으로 백엔드 폴링(Polling) 또는 SSE/WebSocket을 통해 최종 검수 리포트를 화면에 렌더링해야 합니다.
 
 ---
