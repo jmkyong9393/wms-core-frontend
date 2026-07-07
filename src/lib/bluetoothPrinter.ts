@@ -9,6 +9,7 @@ export class BluetoothPrinter {
     return false;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async printLpnTag(lpnCode: string): Promise<void> {
     // TODO: 연결된 프린터에 ZPL/TSPL 바코드 명령어 전송 로직 작성
   }
