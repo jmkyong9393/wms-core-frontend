@@ -2,7 +2,7 @@
 
 import { useAtomValue } from 'jotai';
 import { uploadQueueAtom } from '@/stores/atoms';
-import { Package, Truck, CheckCircle, AlertTriangle } from 'lucide-react';
+import { Package, Truck, CheckCircle, AlertTriangle, Camera } from 'lucide-react';
 
 export default function DashboardPage() {
   const uploadQueue = useAtomValue(uploadQueueAtom);
@@ -85,6 +85,7 @@ export default function DashboardPage() {
               {[...uploadQueue].reverse().slice(0, 5).map((task) => (
                 <div key={task.id} className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-colors border border-gray-50">
                   <div className="flex items-center space-x-4">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={task.previewUrl} alt="book" className="w-12 h-12 object-cover rounded-md border border-gray-200" />
                     <div>
                       <p className="text-sm font-semibold text-gray-800">{task.id.replace('local_', 'REQ-')}</p>
