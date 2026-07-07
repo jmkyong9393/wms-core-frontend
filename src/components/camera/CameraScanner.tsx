@@ -1,145 +1,168 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useSetAtom } from 'jotai';
-import { useCamera } from '@/hooks/useCamera';
-import { processImage } from '@/lib/image-processor';
-import { uploadQueueAtom, UploadTask } from '@/stores/atoms';
+import { useRef, useState } from "react";
+import { useSetAtom } from "jotai";
+import { useS3Upload } from "@/hooks/useS3Upload";
+import { uploadQueueAtom, type UploadTask } from "@/stores/atoms";
+import { Camera, Loader2, CheckCircle2 } from "lucide-react";
 
+/**
+ * CameraScanner — HTML5 native 카메라 캡처 기반 도서 촬영 컴포넌트
+ *
+ * iOS Safari 호환성을 위해 getUserMedia(WebRTC) 대신
+ * <input type="file" capture="environment"> 방식을 사용합니다.
+ * 촬영된 이미지는 browser-image-compression으로 Web Worker 압축 후
+ * Jotai uploadQueueAtom에 낙관적 UI 패턴으로 적재됩니다.
+ */
 export default function CameraScanner() {
-  const { videoRef, startCamera, stopCamera, error } = useCamera();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const setUploadQueue = useSetAtom(uploadQueueAtom);
-  const [isProcessing, setIsProcessing] = useState(false);
+  const {
+    isCompressing,
+    isUploading,
+    uploadProgress,
+    error,
+    uploadImage,
+    resetUploadState,
+  } = useS3Upload();
+
+  const [lastPreview, setLastPreview] = useState<string | null>(null);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
 
-  // 컴포넌트 마운트 시 카메라 자동 시작
-  useEffect(() => {
-    startCamera();
-    return () => stopCamera();
-  }, [startCamera, stopCamera]);
+  const triggerCapture = () => {
+    resetUploadState();
+    fileInputRef.current?.click();
+  };
 
-  // [임시 기능] 풋페달 대용: 스마트폰 물리 볼륨 버튼 및 하드웨어 키보드(Space/Enter) 지원
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // 볼륨키 또는 스페이스바/엔터키 감지
-      if (
-        ['AudioVolumeUp', 'AudioVolumeDown', 'VolumeUp', 'VolumeDown', ' ', 'Enter'].includes(e.key) ||
-        e.keyCode === 24 || e.keyCode === 25 // 일부 안드로이드 볼륨 키코드
-      ) {
-        const btn = document.getElementById('capture-btn');
-        if (btn && !btn.hasAttribute('disabled')) {
-          e.preventDefault();
-          btn.click();
-        }
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  const handleFileChange = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
 
-  const handleCapture = async () => {
-    if (!videoRef.current || isProcessing) return;
-    
-    setIsProcessing(true);
+    const selectedFile = files[0];
     setToastMsg(null);
-    
-    try {
-      // 1. 이미지 압축 및 흔들림 감지 연산 (클라이언트단)
-      const result = await processImage(videoRef.current);
-      
-      if (result.isBlurred) {
-        setToastMsg("⚠️ 사진이 너무 흔들렸습니다. 다시 촬영해 주세요.");
-        setIsProcessing(false);
-        return; // 업로드 중단
-      }
 
-      // 2. 낙관적 UI를 위한 큐(Queue) 적재
-      const newTask: UploadTask = {
-        id: `local_${Date.now()}`,
-        blob: result.blob,
-        previewUrl: result.previewUrl,
-        status: 'PENDING',
-      };
-      
-      setUploadQueue((prev) => [...prev, newTask]);
-      
-      // 3. 셔터 이펙트 및 다음 촬영 유도
-      setToastMsg("✅ 촬영 완료! 백그라운드에서 업로드됩니다.");
-      
-      // Toast 자동 제거
-      setTimeout(() => setToastMsg(null), 2000);
-      
-    } catch (err) {
-      console.error(err);
-      setToastMsg("❌ 촬영 중 오류가 발생했습니다.");
-    } finally {
-      setIsProcessing(false);
+    // 로컬 프리뷰 즉시 생성 (낙관적 UI)
+    const previewUrl = URL.createObjectURL(selectedFile);
+    setLastPreview(previewUrl);
+
+    // 압축 + S3 업로드
+    const uploadResult = await uploadImage(selectedFile);
+
+    if (!uploadResult) {
+      setToastMsg("❌ 이미지 업로드에 실패했습니다.");
+      return;
+    }
+
+    // Jotai 큐에 적재
+    const newTask: UploadTask = {
+      id: `local_${Date.now()}`,
+      blob: selectedFile,
+      previewUrl,
+      status: "COMPLETED",
+    };
+
+    setUploadQueue((prev) => [...prev, newTask]);
+    setToastMsg("✅ 촬영 완료! 업로드되었습니다.");
+
+    // Toast 자동 해제
+    setTimeout(() => setToastMsg(null), 2500);
+
+    // input 초기화 (같은 파일 재선택 허용)
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
     }
   };
 
-  return (
-    <div 
-      className="relative w-full max-w-md mx-auto aspect-[3/4] bg-black rounded-xl overflow-hidden shadow-2xl cursor-pointer"
-      onClick={() => {
-        const btn = document.getElementById('capture-btn');
-        if (btn && !btn.hasAttribute('disabled')) btn.click();
-      }}
-    >
-      {/* 카메라 에러 처리 */}
-      {error && (
-        <div className="absolute inset-0 flex items-center justify-center bg-gray-900 text-white p-4 text-center">
-          {error}
-        </div>
-      )}
+  const isProcessing = isCompressing || isUploading;
 
-      {/* 실시간 비디오 프리뷰 */}
-      <video
-        ref={videoRef}
-        autoPlay
-        playsInline
-        muted
-        className="w-full h-full object-cover"
+  return (
+    <div className="relative w-full max-w-md mx-auto bg-white dark:bg-zinc-900 rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-xl overflow-hidden p-6">
+      {/* 히든 파일 인풋 (Native Camera 호출 연동) */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        onChange={handleFileChange}
+        className="hidden"
       />
 
-      {/* 도서 정렬용 BBox 가이드라인 (Overlay) */}
-      <div className="absolute inset-0 pointer-events-none flex items-center justify-center p-8">
-        <div className="w-full h-[70%] border-4 border-dashed border-white/70 rounded-lg flex flex-col items-center justify-center relative">
-          <div className="absolute -top-8 text-white/90 text-sm font-semibold bg-black/50 px-3 py-1 rounded-full">
-            이 선 안에 책을 맞춰주세요
+      {/* 촬영 영역 */}
+      <div className="space-y-4">
+        {lastPreview ? (
+          <div className="relative rounded-2xl overflow-hidden border border-zinc-200 dark:border-zinc-800 aspect-video bg-zinc-50 dark:bg-zinc-950 flex items-center justify-center">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={lastPreview}
+              alt="최근 촬영 이미지"
+              className="w-full h-full object-contain"
+            />
+            <div className="absolute top-2 right-2 bg-emerald-500 text-white rounded-full p-1 shadow-md">
+              <CheckCircle2 className="w-4 h-4" />
+            </div>
           </div>
-          {/* 중앙 크로스헤어 */}
-          <div className="w-8 h-1 bg-white/50 absolute" />
-          <div className="w-1 h-8 bg-white/50 absolute" />
-        </div>
-      </div>
+        ) : (
+          <div className="rounded-2xl border-2 border-dashed border-zinc-300 dark:border-zinc-700 aspect-video flex flex-col items-center justify-center text-zinc-400 dark:text-zinc-600 bg-zinc-50 dark:bg-zinc-950/40">
+            <Camera className="w-10 h-10 mb-2 text-zinc-400" />
+            <span className="text-sm font-medium">
+              아래 버튼을 눌러 촬영하세요
+            </span>
+          </div>
+        )}
 
-      {/* 흔들림 경고 및 성공 토스트 메시지 */}
-      {toastMsg && (
-        <div className="absolute top-4 left-4 right-4 z-50 animate-in fade-in slide-in-from-top-4">
-          <div className={`px-4 py-3 rounded-lg shadow-lg font-medium text-sm text-center backdrop-blur-md ${
-            toastMsg.includes('⚠️') || toastMsg.includes('❌') 
-              ? 'bg-red-500/90 text-white' 
-              : 'bg-green-500/90 text-white'
-          }`}>
+        {/* 압축/업로드 진행 상태 */}
+        {isProcessing && (
+          <div className="bg-indigo-50 dark:bg-indigo-950/20 border border-indigo-100 dark:border-indigo-900/30 rounded-xl p-3 flex items-center gap-3">
+            <Loader2 className="w-5 h-5 text-indigo-500 animate-spin" />
+            <div className="flex-1">
+              <p className="text-xs font-semibold text-indigo-700 dark:text-indigo-400">
+                {isCompressing ? "이미지 압축 중..." : "S3 업로드 중..."}
+              </p>
+              <div className="w-full bg-indigo-100 dark:bg-indigo-900/30 rounded-full h-1.5 mt-1">
+                <div
+                  className="bg-indigo-500 h-1.5 rounded-full transition-all duration-300"
+                  style={{ width: `${uploadProgress}%` }}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 에러 표시 */}
+        {error && (
+          <div className="p-2.5 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/30 rounded-xl text-center text-xs text-red-600 dark:text-red-400">
+            {error}
+          </div>
+        )}
+
+        {/* 토스트 메시지 */}
+        {toastMsg && (
+          <div
+            className={`p-3 rounded-xl text-center text-sm font-medium ${
+              toastMsg.includes("❌")
+                ? "bg-red-50 dark:bg-red-950/20 text-red-600"
+                : "bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600"
+            }`}
+          >
             {toastMsg}
           </div>
-        </div>
-      )}
+        )}
 
-      {/* 하단 촬영 컨트롤 영역 */}
-      <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/80 to-transparent flex justify-center items-end h-32">
+        {/* 촬영 버튼 */}
         <button
-          id="capture-btn"
-          onClick={(e) => {
-            e.stopPropagation();
-            handleCapture();
-          }}
+          type="button"
+          onClick={triggerCapture}
           disabled={isProcessing}
-          className={`w-16 h-16 rounded-full border-4 border-white flex items-center justify-center transition-transform active:scale-95 ${
-            isProcessing ? 'opacity-50 cursor-not-allowed' : 'hover:bg-white/20'
+          className={`w-full py-4 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all ${
+            isProcessing
+              ? "bg-zinc-200 dark:bg-zinc-800 text-zinc-400 cursor-not-allowed"
+              : "bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/10 active:scale-[0.98]"
           }`}
         >
-          <div className="w-12 h-12 bg-white rounded-full" />
+          <Camera className="w-5 h-5" />
+          {isProcessing ? "처리 중..." : "도서 촬영하기"}
         </button>
       </div>
     </div>

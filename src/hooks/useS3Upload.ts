@@ -1,0 +1,109 @@
+/**
+ * S3 Direct Upload 커스텀 훅
+ *
+ * browser-image-compression 라이브러리를 활용하여 Web Worker 내에서 이미지를 비동기 압축한 뒤,
+ * Pre-signed URL을 통해 S3에 직접 업로드합니다.
+ * 메인 스레드 블로킹 없이 대용량 이미지(10MB+)를 300KB~1MB 수준으로 압축합니다.
+ */
+"use client";
+
+import { useState, useCallback } from "react";
+import imageCompression from "browser-image-compression";
+import { getPresignedUrl } from "@/services/returnService";
+
+interface UploadResult {
+  url: string;
+}
+
+interface UseS3UploadReturn {
+  isCompressing: boolean;
+  isUploading: boolean;
+  uploadProgress: number;
+  error: string | null;
+  uploadImage: (file: File) => Promise<UploadResult | null>;
+  resetUploadState: () => void;
+}
+
+export function useS3Upload(): UseS3UploadReturn {
+  const [isCompressing, setIsCompressing] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [error, setError] = useState<string | null>(null);
+
+  const resetUploadState = useCallback(() => {
+    setIsCompressing(false);
+    setIsUploading(false);
+    setUploadProgress(0);
+    setError(null);
+  }, []);
+
+  const uploadImage = useCallback(
+    async (file: File): Promise<UploadResult | null> => {
+      try {
+        setError(null);
+        setUploadProgress(0);
+
+        // 1단계: Web Worker 기반 이미지 압축
+        setIsCompressing(true);
+        const compressedFile = await imageCompression(file, {
+          maxSizeMB: 1,
+          maxWidthOrHeight: 1600,
+          useWebWorker: true,
+          fileType: "image/jpeg",
+          initialQuality: 0.8,
+        });
+        setIsCompressing(false);
+
+        // 2단계: Pre-signed URL 요청
+        setIsUploading(true);
+        setUploadProgress(10);
+
+        const filename = `inspection_${Date.now()}_${compressedFile.name}`;
+        const { uploadUrl, publicUrl } = await getPresignedUrl(
+          filename,
+          compressedFile.type
+        );
+        setUploadProgress(30);
+
+        // 3단계: S3 Direct PUT 업로드
+        const uploadResponse = await fetch(uploadUrl, {
+          method: "PUT",
+          body: compressedFile,
+          headers: {
+            "Content-Type": compressedFile.type,
+          },
+        });
+
+        if (!uploadResponse.ok) {
+          throw new Error(
+            `S3 업로드 실패 (HTTP ${uploadResponse.status})`
+          );
+        }
+
+        setUploadProgress(100);
+        setIsUploading(false);
+
+        return { url: publicUrl };
+      } catch (err: unknown) {
+        const errMsg =
+          err instanceof Error
+            ? err.message
+            : "이미지 업로드 중 오류가 발생했습니다.";
+        setError(errMsg);
+        setIsCompressing(false);
+        setIsUploading(false);
+        return null;
+      }
+    },
+    []
+  );
+
+  return {
+    isCompressing,
+    isUploading,
+    uploadProgress,
+    error,
+    uploadImage,
+    resetUploadState,
+  };
+}

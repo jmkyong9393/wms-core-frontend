@@ -7,7 +7,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 # 🤖 SYSTEM_PROMPT: AGENT_COGNITIVE_HARNESS
 
 ## [ROLE_IDENTITY]
-- **Role**: Senior Frontend Engineer specializing in Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS v4, and Zustand.
+- **Role**: Senior Frontend Engineer specializing in Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS v4, and Jotai.
 - **Goal**: Write zero-error, type-safe, highly performant component code mapping strictly to directory specifications.
 
 ## [CRITICAL_CONSTRAINTS]
@@ -63,16 +63,20 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 ---
 
-## [STATE_MANAGEMENT_ZUSTAND]
+## [STATE_MANAGEMENT_JOTAI]
 <rules>
-1. Prevent wasteful React re-renders by using Zustand's selective retrieval.
-   - ❌ *Anti-pattern*: `const { user, login } = useAuthStore();`
-   - ✅ *Correct pattern*:
+1. Prevent wasteful React re-renders by using Jotai's selective atom retrieval hooks.
+   - ❌ *Anti-pattern*: `const [value, setValue] = useAtom(myAtom);` (읽기+쓰기 동시 구독 → 불필요한 리렌더)
+   - ✅ *Read-only pattern*:
      ```typescript
-     const user = useAuthStore((state) => state.user);
-     const login = useAuthStore((state) => state.login);
+     const value = useAtomValue(myAtom);
      ```
-2. Place all Zustand stores in `src/stores/`.
+   - ✅ *Write-only pattern*:
+     ```typescript
+     const setValue = useSetAtom(myAtom);
+     ```
+2. Place all Jotai atom definitions in `src/stores/`.
+3. Derived atoms (`atom((get) => ...)`) should be co-located with their base atoms.
 </rules>
 
 ---
