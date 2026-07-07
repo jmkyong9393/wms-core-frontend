@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useJobStatus } from "@/hooks/useJobStatus";
 import {
   startInspection,
@@ -26,12 +26,13 @@ import {
   Loader2,
 } from "lucide-react";
 import { useS3Upload } from "@/hooks/useS3Upload";
+import { useCamera } from "@/hooks/useCamera";
+import { processImage } from "@/lib/image-processor";
 
 /**
- * ReturnsInspector — 전체 AI 검수 위저드 오케스트레이터
+ * ReturnsInspector — 전체 AI 검수 위저드 오케스트레이터 (WebRTC 탑재)
  *
- * 모드 선택 → 촬영/업로드 → AI 비동기 대기 → 결과 리포팅/HITL 관리자 보정 전 단계를 조율합니다.
- * Mock 모드 토글 내장으로 백엔드 없이 전체 플로우 시연 가능.
+ * 실시간 가이드라인 오버레이, 볼륨/페달 단축키 촬영 및 흔들림(Blur) 판독 연산이 통합된 마스터 검수 흐름입니다.
  */
 export default function ReturnsInspector() {
   const [step, setStep] = useState<
@@ -41,6 +42,7 @@ export default function ReturnsInspector() {
   const [jobId, setJobId] = useState<string | null>(null);
   const [mockActive, setMockActive] = useState(isMockMode());
   const [localError, setLocalError] = useState<string | null>(null);
+  const [isProcessingLocal, setIsProcessingLocal] = useState(false);
 
   const {
     jobStatus,
@@ -49,9 +51,43 @@ export default function ReturnsInspector() {
     resetJobState,
     setResultDirectly,
   } = useJobStatus(jobId);
-  const { uploadImage, isCompressing, isUploading, uploadProgress } = useS3Upload();
 
-  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const { uploadImage, isCompressing, isUploading, uploadProgress, error: uploadError } = useS3Upload();
+  const { videoRef, startCamera, stopCamera, error: cameraError } = useCamera();
+
+  // 1. 촬영 단계("capture") 진입 시에만 카메라 가동 시작
+  useEffect(() => {
+    if (step === "capture") {
+      startCamera();
+    } else {
+      stopCamera();
+    }
+    return () => {
+      stopCamera();
+    };
+  }, [step, startCamera, stopCamera]);
+
+  // 2. 물리 풋페달 단축키 바인딩
+  useEffect(() => {
+    if (step !== "capture") return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (
+        ["AudioVolumeUp", "AudioVolumeDown", "VolumeUp", "VolumeDown", " ", "Enter"].includes(e.key) ||
+        e.keyCode === 24 ||
+        e.keyCode === 25
+      ) {
+        const btn = document.getElementById("capture-btn");
+        if (btn && !btn.hasAttribute("disabled")) {
+          e.preventDefault();
+          btn.click();
+        }
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [step]);
 
   // Mock 모드 토글
   const handleToggleMock = () => {
@@ -66,46 +102,46 @@ export default function ReturnsInspector() {
     setStep("capture");
   };
 
-  // 촬영 트리거
-  const triggerCapture = () => {
-    fileInputRef.current?.click();
-  };
-
-  // 파일 선택 → 압축 → 업로드 → 검수 시작
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
+  // 비디오 프레임 캡처 및 전처리 파이프라인
+  const handleCapture = async () => {
+    if (!videoRef.current || isProcessingLocal || isCompressing || isUploading) return;
 
     setLocalError(null);
-    setStep("analyzing");
+    setIsProcessingLocal(true);
 
     try {
-      const uploadResult = await uploadImage(files[0]);
-      if (!uploadResult) {
-        throw new Error("이미지 업로드에 실패했습니다.");
+      // 1) 흔들림 검사 및 캔버스 스케일링
+      const processed = await processImage(videoRef.current);
+      if (processed.isBlurred) {
+        setLocalError("⚠️ 사진이 너무 흔들렸습니다. 구도를 고정한 채 다시 촬영해 주세요.");
+        setIsProcessingLocal(false);
+        return;
       }
 
+      setStep("analyzing");
+
+      // 2) S3 업로드 진행
+      const filePayload = new File([processed.blob], `inspect_${Date.now()}.jpg`, { type: "image/jpeg" });
+      const uploadResult = await uploadImage(filePayload);
+      if (!uploadResult) {
+        throw new Error("이미지 서버 전송에 실패했습니다.");
+      }
+
+      // 3) AI 검수 큐 진입 요청
       const inspectResponse = await startInspection({
         mode,
         coverImageUrl: uploadResult.url,
         defectImageUrls: [],
-        bookTitle:
-          mode === "NEW_RETURN" ? "반품 신간 도서" : "매입 중고 도서",
+        bookTitle: mode === "NEW_RETURN" ? "반품 신간 도서" : "매입 중고 도서",
       });
 
       setJobId(inspectResponse.jobId);
     } catch (err: unknown) {
-      const errMsg =
-        err instanceof Error
-          ? err.message
-          : "AI 검수 요청 시작에 실패했습니다.";
+      const errMsg = err instanceof Error ? err.message : "AI 검수 요청 시작에 실패했습니다.";
       setLocalError(errMsg);
       setStep("capture");
-    }
-
-    // input 초기화
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
+    } finally {
+      setIsProcessingLocal(false);
     }
   };
 
@@ -122,7 +158,7 @@ export default function ReturnsInspector() {
     setLocalError(null);
   };
 
-  // jobStatus 변경 시 result 스텝으로 자동 전이
+  // 완료 전이 조건
   if (
     step === "analyzing" &&
     (jobStatus === "COMPLETED" || jobStatus === "HITL_WAITING") &&
@@ -131,20 +167,10 @@ export default function ReturnsInspector() {
     setStep("result");
   }
 
-  const isProcessing = isCompressing || isUploading;
+  const isWorking = isProcessingLocal || isCompressing || isUploading;
 
   return (
     <div className="w-full max-w-md mx-auto space-y-4">
-      {/* 히든 파일 인풋 */}
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*"
-        capture="environment"
-        onChange={handleFileChange}
-        className="hidden"
-      />
-
       {/* Mock 모드 토글 바 */}
       <div className="flex items-center justify-between bg-zinc-100 dark:bg-zinc-800/50 rounded-2xl px-4 py-2.5">
         <span className="text-xs font-semibold text-zinc-600 dark:text-zinc-400">
@@ -209,7 +235,7 @@ export default function ReturnsInspector() {
         </div>
       )}
 
-      {/* ─── Step 2: 촬영 ─── */}
+      {/* ─── Step 2: 실시간 WebRTC 촬영 ─── */}
       {step === "capture" && (
         <div className="space-y-4">
           <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-50 flex items-center gap-2">
@@ -217,17 +243,45 @@ export default function ReturnsInspector() {
             {mode === "NEW_RETURN" ? "신간 반품 촬영" : "중고 매입 촬영"}
           </h2>
 
-          <div className="rounded-2xl border-2 border-dashed border-zinc-300 dark:border-zinc-700 aspect-video flex flex-col items-center justify-center text-zinc-400 bg-zinc-50 dark:bg-zinc-950/40">
-            <Camera className="w-10 h-10 mb-2" />
-            <span className="text-sm font-medium">
-              아래 버튼으로 촬영하세요
-            </span>
+          <div className="relative w-full aspect-[4/3] bg-black rounded-3xl overflow-hidden shadow-md">
+            {cameraError && (
+              <div className="absolute inset-0 bg-zinc-950 text-white flex items-center justify-center p-4 text-center text-xs z-20">
+                {cameraError}
+              </div>
+            )}
+            
+            <video
+              ref={videoRef}
+              autoPlay
+              playsInline
+              muted
+              className="w-full h-full object-cover"
+            />
+
+            {/* 도서 정렬 가이드라인 박스 */}
+            <div className="absolute inset-0 pointer-events-none flex items-center justify-center p-6 z-10">
+              <div className="w-full h-[80%] border-2 border-dashed border-white/60 rounded-xl relative flex items-center justify-center">
+                <span className="absolute top-2 text-white/80 text-[10px] bg-black/40 px-2 py-0.5 rounded-full">
+                  도서를 선 안에 정렬하세요
+                </span>
+                <div className="w-6 h-[2px] bg-white/40 absolute" />
+                <div className="w-[2px] h-6 bg-white/40 absolute" />
+              </div>
+            </div>
+
+            {/* 흔들림 연산 및 로컬 전처리 처리 중 오버레이 */}
+            {isProcessingLocal && (
+              <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center text-white text-xs z-20">
+                <Loader2 className="w-8 h-8 text-indigo-400 animate-spin mb-2" />
+                <span>흔들림 감지 판독 중...</span>
+              </div>
+            )}
           </div>
 
-          {localError && (
+          {(localError || uploadError) && (
             <div className="p-2.5 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/30 rounded-xl text-center text-xs text-red-600">
               <AlertCircle className="w-4 h-4 inline mr-1" />
-              {localError}
+              {localError || uploadError}
             </div>
           )}
 
@@ -240,13 +294,14 @@ export default function ReturnsInspector() {
               뒤로 가기
             </button>
             <button
+              id="capture-btn"
               type="button"
-              onClick={triggerCapture}
-              disabled={isProcessing}
+              onClick={handleCapture}
+              disabled={isWorking}
               className="py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-lg shadow-indigo-600/10 flex items-center justify-center gap-2 disabled:opacity-50"
             >
               <Camera className="w-4 h-4" />
-              촬영 시작
+              촬영하기
             </button>
           </div>
         </div>
@@ -256,23 +311,23 @@ export default function ReturnsInspector() {
       {step === "analyzing" && (
         <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-8 text-center">
           <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-indigo-50 dark:bg-indigo-950/30 flex items-center justify-center">
-            {isProcessing ? (
+            {isWorking ? (
               <Loader2 className="w-8 h-8 text-indigo-500 animate-spin" />
             ) : (
               <Sparkles className="w-8 h-8 text-indigo-500 animate-pulse" />
             )}
           </div>
           <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-50 mb-1">
-            {isProcessing
-              ? "이미지 처리 중..."
-              : "AI 멀티에이전트 비전 분석 중..."}
+            {isWorking ? "도서 이미지 처리 중..." : "AI 비전 판독 진행 중..."}
           </h3>
           <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-4">
-            {isProcessing
-              ? `압축/업로드 진행률: ${uploadProgress}%`
+            {isWorking
+              ? isCompressing
+                ? "고효율 Web Worker 이미지 압축 실행 중"
+                : `S3 Direct 업로드 중... (${uploadProgress}%)`
               : jobStatus === "PENDING"
-                ? "검수 대기열에서 순서를 기다리고 있습니다."
-                : "OpenCV BBox 맵핑 및 UBCI 점수 산출 중..."}
+                ? "검수 대기열에서 가용한 LangGraph 에이전트를 매칭하는 중입니다."
+                : "OpenCV를 통한 픽셀 BBox 피팅 및 UBCI 상태 수치를 취합하고 있습니다."}
           </p>
 
           {(jobError || localError) && (
@@ -289,10 +344,10 @@ export default function ReturnsInspector() {
         </div>
       )}
 
-      {/* ─── Step 4: 결과 ─── */}
+      {/* ─── Step 4: 결과 리포트 ─── */}
       {step === "result" && result && (
         <div className="space-y-4">
-          {/* HITL 대기 시 관리자 보정 패널 표시 */}
+          {/* HITL 수동 결정 차단 장벽 */}
           {jobStatus === "HITL_WAITING" && (
             <ReturnsHitlPanel
               jobId={result.jobId}
@@ -303,50 +358,50 @@ export default function ReturnsInspector() {
             />
           )}
 
-          {/* 결과 리포트 카드 */}
+          {/* AI 리포트 문서 */}
           <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-50 flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-indigo-500" />
-                AI 검수 최종 리포트
+                AI 품질 판독 명세서
               </h3>
               <span
-                className={`text-xs font-bold px-2.5 py-1 rounded-full ${
+                className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
                   jobStatus === "COMPLETED"
                     ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400"
                     : "bg-amber-100 text-amber-700 dark:bg-amber-950/30 dark:text-amber-400"
                 }`}
               >
-                {jobStatus === "COMPLETED" ? "자동 판정 완료" : "보정 대기"}
+                {jobStatus === "COMPLETED" ? "자동 판정 완료" : "수동 승인 필요"}
               </span>
             </div>
 
-            {/* 핵심 지표 */}
-            <div className="grid grid-cols-3 gap-3 mb-4">
-              <div className="bg-zinc-50 dark:bg-zinc-950 rounded-xl p-3 text-center">
-                <p className="text-xs text-zinc-500 mb-1">등급</p>
-                <p className="text-lg font-black text-zinc-900 dark:text-zinc-50">
+            {/* 품질 지표 명세 */}
+            <div className="grid grid-cols-3 gap-2.5 mb-4">
+              <div className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-100 dark:border-zinc-900 rounded-2xl p-3 text-center">
+                <p className="text-[10px] text-zinc-400 mb-0.5">판독 등급</p>
+                <p className="text-base font-black text-zinc-900 dark:text-zinc-50">
                   {result.grade || "—"}
                 </p>
               </div>
-              <div className="bg-zinc-50 dark:bg-zinc-950 rounded-xl p-3 text-center">
-                <p className="text-xs text-zinc-500 mb-1">신뢰도</p>
-                <p className="text-lg font-black text-zinc-900 dark:text-zinc-50">
+              <div className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-100 dark:border-zinc-900 rounded-2xl p-3 text-center">
+                <p className="text-[10px] text-zinc-400 mb-0.5">AI 신뢰도</p>
+                <p className="text-base font-black text-zinc-900 dark:text-zinc-50">
                   {result.confidenceScore != null
                     ? `${(result.confidenceScore * 100).toFixed(0)}%`
                     : "—"}
                 </p>
               </div>
-              <div className="bg-zinc-50 dark:bg-zinc-950 rounded-xl p-3 text-center">
-                <p className="text-xs text-zinc-500 mb-1">WMS</p>
-                <p className="text-sm font-bold flex items-center justify-center gap-1">
+              <div className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-100 dark:border-zinc-900 rounded-2xl p-3 text-center">
+                <p className="text-[10px] text-zinc-400 mb-0.5">WMS 적재</p>
+                <p className="text-xs font-bold pt-0.5">
                   {result.wmsDecision === "RESTOCKED" ? (
-                    <span className="text-emerald-600 flex items-center gap-1">
-                      <FileCheck2 className="w-3.5 h-3.5" /> 입고
+                    <span className="text-emerald-600 flex items-center justify-center gap-0.5">
+                      <FileCheck2 className="w-3.5 h-3.5" /> 가용입고
                     </span>
                   ) : result.wmsDecision === "REJECTED" ? (
-                    <span className="text-red-600 flex items-center gap-1">
-                      <FileX2 className="w-3.5 h-3.5" /> 반려
+                    <span className="text-red-600 flex items-center justify-center gap-0.5">
+                      <FileX2 className="w-3.5 h-3.5" /> 불합반려
                     </span>
                   ) : (
                     "—"
@@ -355,12 +410,12 @@ export default function ReturnsInspector() {
               </div>
             </div>
 
-            {/* AI 분석 이미지 */}
+            {/* OpenCV 검수 캔버스 피드백 */}
             {result.processedCoverImageUrl && (
               <div className="space-y-2 mb-4">
                 <h4 className="text-xs font-bold text-zinc-700 dark:text-zinc-300 flex items-center gap-1">
-                  <ExternalLink className="w-3 h-3" />
-                  AI 결함 탐지 이미지
+                  <ExternalLink className="w-3 h-3 text-indigo-500" />
+                  AI 판독 검출본 (BBox 맵핑)
                 </h4>
                 <div className="rounded-2xl overflow-hidden border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 aspect-video flex items-center justify-center">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -373,14 +428,14 @@ export default function ReturnsInspector() {
               </div>
             )}
 
-            {/* 완료 시 리셋 버튼 */}
+            {/* 검수 마감 및 리셋 */}
             {jobStatus === "COMPLETED" && (
               <button
                 type="button"
                 onClick={handleReset}
                 className="w-full rounded-2xl py-4 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/10"
               >
-                <RotateCcw className="w-5 h-5" />
+                <RotateCcw className="w-4 h-4" />
                 검수 마감 및 신규 검수 시작
               </button>
             )}
