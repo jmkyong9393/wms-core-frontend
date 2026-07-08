@@ -5,6 +5,7 @@
  * Mock 모드 활성화 시 localStorage 기반으로 상태 전이를 시뮬레이션하여
  * 백엔드 없이도 프론트엔드 단독 개발/데모가 가능합니다.
  */
+import axios from "axios";
 import { apiClient } from "@/lib/api-client";
 import type {
   ReturnInspectPayload,
@@ -42,7 +43,8 @@ export async function getPresignedUrl(
       publicUrl: `https://mock-s3.example.com/public/${filename}`,
     };
   }
-  const res = await apiClient.post<PresignedUrlResponse>("/api/upload/url", {
+  // 로컬 Next.js API Route를 호출합니다.
+  const res = await axios.post<PresignedUrlResponse>("/api/upload/url", {
     filename,
     contentType,
   });
