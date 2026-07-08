@@ -43,12 +43,12 @@ export function useS3Upload(): UseS3UploadReturn {
         setError(null);
         setUploadProgress(0);
 
-        // 1단계: Web Worker 기반 이미지 압축
+        // 1단계: 메인 스레드 기반 이미지 압축 (모바일 웹뷰 및 일부 브라우저의 Web Worker 차단 방지)
         setIsCompressing(true);
         const compressedFile = await imageCompression(file, {
           maxSizeMB: 1,
           maxWidthOrHeight: 1600,
-          useWebWorker: true,
+          useWebWorker: false,
           fileType: "image/jpeg",
           initialQuality: 0.8,
         });

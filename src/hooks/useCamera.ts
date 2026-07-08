@@ -36,8 +36,8 @@ export function useCamera({ idealFacingMode = "environment" }: UseCameraOptions 
       const constraints: MediaStreamConstraints = {
         video: {
           facingMode: idealFacingMode,
-          width: { ideal: 4096 },
-          height: { ideal: 2160 },
+          width: { ideal: 1920 },
+          height: { ideal: 1080 },
         },
         audio: false, // iOS 사파리 팝업 중복 방지 및 마이크 권한 요청 제거
       };
