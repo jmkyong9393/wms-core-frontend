@@ -75,8 +75,22 @@ export function useS3Upload(): UseS3UploadReturn {
         });
 
         if (!uploadResponse.ok) {
+          let errorDetails = "";
+          try {
+            const errorText = await uploadResponse.text();
+            const codeMatch = errorText.match(/<Code>([\s\S]*?)<\/Code>/);
+            const messageMatch = errorText.match(/<Message>([\s\S]*?)<\/Message>/);
+            if (codeMatch && codeMatch[1]) {
+              errorDetails += ` [${codeMatch[1].trim()}]`;
+            }
+            if (messageMatch && messageMatch[1]) {
+              errorDetails += `: ${messageMatch[1].trim()}`;
+            }
+          } catch (e) {
+            // ignore parsing error
+          }
           throw new Error(
-            `S3 업로드 실패 (HTTP ${uploadResponse.status})`
+            `S3 업로드 실패 (HTTP ${uploadResponse.status})${errorDetails}`
           );
         }
 
