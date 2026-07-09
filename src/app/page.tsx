@@ -2,7 +2,7 @@
 
 import { useAtomValue } from 'jotai';
 import { uploadQueueAtom } from '@/stores/atoms';
-import { Package, Truck, CheckCircle, AlertTriangle } from 'lucide-react';
+import { Package, Truck, CheckCircle, AlertTriangle, Camera } from 'lucide-react';
 
 export default function DashboardPage() {
   const uploadQueue = useAtomValue(uploadQueueAtom);
