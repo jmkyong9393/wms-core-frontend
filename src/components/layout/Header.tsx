@@ -13,9 +13,11 @@ export default function Header() {
   const pathname = usePathname();
   let pageTitle = 'Dashboard';
   if (pathname === '/inbound') pageTitle = '현장 반품 검수';
-  if (pathname === '/inventory') pageTitle = '가상 재고 창고';
   if (pathname === '/po') pageTitle = '자동 발주 현황';
   if (pathname === '/reports') pageTitle = 'AI 품질 리포트';
+  if (pathname === '/admin/queue') pageTitle = '검토 대기';
+  if (pathname === '/admin/inspections') pageTitle = '검수 처리 내역';
+  if (pathname === '/admin/inventory') pageTitle = '재고·출고 관리';
 
   return (
     <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 lg:px-8">

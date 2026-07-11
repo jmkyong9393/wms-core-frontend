@@ -38,8 +38,7 @@ export interface UploadTask {
 export const uploadQueueAtom = atom<UploadTask[]>([]);
 
 // 4. HITL(Human-in-the-Loop) 관리자 수동 승인 대기 큐
-// uploadQueueAtom(촬영/업로드 진행 상태)과는 별개로,
-// AI 검수 신뢰도가 낮아 관리자 승인이 필요한 반품 작업(return_job) 단위를 관리한다.
+// AI 판단이 애매한 경우 관리자가 확인할 목록
 export type HitlItemStatus = 'AWAITING_REVIEW' | 'APPROVED' | 'REJECTED';
 
 export interface HitlQueueItem {
@@ -47,19 +46,19 @@ export interface HitlQueueItem {
   isbn?: string;
   title?: string;
   ubciScore?: number;
-  confidence?: number;
   status: HitlItemStatus;
 }
 
+// 관리자가 확인해야 하는 검수 목록
 export const hitlQueueAtom = atom<HitlQueueItem[]>([]);
 
-// 승인 대기 중인 항목 수 (Header 등에서 배지 표시용)
+// 아직 검토하지 않은 항목 개수
+// 대시보드에 검토 대기 건수를 보여줄 때 사용
 export const pendingHitlCountAtom = atom((get) =>
   get(hitlQueueAtom).filter((item) => item.status === 'AWAITING_REVIEW').length
 );
 
-// id의 status만 갱신하는 단순 setter.
-// rollback은 별도 구조 없이, 호출부가 이전 status로 이 atom을 다시 호출하는 것으로 처리한다.
+// 전달받은 id와 같은 항목의 상태만 변경
 export const setHitlItemStatusAtom = atom(
   null,
   (get, set, update: { id: string; status: HitlItemStatus }) => {
@@ -69,10 +68,12 @@ export const setHitlItemStatusAtom = atom(
   }
 );
 
+// 승인 버튼을 눌렀을 때 APPROVED 상태로 변경
 export const approveHitlItemAtom = atom(null, (get, set, id: string) => {
   set(setHitlItemStatusAtom, { id, status: 'APPROVED' });
 });
 
+// 반려 버튼을 눌렀을 때 REJECTED 상태로 변경
 export const rejectHitlItemAtom = atom(null, (get, set, id: string) => {
   set(setHitlItemStatusAtom, { id, status: 'REJECTED' });
 });
