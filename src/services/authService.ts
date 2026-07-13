@@ -49,6 +49,7 @@ interface MockUser extends UserInfo {
   password_hash: string;
   created_at: string;
   update_at: string;
+  last_login?: string | null;
 }
 
 const MOCK_USERS_KEY = "wms_mock_users_db";
