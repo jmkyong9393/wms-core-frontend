@@ -16,7 +16,7 @@ export const mockInventoryItems: InventoryItem[] = [
   {
     id: 'inv_002',
     bookTitle: '위버멘쉬',
-    grade: 'EXCELLENT',
+    grade: 'GOOD',
     ubciScore: 90,
     virtualStock: 8,
     location: 'B-1-2',

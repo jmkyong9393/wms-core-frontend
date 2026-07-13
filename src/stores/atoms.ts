@@ -39,7 +39,8 @@ export const uploadQueueAtom = atom<UploadTask[]>([]);
 
 // 4. HITL(Human-in-the-Loop) 관리자 수동 승인 대기 큐
 // AI 판단이 애매한 경우 관리자가 확인할 목록
-export type HitlItemStatus = 'AWAITING_REVIEW' | 'APPROVED' | 'REJECTED';
+// ERD의 return_jobs.status와 동일한 값 사용 (HITL_REQUIRED = 관리자 확인 필요)
+export type HitlItemStatus = 'PENDING' | 'PROCESSING' | 'APPROVED' | 'REJECTED' | 'HITL_REQUIRED';
 
 export interface HitlQueueItem {
   id: string;
@@ -55,7 +56,7 @@ export const hitlQueueAtom = atom<HitlQueueItem[]>([]);
 // 아직 검토하지 않은 항목 개수
 // 대시보드에 검토 대기 건수를 보여줄 때 사용
 export const pendingHitlCountAtom = atom((get) =>
-  get(hitlQueueAtom).filter((item) => item.status === 'AWAITING_REVIEW').length
+  get(hitlQueueAtom).filter((item) => item.status === 'HITL_REQUIRED').length
 );
 
 // 전달받은 id와 같은 항목의 상태만 변경

@@ -13,7 +13,8 @@ export interface AgentLogStep {
   reasonCode?: string;
 }
 
-export type BookGrade = 'MINT' | 'EXCELLENT' | 'GOOD' | 'FAIR' | 'SCRAP';
+// 4단계 등급으로 변경
+export type BookGrade = 'MINT' | 'GOOD' | 'NORMAL' | 'REJECT';
 
 export interface MockInspectionRecord {
   id: string;

@@ -74,7 +74,7 @@ export const mockInspectionRecords: MockInspectionRecord[] = [
   {
     id: 'insp_003',
     bookTitle: '신경끄기의 기술',
-    finalGrade: 'EXCELLENT',
+    finalGrade: 'GOOD',
     isFastTrack: false,
     steps: [
       {
@@ -103,14 +103,14 @@ export const mockInspectionRecords: MockInspectionRecord[] = [
         stepOrder: 4,
         agentName: 'Report',
         executionStatus: 'COMPLETED',
-        resultSummary: 'EXCELLENT 등급 판정, 정상 재고 편입 및 사유서 작성',
+        resultSummary: 'GOOD 등급 판정, 정상 재고 편입 및 사유서 작성',
       },
     ],
   },
   {
     id: 'insp_004',
     bookTitle: '사피엔스',
-    finalGrade: 'FAIR',
+    finalGrade: 'REJECT',
     isFastTrack: false,
     steps: [
       {
@@ -139,7 +139,7 @@ export const mockInspectionRecords: MockInspectionRecord[] = [
         stepOrder: 4,
         agentName: 'Report',
         executionStatus: 'COMPLETED',
-        resultSummary: 'FAIR 등급 판정, 매입 불가(반송) 처리 및 거절 사유서 작성',
+        resultSummary: 'REJECT 등급 판정, 매입 불가(반송) 처리 및 거절 사유서 작성',
       },
     ],
   },

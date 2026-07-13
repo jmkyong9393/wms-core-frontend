@@ -8,7 +8,7 @@ export default function QueuePage() {
   // 관리자 검토 목록 가져오기
   const queue = useAtomValue(hitlQueueAtom);
   // 아직 검토하지 않은 항목만 따로 분류
-  const pendingItems = queue.filter((item) => item.status === 'AWAITING_REVIEW');
+  const pendingItems = queue.filter((item) => item.status === 'HITL_REQUIRED');
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
