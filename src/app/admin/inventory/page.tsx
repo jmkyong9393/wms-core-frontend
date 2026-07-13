@@ -1,4 +1,4 @@
-import { mockInventoryItems } from '@/components/features/admin/mockInventory';
+import { mockInventoryItems } from '@/components/features/admin/shared/mockInventory';
 import { GRADE_BADGE_STYLE } from '@/lib/gradeBadge';
 
 export default function InventoryPage() {

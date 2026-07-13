@@ -18,7 +18,7 @@ import { useState } from 'react';
 
 // PM님이 요청하신 사이드바 추천 메뉴 구성
 const MENU_ITEMS = [
-  { name: '대시보드', href: '/', icon: LayoutDashboard },
+  { name: '대시보드', href: '/admin', icon: LayoutDashboard },
   { name: '현장 반품 검수', href: '/inbound', icon: Camera },
   { name: '검토 대기', href: '/admin/queue', icon: ListChecks },
   { name: '검수 처리 내역', href: '/admin/inspections', icon: ClipboardList },

@@ -2,7 +2,7 @@
 
 import { useAtomValue } from 'jotai';
 import { hitlQueueAtom } from '@/stores/atoms';
-import HitlQueueCard from '@/components/features/admin/HitlQueueCard';
+import HitlQueueCard from '@/components/features/admin/queue/HitlQueueCard';
 
 export default function QueuePage() {
   // 관리자 검토 목록 가져오기
