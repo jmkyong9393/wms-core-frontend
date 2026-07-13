@@ -33,7 +33,7 @@ export default function DashboardPage() {
         <p className="text-sm text-gray-500 mt-1">실시간 AI 검수 현황 및 재고 요약</p>
       </div>
 
-       {/* 주요 업무 현황을 카드로 표시 */}
+      {/* 주요 업무 현황을 카드로 표시 */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
         <StatCard
           icon={Package}
