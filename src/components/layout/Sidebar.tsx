@@ -2,23 +2,27 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { 
-  LayoutDashboard, 
-  Camera, 
-  PackageSearch, 
+import {
+  LayoutDashboard,
+  Camera,
   ShoppingCart,
   LineChart,
   Settings,
   Menu,
-  X
+  X,
+  ClipboardList,
+  ListChecks,
+  Warehouse
 } from 'lucide-react';
 import { useState } from 'react';
 
 // PM님이 요청하신 사이드바 추천 메뉴 구성
 const MENU_ITEMS = [
-  { name: '대시보드', href: '/', icon: LayoutDashboard },
+  { name: '대시보드', href: '/admin', icon: LayoutDashboard },
   { name: '현장 반품 검수', href: '/inbound', icon: Camera },
-  { name: '가상 재고 창고', href: '/inventory', icon: PackageSearch },
+  { name: '검토 대기', href: '/admin/queue', icon: ListChecks },
+  { name: '검수 처리 내역', href: '/admin/inspections', icon: ClipboardList },
+  { name: '재고·출고 관리', href: '/admin/inventory', icon: Warehouse },
   { name: '자동 발주 현황', href: '/po', icon: ShoppingCart },
   { name: 'AI 품질 리포트', href: '/reports', icon: LineChart },
 ];
