@@ -75,7 +75,6 @@ export function useS3Upload(): UseS3UploadReturn {
         });
 
         if (!uploadResponse.ok) {
-<<<<<<< HEAD
           let errorDetails = "";
           try {
             const errorText = await uploadResponse.text();
@@ -92,10 +91,6 @@ export function useS3Upload(): UseS3UploadReturn {
           }
           throw new Error(
             `S3 업로드 실패 (HTTP ${uploadResponse.status})${errorDetails}`
-=======
-          throw new Error(
-            `S3 업로드 실패 (HTTP ${uploadResponse.status})`
->>>>>>> f13e7572252e94d4895a2cb1991e82cfa0b66bbf
           );
         }
 
