@@ -3,7 +3,7 @@
 import { useAtomValue } from 'jotai';
 import { ClipboardList } from 'lucide-react';
 import { pendingHitlCountAtom } from '@/stores/atoms';
-import StatCard from '../shared/StatCard';
+import StatCard from './StatCard';
 
 // 관리자 검토 대기 건수를 표시하는 카드
 export default function PendingHitlStatCard() {

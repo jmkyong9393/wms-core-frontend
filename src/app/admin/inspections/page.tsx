@@ -1,6 +1,6 @@
-import AgentLogAccordion from '@/components/features/admin/inspections/AgentLogAccordion';
-import InspectionBadges from '@/components/features/admin/shared/InspectionBadges';
-import { mockInspectionRecords } from '@/components/features/admin/shared/mockAgentLogs';
+import AgentLogAccordion from '@/app/admin/inspections/_components/AgentLogAccordion';
+import InspectionBadges from '@/app/admin/_components/shared/InspectionBadges';
+import { mockInspectionRecords } from '@/app/admin/_components/shared/mockAgentLogs';
 
 export default function InspectionsPage() {
   return (

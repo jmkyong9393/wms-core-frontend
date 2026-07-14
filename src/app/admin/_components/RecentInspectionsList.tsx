@@ -1,6 +1,6 @@
 import Link from 'next/link';
-import { mockInspectionRecords } from '../shared/mockAgentLogs';
-import InspectionBadges from '../shared/InspectionBadges';
+import { mockInspectionRecords } from './shared/mockAgentLogs';
+import InspectionBadges from './shared/InspectionBadges';
 
 // 대시보드에 최근 검수 기록을 간단히 표시
 export default function RecentInspectionsList() {
