@@ -3,12 +3,12 @@
 import { useAtomValue } from 'jotai';
 import { uploadQueueAtom, hitlQueueAtom } from '@/stores/atoms';
 import { Package, Truck, CheckCircle, Camera, Warehouse } from 'lucide-react';
-import StatCard from '@/components/features/admin/shared/StatCard';
-import PendingHitlStatCard from '@/components/features/admin/dashboard/PendingHitlStatCard';
-import InventoryPreview from '@/components/features/admin/dashboard/InventoryPreview';
-import RecentInspectionsList from '@/components/features/admin/dashboard/RecentInspectionsList';
-import SystemStatusPanel from '@/components/features/admin/dashboard/SystemStatusPanel';
-import { mockInventoryItems } from '@/components/features/admin/shared/mockInventory';
+import StatCard from '@/app/admin/_components/StatCard';
+import PendingHitlStatCard from '@/app/admin/_components/PendingHitlStatCard';
+import InventoryPreview from '@/app/admin/_components/InventoryPreview';
+import RecentInspectionsList from '@/app/admin/_components/RecentInspectionsList';
+import SystemStatusPanel from '@/app/admin/_components/SystemStatusPanel';
+import { mockInventoryItems } from '@/app/admin/_components/shared/mockInventory';
 
 export default function DashboardPage() {
   // 관리자 검토 목록 가져오기
