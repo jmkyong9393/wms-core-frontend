@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useAtom } from "jotai";
-import { uploadQueueAtom } from "@/stores/atoms";
+import { uploadQueueAtom } from "@/features/inbound/store/uploadQueueAtoms";
 import CameraScanner from "@/features/inbound/components/CameraScanner";
 import ReturnsInspector from "@/components/features/returns/ReturnsInspector";
 import { ToggleLeft, ToggleRight } from "lucide-react";

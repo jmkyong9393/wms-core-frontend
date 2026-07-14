@@ -1,4 +1,4 @@
-import type { InventoryItem } from '@/types/inventory';
+import type { InventoryItem } from '@/features/inventory/types/inventory';
 
 // 재고 관리 화면에서 사용할 임시 데이터 
 // 할인가는 미리 계산된 값으로 사용

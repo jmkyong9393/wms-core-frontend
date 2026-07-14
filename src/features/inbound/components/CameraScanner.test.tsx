@@ -4,7 +4,7 @@ import React from "react";
 import CameraScanner from "./CameraScanner";
 
 // Mock hooks and processors
-vi.mock("@/hooks/useCamera", () => {
+vi.mock("@/features/inbound/hooks/useCamera", () => {
   return {
     useCamera: () => ({
       videoRef: { current: null },
@@ -15,7 +15,7 @@ vi.mock("@/hooks/useCamera", () => {
   };
 });
 
-vi.mock("@/hooks/useS3Upload", () => {
+vi.mock("@/features/inbound/hooks/useS3Upload", () => {
   return {
     useS3Upload: () => ({
       isCompressing: false,
@@ -28,7 +28,7 @@ vi.mock("@/hooks/useS3Upload", () => {
   };
 });
 
-vi.mock("@/lib/image-processor", () => {
+vi.mock("@/features/inbound/utils/image-processor", () => {
   return {
     processImage: vi.fn().mockResolvedValue({
       blob: new Blob(["test-image"], { type: "image/jpeg" }),

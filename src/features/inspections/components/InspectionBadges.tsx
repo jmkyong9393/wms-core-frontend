@@ -1,6 +1,6 @@
 import { cn } from '@/lib/utils';
-import { GRADE_BADGE_STYLE } from '@/lib/gradeBadge';
-import type { BookGrade } from '@/types/agentLog';
+import { GRADE_BADGE_STYLE } from '@/features/inspections/utils/gradeBadge';
+import type { BookGrade } from '@/features/inspections/types/inspection';
 
 interface InspectionBadgesProps {
   isFastTrack: boolean;

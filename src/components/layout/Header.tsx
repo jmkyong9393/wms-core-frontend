@@ -1,13 +1,12 @@
 'use client';
 
 import { useAtomValue } from 'jotai';
-import { uploadQueueAtom } from '@/stores/atoms';
+import { pendingUploadCountAtom } from '@/features/inbound/store/uploadQueueAtoms';
 import { Bell, User, CloudUpload, CloudOff } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 
 export default function Header() {
-  const uploadQueue = useAtomValue(uploadQueueAtom);
-  const pendingCount = uploadQueue.filter(t => t.status !== 'COMPLETED').length;
+  const pendingCount = useAtomValue(pendingUploadCountAtom);
   const isOnline = true; // 추후 PWA navigator.onLine 연동
 
   const pathname = usePathname();

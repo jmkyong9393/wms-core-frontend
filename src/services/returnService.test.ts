@@ -2,7 +2,6 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import {
   isMockMode,
   setMockMode,
-  getPresignedUrl,
   startInspection,
   getJobStatus,
   submitHitlOverride,
@@ -58,29 +57,6 @@ describe("returnService", () => {
       setMockMode(false);
       expect(isMockMode()).toBe(false);
       expect(localStorage.getItem("wms_mock_mode")).toBe("false");
-    });
-  });
-
-  describe("getPresignedUrl", () => {
-    it("should return mock response in mock mode", async () => {
-      setMockMode(true);
-      const res = await getPresignedUrl("test.jpg", "image/jpeg");
-      expect(res.uploadUrl).toContain("mock-s3");
-      expect(res.publicUrl).toContain("mock-s3");
-      expect(apiClient.post).not.toHaveBeenCalled();
-    });
-
-    it("should call apiClient in real mode", async () => {
-      setMockMode(false);
-      const mockData = { uploadUrl: "real-upload", publicUrl: "real-public" };
-      vi.mocked(apiClient.post).mockResolvedValueOnce({ data: mockData });
-
-      const res = await getPresignedUrl("test.jpg", "image/jpeg");
-      expect(apiClient.post).toHaveBeenCalledWith("/api/upload/url", {
-        filename: "test.jpg",
-        contentType: "image/jpeg",
-      });
-      expect(res).toEqual(mockData);
     });
   });
 

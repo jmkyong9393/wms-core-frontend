@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { mockInventoryItems } from '@/features/inventory/mocks/mockInventory';
-import { GRADE_BADGE_STYLE } from '@/lib/gradeBadge';
+import { GRADE_BADGE_STYLE } from '@/features/inspections/utils/gradeBadge';
 
 const PREVIEW_LIMIT = 3;
 

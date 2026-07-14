@@ -9,7 +9,7 @@
 
 import { useState, useCallback } from "react";
 import imageCompression from "browser-image-compression";
-import { getPresignedUrl } from "@/services/returnService";
+import { getPresignedUrl } from "@/features/inbound/api/getPresignedUrl";
 
 interface UploadResult {
   url: string;
