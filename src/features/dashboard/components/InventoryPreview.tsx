@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { mockInventoryItems } from './shared/mockInventory';
+import { mockInventoryItems } from '@/features/inventory/mocks/mockInventory';
 import { GRADE_BADGE_STYLE } from '@/lib/gradeBadge';
 
 const PREVIEW_LIMIT = 3;
