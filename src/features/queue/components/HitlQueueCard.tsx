@@ -1,7 +1,7 @@
 'use client';
 
 import { useSetAtom } from 'jotai';
-import { approveHitlItemAtom, rejectHitlItemAtom, type HitlQueueItem } from '@/stores/atoms';
+import { approveHitlItemAtom, rejectHitlItemAtom, type HitlQueueItem } from '@/features/queue/store/queueAtoms';
 import { Button } from '@/components/ui/button';
 
 interface HitlQueueCardProps {

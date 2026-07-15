@@ -1,4 +1,4 @@
-import type { BookGrade } from '@/types/agentLog';
+import type { BookGrade } from '../types/inspection';
 
 // 도서 등급별 배지 색상
 export const GRADE_BADGE_STYLE: Record<BookGrade, string> = {

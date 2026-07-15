@@ -25,9 +25,9 @@ import {
   Camera,
   Loader2,
 } from "lucide-react";
-import { useS3Upload } from "@/hooks/useS3Upload";
-import { useCamera } from "@/hooks/useCamera";
-import { processImage } from "@/lib/image-processor";
+import { useS3Upload } from "@/features/inbound/hooks/useS3Upload";
+import { useCamera } from "@/features/inbound/hooks/useCamera";
+import { processImage } from "@/features/inbound/utils/image-processor";
 
 /**
  * ReturnsInspector — 전체 AI 검수 위저드 오케스트레이터 (WebRTC 탑재)

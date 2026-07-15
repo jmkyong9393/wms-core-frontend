@@ -64,9 +64,3 @@ export interface HitlOverrideResponse {
   success: boolean;
   result: InspectionResult;
 }
-
-/** Pre-signed URL 응답 */
-export interface PresignedUrlResponse {
-  uploadUrl: string;
-  publicUrl: string;
-}

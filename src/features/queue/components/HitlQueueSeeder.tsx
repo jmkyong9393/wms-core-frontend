@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { useSetAtom } from 'jotai';
-import { hitlQueueAtom } from '@/stores/atoms';
+import { hitlQueueAtom } from '@/features/queue/store/queueAtoms';
 import { mockHitlQueueSeed } from '../mocks/mockHitlQueueSeed';
 
 export default function HitlQueueSeeder() {

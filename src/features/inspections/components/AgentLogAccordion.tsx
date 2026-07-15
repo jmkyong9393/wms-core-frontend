@@ -4,7 +4,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import type { MockInspectionRecord } from '@/types/agentLog';
+import type { MockInspectionRecord } from '@/features/inspections/types/inspection';
 
 interface AgentLogAccordionProps {
   record: MockInspectionRecord;

@@ -5,14 +5,12 @@
  * Mock 모드 활성화 시 localStorage 기반으로 상태 전이를 시뮬레이션하여
  * 백엔드 없이도 프론트엔드 단독 개발/데모가 가능합니다.
  */
-import axios from "axios";
 import { apiClient } from "@/lib/api-client";
 import type {
   ReturnInspectPayload,
   InspectionResult,
   HitlPayload,
   InspectionJobStatus,
-  PresignedUrlResponse,
   HitlOverrideResponse,
 } from "@/types/returnTypes";
 
@@ -30,26 +28,6 @@ export const setMockMode = (active: boolean): void => {
     localStorage.setItem(MOCK_MODE_KEY, String(active));
   }
 };
-
-// ─── Pre-signed URL 요청 ───
-
-export async function getPresignedUrl(
-  filename: string,
-  contentType: string
-): Promise<PresignedUrlResponse> {
-  if (isMockMode()) {
-    return {
-      uploadUrl: `https://mock-s3.example.com/upload/${filename}`,
-      publicUrl: `https://mock-s3.example.com/public/${filename}`,
-    };
-  }
-  // 로컬 Next.js API Route를 호출합니다.
-  const res = await axios.post<PresignedUrlResponse>("/api/upload/url", {
-    filename,
-    contentType,
-  });
-  return res.data;
-}
 
 // ─── 검수 시작 요청 ───
 

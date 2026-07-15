@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { useSetAtom } from "jotai";
-import { useCamera } from "@/hooks/useCamera";
-import { useS3Upload } from "@/hooks/useS3Upload";
-import { processImage } from "@/lib/image-processor";
-import { uploadQueueAtom, type UploadTask } from "@/stores/atoms";
+import { useCamera } from "@/features/inbound/hooks/useCamera";
+import { useS3Upload } from "@/features/inbound/hooks/useS3Upload";
+import { processImage } from "@/features/inbound/utils/image-processor";
+import { uploadQueueAtom, type UploadTask } from "@/features/inbound/store/uploadQueueAtoms";
 import { Loader2 } from "lucide-react";
 
 /**

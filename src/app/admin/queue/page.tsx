@@ -1,7 +1,7 @@
 'use client';
 
 import { useAtomValue } from 'jotai';
-import { hitlQueueAtom } from '@/stores/atoms';
+import { hitlQueueAtom } from '@/features/queue/store/queueAtoms';
 import HitlQueueCard from '@/features/queue/components/HitlQueueCard';
 
 export default function QueuePage() {

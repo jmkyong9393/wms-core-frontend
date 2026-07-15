@@ -1,7 +1,8 @@
 'use client';
 
 import { useAtomValue } from 'jotai';
-import { uploadQueueAtom, hitlQueueAtom } from '@/stores/atoms';
+import { hitlQueueAtom } from '@/features/queue/store/queueAtoms';
+import { uploadQueueAtom } from '@/features/inbound/store/uploadQueueAtoms';
 import { Package, Truck, CheckCircle, Camera, Warehouse } from 'lucide-react';
 import StatCard from '@/features/dashboard/components/StatCard';
 import PendingHitlStatCard from '@/features/dashboard/components/PendingHitlStatCard';

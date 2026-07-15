@@ -1,4 +1,4 @@
-import type { MockInspectionRecord } from '@/types/agentLog';
+import type { MockInspectionRecord } from '@/features/inspections/types/inspection';
 
 // 검수 처리 내역 화면에서 사용할 임시 데이터
 export const mockInspectionRecords: MockInspectionRecord[] = [

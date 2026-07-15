@@ -1,4 +1,4 @@
-import type { HitlQueueItem } from '@/stores/atoms';
+import type { HitlQueueItem } from '@/features/queue/store/queueAtoms';
 
 // 관리자 검토 대기 화면에서 사용할 임시 데이터
 export const mockHitlQueueSeed: HitlQueueItem[] = [
