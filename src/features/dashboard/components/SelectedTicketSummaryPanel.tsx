@@ -35,18 +35,22 @@ export default function SelectedTicketSummaryPanel({ item }: SelectedTicketSumma
             <p className="text-xs text-gray-400">ISBN</p>
             <p className="text-sm text-gray-700">{item.isbn ?? '-'}</p>
           </div>
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs text-gray-400">상태</p>
-              <p className="text-sm text-gray-700">{STATUS_LABEL[item.status]}</p>
-            </div>
-            <div>
-              <p className="text-xs text-gray-400">UBCI 점수</p>
-              <p className="text-sm text-gray-700">
-                {item.ubciScore !== undefined ? `${item.ubciScore}점` : '-'}
-              </p>
-            </div>
+          <div>
+            <p className="text-xs text-gray-400">상태</p>
+            <p className="text-sm text-gray-700">{STATUS_LABEL[item.status]}</p>
           </div>
+          <div>
+            <p className="text-xs text-gray-400">UBCI 점수</p>
+            <p className="text-sm text-gray-700">
+              {item.ubciScore !== undefined ? `${item.ubciScore}점` : '-'}
+            </p>
+          </div>
+          {item.reviewer && (
+            <div>
+              <p className="text-xs text-gray-400">담당 관리자</p>
+              <p className="text-sm text-gray-700">👤 {item.reviewer}</p>
+            </div>
+          )}
           <div className="pt-3 border-t border-gray-100">
             <p className="text-xs text-gray-400 mb-1">최종 판정 요약</p>
             <p className="text-xs text-gray-500 leading-relaxed">

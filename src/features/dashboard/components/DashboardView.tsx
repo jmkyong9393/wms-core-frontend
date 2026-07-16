@@ -6,8 +6,6 @@ import { hitlQueueAtom } from '@/features/queue/store/queueAtoms';
 import KpiDonutCard from './KpiDonutCard';
 import HitlKanbanPreview from './HitlKanbanPreview';
 import SelectedTicketSummaryPanel from './SelectedTicketSummaryPanel';
-import SuggestedPoPlaceholder from './SuggestedPoPlaceholder';
-import InventoryPreview from './InventoryPreview';
 
 // 전체 건수가 0이면 NaN 대신 0%로 처리
 function toRatio(count: number, total: number): number {
@@ -39,15 +37,15 @@ export default function DashboardView() {
   }, [hitlQueue, selectedTicketId]);
 
   return (
-    <div className="max-w-[1600px] mx-auto space-y-3">
+    <div className="max-w-[1600px] mx-auto space-y-3 h-full flex flex-col">
       {/* Header Section */}
-      <div>
+      <div className="shrink-0">
         <h2 className="text-2xl font-bold text-gray-800">물류 센터 통합 대시보드</h2>
         <p className="text-sm text-gray-500 mt-1">실시간 AI 검수 현황 및 재고 요약</p>
       </div>
 
       {/* KPI 카드 4개 (어제 대비 추세는 실제 일자별 집계가 없어 고정 mock값) */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 shrink-0">
         <KpiDonutCard
           label="금일 누적 처리량"
           centerValue={`${processedCount}건`}
@@ -84,20 +82,16 @@ export default function DashboardView() {
       </div>
 
       {/* HITL 처리 현황 */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-3">
-        <div className="lg:col-span-3">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-3 flex-1 min-h-0">
+        <div className="lg:col-span-3 min-h-0">
           <HitlKanbanPreview
             queue={hitlQueue}
             selectedId={selectedItem?.id ?? null}
             onSelect={setSelectedTicketId}
           />
         </div>
-        <div className="lg:col-span-1 lg:row-span-2">
+        <div className="lg:col-span-1 min-h-0">
           <SelectedTicketSummaryPanel item={selectedItem} />
-        </div>
-        <div className="lg:col-span-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <InventoryPreview />
-          <SuggestedPoPlaceholder />
         </div>
       </div>
     </div>
