@@ -1,13 +1,25 @@
 'use client';
 
-import { useAtomValue } from 'jotai';
+import { useAtomValue, useSetAtom } from 'jotai';
 import { pendingUploadCountAtom } from '@/features/inbound/store/uploadQueueAtoms';
-import { Bell, User, CloudUpload, CloudOff } from 'lucide-react';
+import { userAtom, tokenAtom } from '@/stores/atoms';
+import { Bell, User, CloudUpload, CloudOff, LogOut } from 'lucide-react';
 import { usePathname } from 'next/navigation';
+import { authService } from '@/services/authService';
 
 export default function Header() {
   const pendingCount = useAtomValue(pendingUploadCountAtom);
   const isOnline = true; // 추후 PWA navigator.onLine 연동
+
+  const user = useAtomValue(userAtom);
+  const setToken = useSetAtom(tokenAtom);
+  const setUser = useSetAtom(userAtom);
+
+  const handleLogout = () => {
+    authService.logout();
+    setToken(null);
+    setUser(null);
+  };
 
   const pathname = usePathname();
   let pageTitle = 'Dashboard';
@@ -55,13 +67,29 @@ export default function Header() {
         </button>
 
         {/* User Profile */}
-        <div className="flex items-center pl-2 border-l border-gray-200">
-          <div className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-700">
-            <User className="w-4 h-4" />
+        <div className="flex items-center pl-2 border-l border-gray-200 space-x-3">
+          <div className="flex items-center">
+            <div className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-700">
+              <User className="w-4 h-4" />
+            </div>
+            <div className="ml-2 hidden md:flex flex-col text-left">
+              <span className="text-xs font-semibold text-gray-800">
+                {user?.name || '사용자'}
+              </span>
+              <span className="text-[10px] text-gray-500 font-medium">
+                {user?.role === 'MASTER' ? '총괄 관리자' : user?.role === 'WORKER' ? '현장 작업자' : '일반 사용자'}
+              </span>
+            </div>
           </div>
-          <span className="ml-2 text-sm font-medium text-gray-700 hidden md:block">
-            현장 관리자
-          </span>
+
+          {/* Logout Button */}
+          <button
+            onClick={handleLogout}
+            title="로그아웃"
+            className="p-1.5 text-gray-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+          >
+            <LogOut className="w-4 h-4" />
+          </button>
         </div>
       </div>
     </header>

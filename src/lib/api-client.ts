@@ -15,11 +15,13 @@ export const apiClient = axios.create({
 // 인터셉터 (요청 전)
 apiClient.interceptors.request.use(
   (config) => {
-    // TODO: 로컬 스토리지나 쿠키에서 토큰을 가져와 헤더에 주입
-    // const token = localStorage.getItem("token");
-    // if (token) {
-    //   config.headers.Authorization = `Bearer ${token}`;
-    // }
+    // SSR 환경 오류 방지를 위한 클라이언트 환경 체크
+    if (typeof window !== "undefined") {
+      const token = localStorage.getItem("wms_token");
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+    }
     return config;
   },
   (error) => Promise.reject(error)
@@ -29,7 +31,15 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    // TODO: 전역 에러 핸들링 (예: 401 인증 만료 시 로그인 페이지 리다이렉트)
+    // 401 인증 만료 에러 발생 시 세션 만료 처리 및 로그인 화면 강제 유도
+    if (error.response?.status === 401) {
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("wms_token");
+        localStorage.removeItem("wms_user");
+        // 강제로 새로고침하여 레이아웃 인증 가드 발동 유도
+        window.location.reload();
+      }
+    }
     return Promise.reject(error);
   }
 );
