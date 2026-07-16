@@ -7,8 +7,10 @@ import HitlQueueCard from '@/features/queue/components/HitlQueueCard';
 export default function QueuePage() {
   // 관리자 검토 목록 가져오기
   const queue = useAtomValue(hitlQueueAtom);
-  // 아직 검토하지 않은 항목만 따로 분류
-  const pendingItems = queue.filter((item) => item.status === 'AWAITING_REVIEW');
+  // 아직 승인/반려로 끝나지 않은 항목(대기중 + 검토중)만 따로 분류
+  const pendingItems = queue.filter(
+    (item) => item.status === 'AWAITING_REVIEW' || item.status === 'IN_PROGRESS'
+  );
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -16,7 +18,7 @@ export default function QueuePage() {
       <div>
         <h2 className="text-2xl font-bold text-gray-800">검토 대기</h2>
         <p className="text-sm text-gray-500 mt-1">
-          AI 신뢰도가 낮아 관리자의 승인 또는 반려가 필요한 항목입니다.
+          AI 신뢰도가 낮아 관리자의 검토·승인·반려가 필요한 항목입니다.
         </p>
       </div>
 

@@ -4,17 +4,10 @@ import {
   approveHitlItemAtom,
   rejectHitlItemAtom,
   requestReReviewHitlItemAtom,
-  type HitlItemStatus,
   type HitlQueueItem,
 } from '@/features/queue/store/queueAtoms';
-import AgentConversationModal from './AgentConversationModal';
-
-const STATUS_LABEL: Record<HitlItemStatus, string> = {
-  AWAITING_REVIEW: '검토 대기',
-  IN_PROGRESS: '검토중',
-  APPROVED: '승인 완료',
-  REJECTED: '반려',
-};
+import { STATUS_LABEL } from '@/features/queue/utils/statusLabel';
+import AgentConversationModal from '@/features/queue/components/AgentConversationModal';
 
 interface SelectedTicketSummaryPanelProps {
   item: HitlQueueItem | null;

@@ -16,7 +16,7 @@ interface AgentConversationModalProps {
   onClose: () => void;
 }
 
-// 검수 티켓 클릭 시 뜨는 에이전트 대화 로그 모달 (백엔드 연동 전, mock agentLogs 기반)
+// 검수 티켓 클릭 시 뜨는 에이전트 대화 로그 모달 (백엔드 연동 전 mock agentLogs 기반)
 export default function AgentConversationModal({ item, onClose }: AgentConversationModalProps) {
   useEffect(() => {
     if (!item) return;
@@ -62,7 +62,7 @@ export default function AgentConversationModal({ item, onClose }: AgentConversat
             </div>
           </div>
 
-          {/* 에이전트 대화 로그 (카카오톡 스타일 말풍선, 스크롤) */}
+          {/* 에이전트 대화 로그 (카카오톡 스타일 말풍선) */}
           <div className="p-4 flex flex-col min-h-0">
             <div className="flex-1 overflow-y-auto space-y-3 pr-1">
               {item.agentLogs && item.agentLogs.length > 0 ? (
