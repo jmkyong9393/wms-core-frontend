@@ -108,7 +108,7 @@ export default function CameraScanner() {
   const isWorking = isProcessingLocal || isCompressing || isUploading;
 
   return (
-    <div className="relative w-full max-w-md mx-auto aspect-[3/4] bg-black border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] rounded-none overflow-hidden font-mono">
+    <div className="relative w-full max-w-md mx-auto aspect-[3/4] bg-black rounded-3xl overflow-hidden shadow-2xl">
       {/* 카메라 에러 처리 */}
       {error && (
         <div className="absolute inset-0 flex items-center justify-center bg-zinc-900 text-white p-4 text-center z-20">
@@ -125,11 +125,11 @@ export default function CameraScanner() {
         className="w-full h-full object-cover"
       />
 
-      {/* 도서 정렬용 BBox 가이드라인 오버레이 (둥글기 엄격 배제) */}
+      {/* 도서 정렬용 BBox 가이드라인 오버레이 */}
       <div className="absolute inset-0 pointer-events-none flex items-center justify-center p-8 z-10">
-        <div className="w-full h-[70%] border-4 border-dashed border-white flex flex-col items-center justify-center relative rounded-none">
-          <div className="absolute -top-8 text-white text-[10px] font-black uppercase tracking-wider bg-black border-2 border-white px-3 py-1 rounded-none">
-            ALIGN BOOK WITHIN GUIDE
+        <div className="w-full h-[70%] border-4 border-dashed border-white/70 rounded-2xl flex flex-col items-center justify-center relative">
+          <div className="absolute -top-8 text-white/90 text-xs font-semibold bg-black/50 px-3 py-1 rounded-full">
+            이 선 안에 책을 맞춰주세요
           </div>
           <div className="w-8 h-1 bg-white/50 absolute" />
           <div className="w-1 h-8 bg-white/50 absolute" />
@@ -138,22 +138,22 @@ export default function CameraScanner() {
 
       {/* 프로세싱 상태 표시 */}
       {isWorking && (
-        <div className="absolute inset-0 bg-black/80 flex flex-col items-center justify-center text-white z-20 p-4">
-          <Loader2 className="w-10 h-10 text-white animate-spin mb-3" />
-          <span className="text-xs font-black uppercase tracking-widest text-center">
-            {isProcessingLocal ? "Blur check running..." : isCompressing ? "Compressing frame..." : `UPLOADING STREAM (${uploadProgress}%)`}
+        <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center text-white z-20 p-4">
+          <Loader2 className="w-10 h-10 text-indigo-400 animate-spin mb-3" />
+          <span className="text-sm font-semibold">
+            {isProcessingLocal ? "흔들림 감지 연산 중..." : isCompressing ? "이미지 압축 중..." : `업로드 중... (${uploadProgress}%)`}
           </span>
         </div>
       )}
 
-      {/* 경고 및 성공 토스트 메시지 (브루탈리즘 스타일) */}
+      {/* 경고 및 성공 토스트 메시지 */}
       {toastMsg && (
         <div className="absolute top-4 left-4 right-4 z-30">
           <div
-            className={`px-4 py-3 rounded-none border-2 border-black font-black text-xs text-center uppercase tracking-wider ${
+            className={`px-4 py-3 rounded-xl shadow-lg font-medium text-xs text-center backdrop-blur-md ${
               toastMsg.includes("⚠️") || toastMsg.includes("❌")
-                ? "bg-[#E60012] text-white"
-                : "bg-white text-black"
+                ? "bg-red-500/90 text-white"
+                : "bg-emerald-500/90 text-white"
             }`}
           >
             {toastMsg}
@@ -163,23 +163,23 @@ export default function CameraScanner() {
 
       {/* 에러 */}
       {uploadError && (
-        <div className="absolute top-16 left-4 right-4 z-30 px-4 py-3 rounded-none border-2 border-black bg-[#E60012] text-white text-xs text-center font-black uppercase tracking-wider">
+        <div className="absolute top-16 left-4 right-4 z-30 px-4 py-3 rounded-xl bg-red-500/90 text-white text-xs text-center">
           {uploadError}
         </div>
       )}
 
-      {/* 하단 촬영 컨트롤 영역: 셔터 역시 사각형으로 브루탈리즘화 */}
+      {/* 하단 촬영 컨트롤 영역 */}
       <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/80 to-transparent flex justify-center items-end h-32 z-10">
         <button
           id="capture-btn"
           type="button"
           onClick={handleCapture}
           disabled={isWorking}
-          className={`w-14 h-14 rounded-none border-4 border-white flex items-center justify-center transition-transform active:scale-90 ${
+          className={`w-16 h-16 rounded-full border-4 border-white flex items-center justify-center transition-transform active:scale-95 ${
             isWorking ? "opacity-50 cursor-not-allowed" : "hover:bg-white/20"
           }`}
         >
-          <div className="w-10 h-10 bg-white rounded-none" />
+          <div className="w-12 h-12 bg-white rounded-full" />
         </button>
       </div>
     </div>

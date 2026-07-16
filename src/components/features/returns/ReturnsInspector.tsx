@@ -19,6 +19,7 @@ import {
   ExternalLink,
   Camera,
   Loader2,
+  AlertCircle,
 } from "lucide-react";
 import { useS3Upload } from "@/features/inbound/hooks/useS3Upload";
 import { useCamera } from "@/features/inbound/hooks/useCamera";
@@ -230,9 +231,9 @@ export default function ReturnsInspector() {
             {mode === "NEW_RETURN" ? "NEW BOOK SCAN" : "USED BOOK SCAN"}
           </h2>
 
-          <div className="relative w-full aspect-[4/3] bg-black border-2 border-black rounded-none overflow-hidden shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+          <div className="relative w-full aspect-[4/3] bg-black rounded-3xl overflow-hidden shadow-md">
             {cameraError && (
-              <div className="absolute inset-0 bg-zinc-950 text-white flex items-center justify-center p-4 text-center text-xs z-20 font-black uppercase">
+              <div className="absolute inset-0 bg-zinc-950 text-white flex items-center justify-center p-4 text-center text-xs z-20">
                 {cameraError}
               </div>
             )}
@@ -245,11 +246,11 @@ export default function ReturnsInspector() {
               className="w-full h-full object-cover"
             />
 
-            {/* 도서 정렬 가이드라인 박스 (둥글기 엄격 배제) */}
+            {/* 도서 정렬 가이드라인 박스 */}
             <div className="absolute inset-0 pointer-events-none flex items-center justify-center p-6 z-10">
-              <div className="w-full h-[80%] border-2 border-dashed border-white rounded-none relative flex items-center justify-center">
-                <span className="absolute top-2 text-white text-[9px] font-black uppercase tracking-wider bg-black border border-white px-2 py-0.5 rounded-none">
-                  ALIGN BOOK WITHIN BOX
+              <div className="w-full h-[80%] border-2 border-dashed border-white/60 rounded-xl relative flex items-center justify-center">
+                <span className="absolute top-2 text-white/80 text-[10px] bg-black/40 px-2 py-0.5 rounded-full">
+                  도서를 선 안에 정렬하세요
                 </span>
                 <div className="w-6 h-[2px] bg-white/40 absolute" />
                 <div className="w-[2px] h-6 bg-white/40 absolute" />
@@ -258,15 +259,16 @@ export default function ReturnsInspector() {
 
             {/* 흔들림 연산 및 로컬 전처리 처리 중 오버레이 */}
             {isProcessingLocal && (
-              <div className="absolute inset-0 bg-black/80 flex flex-col items-center justify-center text-white text-xs z-20">
-                <Loader2 className="w-8 h-8 text-white animate-spin mb-2" />
-                <span className="font-black uppercase tracking-wider">BLUR CHECK RUNNING...</span>
+              <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center text-white text-xs z-20">
+                <Loader2 className="w-8 h-8 text-indigo-400 animate-spin mb-2" />
+                <span>흔들림 감지 판독 중...</span>
               </div>
             )}
           </div>
 
           {(localError || uploadError) && (
-            <div className="p-3 bg-[#E60012]/10 border-2 border-black rounded-none text-center text-xs font-black text-black uppercase tracking-wider shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+            <div className="p-2.5 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/30 rounded-xl text-center text-xs text-red-600">
+              <AlertCircle className="w-4 h-4 inline mr-1" />
               {localError || uploadError}
             </div>
           )}
@@ -275,19 +277,19 @@ export default function ReturnsInspector() {
             <button
               type="button"
               onClick={handleReset}
-              className="py-3 rounded-none border-2 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none hover:bg-black hover:text-white transition-all bg-white text-black font-bold text-xs cursor-pointer uppercase"
+              className="py-3 rounded-2xl border border-zinc-200 dark:border-zinc-800 text-xs font-semibold text-zinc-600 hover:bg-zinc-50 transition-colors"
             >
-              BACK
+              뒤로 가기
             </button>
             <button
               id="capture-btn"
               type="button"
               onClick={handleCapture}
               disabled={isWorking}
-              className="py-3 rounded-none bg-black text-white hover:bg-white hover:text-black border-2 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all text-xs font-bold flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer uppercase"
+              className="py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-lg shadow-indigo-600/10 flex items-center justify-center gap-2 disabled:opacity-50"
             >
               <Camera className="w-4 h-4" />
-              CAPTURE
+              촬영하기
             </button>
           </div>
         </div>
