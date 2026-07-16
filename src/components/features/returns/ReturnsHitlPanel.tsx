@@ -107,18 +107,16 @@ export default function ReturnsHitlPanel({
   };
 
   return (
-    <div className="w-full max-w-md mx-auto bg-zinc-50 dark:bg-zinc-900 border-2 border-amber-500/80 rounded-3xl p-6 shadow-2xl transition-all relative overflow-hidden">
+    <div className="w-full max-w-md mx-auto bg-white border-2 border-black p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] rounded-none transition-all relative overflow-hidden font-mono text-black">
       {/* 관리자 대기 장벽 가이드 헤더 */}
-      <div className="flex items-start gap-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/30 rounded-2xl p-4 mb-6">
-        <ShieldAlert className="w-6 h-6 text-amber-600 dark:text-amber-500 shrink-0 mt-0.5" />
+      <div className="flex items-start gap-3 bg-[#E60012]/10 border-2 border-black rounded-none p-4 mb-6">
+        <ShieldAlert className="w-6 h-6 text-black shrink-0 mt-0.5" />
         <div>
-          <h3 className="text-sm font-bold text-amber-900 dark:text-amber-400">
-            Human-in-the-Loop 관리자 보정 대기 중
+          <h3 className="text-xs font-black text-black uppercase tracking-wider">
+            HUMAN-IN-THE-LOOP INTERVENTION
           </h3>
-          <p className="text-xs text-amber-700 dark:text-amber-500 mt-1 leading-normal">
-            AI 신뢰 점수가 낮게 검측되어 자동 재고 입고/반출 라우팅이 일시
-            정지되었습니다. 실제 도서 상태와 매치하여 최종 결정을 수동 승인해
-            주십시오.
+          <p className="text-[10px] font-bold text-black uppercase mt-1 leading-relaxed">
+            AI confidence score is low. Automatic routing is halted. Align physical book state and confirm final decision override.
           </p>
         </div>
       </div>
@@ -126,8 +124,8 @@ export default function ReturnsHitlPanel({
       <div className="space-y-6">
         {/* 1. 등급 보정 */}
         <div className="space-y-2">
-          <label className="text-xs font-bold text-zinc-700 dark:text-zinc-300 block">
-            도서 등급 강제 오버라이드
+          <label className="text-[10px] font-black text-black uppercase tracking-widest block">
+            FORCE GRADE OVERRIDE *
           </label>
           <div className="grid grid-cols-5 gap-1.5" role="radiogroup" aria-label="도서 등급 선택">
             {GRADES.map((grade) => {
@@ -139,10 +137,10 @@ export default function ReturnsHitlPanel({
                   role="radio"
                   aria-checked={isSelected}
                   onClick={() => handleGradeChange(grade)}
-                  className={`py-2 px-1 text-xs font-bold rounded-xl transition-all border ${
+                  className={`py-2 px-1 text-[10px] font-black rounded-none border-2 border-black transition-all ${
                     isSelected
-                      ? "bg-amber-500 border-amber-500 text-white shadow-md shadow-amber-500/20 scale-105"
-                      : "bg-white dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-900"
+                      ? "bg-black text-white"
+                      : "bg-white text-black hover:bg-black hover:text-white"
                   }`}
                 >
                   {grade}
@@ -154,74 +152,74 @@ export default function ReturnsHitlPanel({
 
         {/* 2. WMS 라우팅 결정 */}
         <div className="space-y-2">
-          <label className="text-xs font-bold text-zinc-700 dark:text-zinc-300 block">
-            WMS 보관 정책 라우팅
+          <label className="text-[10px] font-black text-black uppercase tracking-widest block">
+            WMS STORAGE DECISION *
           </label>
           <div className="grid grid-cols-2 gap-3">
             <button
               type="button"
               onClick={() => setDecision("RESTOCKED")}
-              className={`py-3 px-4 rounded-2xl flex items-center justify-center gap-2 border font-semibold text-xs transition-all ${
+              className={`py-3 px-4 rounded-none flex items-center justify-center gap-2 border-2 border-black font-black text-[10px] transition-all uppercase shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none cursor-pointer ${
                 decision === "RESTOCKED"
-                  ? "bg-emerald-500 border-emerald-500 text-white shadow-md shadow-emerald-500/10 scale-[1.02]"
-                  : "bg-white dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-400"
+                  ? "bg-black text-white"
+                  : "bg-white text-black"
               }`}
             >
               <Check className="w-4 h-4" />
-              재고 적재 (+1 입고)
+              RESTOCK ITEM
             </button>
 
             <button
               type="button"
               onClick={() => setDecision("REJECTED")}
-              className={`py-3 px-4 rounded-2xl flex items-center justify-center gap-2 border font-semibold text-xs transition-all ${
+              className={`py-3 px-4 rounded-none flex items-center justify-center gap-2 border-2 border-black font-black text-[10px] transition-all uppercase shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none cursor-pointer ${
                 decision === "REJECTED"
-                  ? "bg-red-500 border-red-500 text-white shadow-md shadow-red-500/10 scale-[1.02]"
-                  : "bg-white dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-400"
+                  ? "bg-[#E60012] text-white"
+                  : "bg-white text-black"
               }`}
             >
               <X className="w-4 h-4" />
-              매입 반려 (폐기)
+              SCRAP / REJECT
             </button>
           </div>
         </div>
 
         {/* 3. 훼손 사유 관리 */}
         <div className="space-y-3">
-          <label className="text-xs font-bold text-zinc-700 dark:text-zinc-300 block">
-            상태 훼손 사유 코드 관리
+          <label className="text-[10px] font-black text-black uppercase tracking-widest block">
+            DEFECT REASON CODES
           </label>
 
           {/* 활성 사유 태그 */}
           {reasons.length > 0 ? (
-            <div className="flex flex-wrap gap-1.5 p-3 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl min-h-[50px]">
+            <div className="flex flex-wrap gap-1.5 p-3 bg-white border-2 border-black rounded-none min-h-[50px]">
               {reasons.map((r) => (
                 <span
                   key={r.code}
-                  className="inline-flex items-center gap-1 bg-amber-500/10 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400 text-xs font-bold px-2 py-1 rounded-lg border border-amber-500/20"
+                  className="inline-flex items-center gap-1.5 bg-white text-black text-[10px] font-black px-2.5 py-1 rounded-none border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
                 >
                   {r.description}
                   <button
                     type="button"
                     onClick={() => removeReason(r.code)}
                     aria-label={`${r.description} 사유 삭제`}
+                    className="cursor-pointer text-black hover:text-[#E60012]"
                   >
-                    <X className="w-3 h-3 hover:text-amber-900 dark:hover:text-white" />
+                    <X className="w-3 h-3" />
                   </button>
                 </span>
               ))}
             </div>
           ) : (
-            <div className="text-center py-4 border border-dashed border-zinc-200 dark:border-zinc-800 rounded-2xl text-zinc-400 dark:text-zinc-600 text-xs flex items-center justify-center gap-1">
-              <HelpCircle className="w-3.5 h-3.5" /> 훼손 코드 없음 (정상
-              상태 판정 보정)
+            <div className="text-center py-4 border-2 border-dashed border-black rounded-none text-gray-400 text-[10px] font-bold uppercase tracking-wider flex items-center justify-center gap-1 bg-[#F9F9F7]">
+              <HelpCircle className="w-3.5 h-3.5" /> NO ACTIVE DEFECT CODES (PASSED)
             </div>
           )}
 
           {/* 표준 사유 빠른 선택 */}
           <div className="space-y-1.5">
-            <span className="text-xs text-zinc-500 dark:text-zinc-400 block font-semibold">
-              자주 지정되는 표준 훼손 코드
+            <span className="text-[9px] text-gray-400 block font-black uppercase tracking-widest">
+              FAST-SELECT STANDARD CODES
             </span>
             <div className="flex flex-wrap gap-1">
               {STANDARD_REASONS.map((r) => {
@@ -233,10 +231,10 @@ export default function ReturnsHitlPanel({
                     key={r.code}
                     type="button"
                     onClick={() => toggleReason(r)}
-                    className={`text-xs font-semibold px-2 py-1 rounded-lg border transition-all ${
+                    className={`text-[9px] font-black px-2 py-1 rounded-none border-2 border-black transition-all ${
                       isActive
-                        ? "bg-amber-500/20 border-amber-500 text-amber-700 dark:text-amber-300"
-                        : "bg-white dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100"
+                        ? "bg-black text-white"
+                        : "bg-white text-black hover:bg-black hover:text-white"
                     }`}
                   >
                     {r.description}
@@ -247,20 +245,20 @@ export default function ReturnsHitlPanel({
           </div>
 
           {/* 직접 사유 입력 */}
-          <form onSubmit={addCustomReason} className="flex gap-2">
+          <form onSubmit={addCustomReason} className="flex gap-2 pt-2">
             <input
               type="text"
               value={customReasonDesc}
               onChange={(e) => setCustomReasonDesc(e.target.value)}
-              placeholder="기타 사유를 직접 입력해 주세요..."
-              className="flex-1 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 px-3 py-2 bg-white dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
+              placeholder="직접 입력..."
+              className="flex-1 text-[10px] rounded-none border-b-2 border-black px-3 py-2 bg-transparent text-black font-bold focus:outline-none placeholder-gray-300"
             />
             <button
               type="submit"
-              className="rounded-xl border border-zinc-200 dark:border-zinc-800 px-3 py-2 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors"
+              className="rounded-none border-2 border-black bg-white px-3 py-2 hover:bg-black hover:text-white transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none cursor-pointer"
               aria-label="사유 추가"
             >
-              <Plus className="w-4 h-4 text-zinc-500" />
+              <Plus className="w-4 h-4 text-current" />
             </button>
           </form>
         </div>
@@ -268,17 +266,17 @@ export default function ReturnsHitlPanel({
 
       {/* 로딩 오버레이 */}
       {isSubmitting && (
-        <div className="absolute inset-0 bg-white/90 dark:bg-zinc-900/90 flex flex-col items-center justify-center text-center">
-          <ShieldAlert className="w-10 h-10 text-amber-500 animate-pulse mb-2" />
-          <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100">
-            WMS 코어 트랜잭션 적재 및 오버라이드 중...
+        <div className="absolute inset-0 bg-white/95 border-2 border-black flex flex-col items-center justify-center text-center">
+          <ShieldAlert className="w-10 h-10 text-black animate-pulse mb-3" />
+          <span className="text-[10px] font-black uppercase tracking-widest text-black p-4 leading-relaxed">
+            COMMITING WMS ROUTING TRANSACTION OVERRIDE...
           </span>
         </div>
       )}
 
       {/* 에러 */}
       {error && (
-        <div className="mt-4 p-2.5 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/30 rounded-xl text-center text-xs text-red-600 dark:text-red-400">
+        <div className="mt-4 p-2.5 bg-[#E60012]/10 border-2 border-black rounded-none text-center text-xs font-black text-black uppercase tracking-wider">
           {error}
         </div>
       )}
@@ -289,17 +287,17 @@ export default function ReturnsHitlPanel({
           type="button"
           onClick={onCancel}
           disabled={isSubmitting}
-          className="rounded-xl py-4 font-semibold text-xs border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors disabled:opacity-50"
+          className="rounded-none py-4 font-black text-xs border-2 border-black bg-white text-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none hover:bg-black hover:text-white transition-all cursor-pointer uppercase disabled:opacity-50"
         >
-          취소
+          CANCEL
         </button>
         <button
           type="button"
           onClick={handleSubmit}
           disabled={isSubmitting}
-          className="rounded-xl py-4 font-bold text-xs bg-amber-500 hover:bg-amber-600 text-white shadow-md shadow-amber-500/10 disabled:opacity-50"
+          className="rounded-none py-4 font-black text-xs border-2 border-black bg-[#E60012] text-white shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none hover:bg-white hover:text-black transition-all cursor-pointer uppercase disabled:opacity-50"
         >
-          최종 결정 수동 승인
+          CONFIRM DECISION
         </button>
       </div>
     </div>

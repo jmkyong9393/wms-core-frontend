@@ -4,12 +4,12 @@ import { mockInspectionRecords } from '@/features/inspections/mocks/mockAgentLog
 
 export default function InspectionsPage() {
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="max-w-4xl mx-auto space-y-6 font-mono">
       {/* 페이지 제목과 설명 */}
-      <div>
-        <h2 className="text-2xl font-bold text-gray-800">검수 처리 내역</h2>
-        <p className="text-sm text-gray-500 mt-1">
-          AI Agent 검수 결과와 단계별 추론 근거를 확인할 수 있습니다.
+      <div className="border-b-2 border-black pb-4">
+        <h2 className="text-xl font-black text-black uppercase tracking-widest">INSPECTION RECORDS</h2>
+        <p className="text-xs text-gray-400 mt-1 uppercase tracking-wider">
+          Review AI Agent inspection logs and reasoning traces at each stage.
         </p>
       </div>
 
@@ -18,15 +18,15 @@ export default function InspectionsPage() {
         {mockInspectionRecords.map((record) => (
           <div
             key={record.id}
-            className="bg-white rounded-xl border border-gray-100 shadow-sm p-6"
+            className="bg-white border-2 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] rounded-none p-6"
           >
             {/* 책 정보와 최종 등급 표시 */}
-            <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center justify-between mb-4 border-b border-black/10 pb-2">
               <div>
-                <p className="text-sm font-semibold text-gray-800">
+                <p className="text-xs font-bold text-black">
                   {record.bookTitle}
                 </p>
-                <p className="text-xs text-gray-400">{record.id}</p>
+                <p className="text-[10px] text-gray-400 uppercase tracking-widest mt-0.5">{record.id}</p>
               </div>
               <InspectionBadges isFastTrack={record.isFastTrack} finalGrade={record.finalGrade} />
             </div>

@@ -78,9 +78,9 @@ export default function AuthPage() {
   return (
     // 크림화이트 생지 캔버스 배경 유지
     <div className="min-h-screen w-full flex items-center justify-center bg-[#F9F9F7] px-6 py-12 font-mono text-black">
-      
+
       <div className="w-full max-w-[420px] bg-white border-2 border-black p-8 md:p-10 rounded-none shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] relative overflow-hidden">
-        
+
         {/* 상단 오마주 아트워크: 눈이 달린 빨간 상자 (WMS PLAY BOX) */}
         <div className="flex flex-col items-center mb-8 select-none">
           <div className="w-20 h-16 relative cursor-pointer hover:scale-105 transition-transform duration-200">
@@ -103,7 +103,7 @@ export default function AuthPage() {
               <path d="M50,35 Q60,38 70,35" stroke="#000" strokeWidth="2" fill="none" />
             </svg>
           </div>
-          
+
           {/* 타이틀에서 브랜드 이름 제거 및 고유 이름 매핑 */}
           <h1 className="text-lg font-black tracking-[0.18em] text-black uppercase mt-4">
             WMS AI PLATFORM
@@ -118,22 +118,20 @@ export default function AuthPage() {
           <button
             type="button"
             onClick={() => switchTab("login")}
-            className={`flex-1 text-center py-2.5 text-xs font-bold tracking-widest uppercase transition-all rounded-none cursor-pointer ${
-              activeTab === "login"
+            className={`flex-1 text-center py-2.5 text-xs font-bold tracking-widest uppercase transition-all rounded-none cursor-pointer ${activeTab === "login"
                 ? "bg-black text-white"
                 : "text-black hover:bg-gray-100"
-            }`}
+              }`}
           >
             LOGIN
           </button>
           <button
             type="button"
             onClick={() => switchTab("signup")}
-            className={`flex-1 text-center py-2.5 text-xs font-bold tracking-widest uppercase transition-all rounded-none cursor-pointer ${
-              activeTab === "signup"
+            className={`flex-1 text-center py-2.5 text-xs font-bold tracking-widest uppercase transition-all rounded-none cursor-pointer ${activeTab === "signup"
                 ? "bg-black text-white"
                 : "text-black hover:bg-gray-100"
-            }`}
+              }`}
           >
             SIGNUP
           </button>

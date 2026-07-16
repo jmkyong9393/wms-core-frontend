@@ -68,28 +68,27 @@ export default function DashboardPage() {
 
       {/* 실시간 업로드 큐 (진행 중인 항목이 있는 경우 표시) */}
       {uploadQueue.length > 0 && (
-        <div className="bg-white rounded-xl border border-blue-100 shadow-sm p-5">
-          <h3 className="text-base font-bold text-gray-800 mb-3 flex items-center">
-            <Camera className="w-5 h-5 mr-2 text-blue-600" />
+        <div className="bg-white border-2 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] rounded-none p-5 font-mono">
+          <h3 className="text-xs font-black tracking-wider text-black uppercase border-b-2 border-black pb-2 mb-4 flex items-center">
+            <Camera className="w-4 h-4 mr-2" />
             실시간 검수/업로드 진행 현황
           </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {[...uploadQueue].reverse().slice(0, 6).map((task) => (
-              <div key={task.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
+              <div key={task.id} className="flex items-center justify-between p-3 bg-white border-2 border-black rounded-none shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
                 <div className="flex items-center space-x-3 min-w-0">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={task.previewUrl} alt="book" className="w-10 h-10 object-cover rounded-md border border-gray-200 flex-shrink-0" />
+                  <img src={task.previewUrl} alt="book" className="w-10 h-10 object-cover rounded-none border-2 border-black flex-shrink-0" />
                   <div className="min-w-0">
-                    <p className="text-sm font-semibold text-gray-800 truncate">{task.id.replace('local_', 'REQ-')}</p>
-                    <p className="text-xs text-gray-500">UBCI 판독 대기 중</p>
+                    <p className="text-xs font-black text-black truncate">{task.id.replace('local_', 'REQ-')}</p>
+                    <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest mt-0.5">UBCI PENDING</p>
                   </div>
                 </div>
                 <div>
                   {task.status === 'COMPLETED' ? (
-                    <span className="px-2.5 py-0.5 bg-green-100 text-green-700 text-xs font-semibold rounded-full">완료</span>
+                    <span className="px-2 py-0.5 bg-white text-black border-2 border-black text-[10px] font-black rounded-none uppercase">완료</span>
                   ) : (
-                    <span className="px-2.5 py-0.5 bg-yellow-100 text-yellow-700 text-xs font-semibold rounded-full flex items-center">
-                      <span className="w-1.5 h-1.5 rounded-full border border-yellow-500 border-t-transparent animate-spin mr-1.5" />
+                    <span className="px-2 py-0.5 bg-black text-white border-2 border-black text-[10px] font-black rounded-none uppercase flex items-center">
                       분석 중
                     </span>
                   )}

@@ -11,23 +11,23 @@ export default function QueuePage() {
   const pendingItems = queue.filter((item) => item.status === 'AWAITING_REVIEW');
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="max-w-4xl mx-auto space-y-6 font-mono">
       {/* 페이지 제목과 설명 */}
-      <div>
-        <h2 className="text-2xl font-bold text-gray-800">검토 대기</h2>
-        <p className="text-sm text-gray-500 mt-1">
-          AI 신뢰도가 낮아 관리자의 승인 또는 반려가 필요한 항목입니다.
+      <div className="border-b-2 border-black pb-4">
+        <h2 className="text-xl font-black text-black uppercase tracking-widest">AWAITING REVIEW</h2>
+        <p className="text-xs text-gray-400 mt-1 uppercase tracking-wider">
+          AI confidence score is low. Manual approval or rejection is required.
         </p>
       </div>
 
       {/* 검토할 항목이 없는 경우 안내 문구 표시 */}
       {pendingItems.length === 0 ? (
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-8 text-center text-gray-400">
-          승인 대기 중인 항목이 없습니다.
+        <div className="bg-white border-2 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] rounded-none p-8 text-center font-bold text-black">
+          * NO PENDING ITEMS TO REVIEW.
         </div>
       ) : (
         /* 검토 대기 항목을 카드 형태로 표시 */
-        <div className="space-y-3">
+        <div className="space-y-4">
           {pendingItems.map((item) => (
             <HitlQueueCard key={item.id} item={item} />
           ))}

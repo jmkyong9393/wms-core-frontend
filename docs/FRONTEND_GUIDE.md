@@ -42,38 +42,49 @@
 
 ---
 
-## 📁 2. 디렉토리 구조 (Feature-driven Architecture)
+## 📁 2. 디렉토리 구조 (Feature-driven Domain Architecture)
 
-우리 프로젝트는 역할과 책임(SRP)을 분리하여, 코드가 커져도 유지보수가 쉽도록 설계되었습니다. 기능 추가 시 아래의 폴더 용도에 맞게 파일을 생성해 주세요.
+우리 프로젝트는 역할과 책임(SRP)을 분리하고 도메인별 응집도를 극대화하기 위해, 핵심 기능들을 `src/features/` 하위에 도메인 단위로 묶는 **기능 중심 아키텍처**를 적용하고 있습니다.
 
 ```text
 src/
-├── app/                  # 📍 라우팅 및 페이지 엔트리포인트
-│   ├── (auth)/           # - 로그인, 회원가입 등 인증 관련 라우트 그룹
-│   ├── dashboard/        # - 대시보드 페이지 라우트
-│   ├── layout.tsx        # - 최상위 레이아웃
-│   └── page.tsx          # - 메인(홈) 페이지
+├── app/                  # 📍 라우팅 및 페이지 엔트리포인트 (조립 계층)
+│   ├── admin/            # - 관리자 영역 페이지 (queue, inventory, inspections)
+│   ├── inbound/          # - 현장 반품 검수 페이지
+│   ├── layout.tsx        # - 최상위 HTML/Body 및 Providers 레이아웃
+│   └── page.tsx          # - 대시보드 메인 페이지
 │
-├── components/           # 🧩 UI 컴포넌트 모음 (가장 많이 작업하게 될 폴더)
-│   ├── common/           # - Button, Input, Modal 등 전역 재사용 컴포넌트
-│   ├── layout/           # - Header, Sidebar, Footer 등 틀(Layout) 컴포넌트
-│   └── features/         # - 특정 도메인 로직이 포함된 덩어리 컴포넌트 (예: ReportCard)
+├── components/           # 🧩 공통 UI 컴포넌트 모음 (비즈니스 로직 없음)
+│   ├── common/           # - Button, Input, Modal 등 도메인 비의존 재사용 컴포넌트
+│   └── layout/           # - Header, Sidebar 등 애플리케이션 프레임워크 레이아웃
 │
-├── hooks/                # 🪝 커스텀 React 훅
-│   └── usePolling.ts     # - (예시) 서버 비동기 응답을 대기하는 폴링 로직 등
+├── features/             # 🚀 도메인별 핵심 비즈니스 로직 및 전용 컴포넌트 응집
+│   ├── inbound/          # - 반품 입고/스캔 기능 도메인
+│   │   ├── api/          #   - S3 프리사인드 URL 발급 등 inbound 전용 API 호출
+│   │   ├── components/   #   - CameraScanner 등 inbound 전용 UI 컴포넌트
+│   │   ├── hooks/        #   - useCamera, useS3Upload 등 전용 React 훅
+│   │   ├── store/        #   - uploadQueueAtoms.ts 등 해당 도메인 상태 관리 (Jotai)
+│   │   └── utils/        #   - image-processor.ts 등 전용 유틸리티
+│   │
+│   ├── queue/            # - HITL(수동 검토) 대기열 도메인
+│   │   ├── components/   #   - HitlQueueCard, HitlQueueSeeder 등
+│   │   └── store/        #   - queueAtoms.ts 상태 관리
+│   │
+│   ├── inventory/        # - 재고/출고 도메인
+│   │   └── types/        #   - inventory.ts 데이터 타입 정의
+│   │
+│   └── inspections/      # - AI 판정/검수 이력 도메인
+│       ├── components/   #   - AgentLogAccordion 등 UI
+│       └── mocks/        #   - mockAgentLogs.ts 모의 데이터
 │
-├── lib/                  # 🛠️ 범용 유틸리티 함수
-│   ├── format.ts         # - 날짜, 금액 포맷팅 함수
-│   └── s3_helper.ts      # - S3 업로드 유틸 함수 등
+├── services/             # 🌐 공통 API 서비스 (네트워크/인프라 계층)
+│   ├── authService.ts    # - Supabase/Mock 로그인 및 회원가입 비즈니스 로직
+│   └── returnService.ts  # - 반품/검수 공통 CRUD 통신
 │
-├── services/             # 🌐 API 호출 함수 (네트워크 계층)
-│   └── api.ts            # - axios 인스턴스 설정 및 Fetch 로직
+├── stores/               # 📦 공통/전역 상태 관리 (Jotai Atoms)
+│   └── atoms.ts          # - themeAtom, isSidebarOpenAtom, userAtom(인증) 등 공통 상태
 │
-├── stores/               # 📦 전역 상태 관리 (Jotai Atoms)
-│   └── atoms.ts          # - 큐(Queue) 및 토큰 등 상태 관리
-│
-└── types/                # 🏷️ TypeScript 공통 인터페이스 및 타입 선언
-    └── index.ts          # - DTO, 모델 인터페이스
+└── types/                # 🏷️ TypeScript 애플리케이션 공통 타입 선언
 ```
 
 ---

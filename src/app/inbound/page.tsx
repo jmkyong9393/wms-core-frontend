@@ -5,7 +5,6 @@ import { useAtom } from "jotai";
 import { uploadQueueAtom } from "@/features/inbound/store/uploadQueueAtoms";
 import CameraScanner from "@/features/inbound/components/CameraScanner";
 import ReturnsInspector from "@/components/features/returns/ReturnsInspector";
-import { ToggleLeft, ToggleRight } from "lucide-react";
 
 /**
  * InboundPage — 반품 도서 검수 메인 페이지
@@ -43,39 +42,33 @@ export default function InboundPage() {
   }, [uploadQueue, setUploadQueue]);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-zinc-950 flex flex-col items-center p-4 font-sans">
-      <div className="w-full max-w-md mb-4">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-zinc-50 mb-1">
-          반품 도서 검수
+    <div className="min-h-screen bg-[#F9F9F7] flex flex-col items-center p-4 font-mono text-black">
+      <div className="w-full max-w-md mb-4 border-b-2 border-black pb-2">
+        <h1 className="text-md font-black tracking-widest text-black uppercase mb-1">
+          INBOUND SCANNING
         </h1>
-        <p className="text-sm text-gray-500 dark:text-zinc-400">
+        <p className="text-[10px] text-gray-400 uppercase tracking-widest">
           {isFullInspectionMode
-            ? "AI 멀티에이전트 전체 검수 플로우"
-            : "가이드라인에 맞춰 도서를 촬영해주세요."}
+            ? "AI MULTI-AGENT COMPREHENSIVE FLOW"
+            : "ALIGN BOOK AND CLICK SHUTTER GENTLY."}
         </p>
       </div>
 
-      {/* 전체 AI 검수 모드 토글 */}
-      <div className="w-full max-w-md mb-4">
+      {/* 전체 AI 검수 모드 토글 (브루탈리즘 버튼화) */}
+      <div className="w-full max-w-md mb-6">
         <button
           type="button"
           onClick={() => setIsFullInspectionMode((prev) => !prev)}
-          className="w-full flex items-center justify-between bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl px-4 py-3 hover:border-indigo-400 transition-colors"
+          className="w-full flex items-center justify-between bg-white border-2 border-black rounded-none px-4 py-3 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] active:translate-x-[3px] active:translate-y-[3px] active:shadow-none transition-all cursor-pointer"
         >
-          <span className="text-sm font-semibold text-gray-700 dark:text-zinc-300">
-            전체 AI 검수 모드
+          <span className="text-xs font-bold text-black uppercase tracking-wider">
+            AI AGENT INSPECTION MODE
           </span>
-          <div className="flex items-center gap-1.5 text-xs font-bold">
+          <div className="flex items-center gap-1.5 text-xs font-bold font-mono">
             {isFullInspectionMode ? (
-              <>
-                <ToggleRight className="w-6 h-6 text-indigo-500" />
-                <span className="text-indigo-600 dark:text-indigo-400">ON</span>
-              </>
+              <span className="bg-black text-white border-2 border-black px-2 py-0.5 text-[9px] font-black rounded-none">ON</span>
             ) : (
-              <>
-                <ToggleLeft className="w-6 h-6 text-gray-400" />
-                <span className="text-gray-500">OFF</span>
-              </>
+              <span className="bg-white text-black border-2 border-black px-2 py-0.5 text-[9px] font-black rounded-none">OFF</span>
             )}
           </div>
         </button>
@@ -90,53 +83,53 @@ export default function InboundPage() {
           <CameraScanner />
 
           {/* 낙관적 UI: 업로드 대기열 현황판 */}
-          <div className="w-full max-w-md mt-6 bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-gray-100 dark:border-zinc-800 p-4">
-            <h3 className="text-sm font-semibold text-gray-700 dark:text-zinc-300 mb-3 flex items-center justify-between">
-              <span>작업 진행 현황</span>
-              <span className="bg-blue-100 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400 py-0.5 px-2 rounded-full text-xs">
-                대기{" "}
+          <div className="w-full max-w-md mt-6 bg-white border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rounded-none p-4">
+            <h3 className="text-xs font-black text-black mb-4 border-b-2 border-black pb-2 flex items-center justify-between">
+              <span className="uppercase tracking-widest">BATCH PROGRESS</span>
+              <span className="bg-black text-white py-0.5 px-2 rounded-none border border-black text-[9px] font-black uppercase tracking-widest">
+                PENDING:{" "}
                 {
                   uploadQueue.filter((t) => t.status !== "COMPLETED")
                     .length
                 }
-                건
+                EA
               </span>
             </h3>
 
             {uploadQueue.length === 0 ? (
-              <p className="text-xs text-gray-400 dark:text-zinc-600 text-center py-4">
-                아직 촬영된 도서가 없습니다.
+              <p className="text-[10px] text-gray-400 text-center py-6 font-bold uppercase tracking-widest">
+                * NO PHOTOS ENQUEUED YET.
               </p>
             ) : (
-              <div className="space-y-3 max-h-48 overflow-y-auto pr-2">
+              <div className="space-y-3 max-h-48 overflow-y-auto pr-2 divide-y divide-black/10">
                 {[...uploadQueue].reverse().map((task) => (
                   <div
                     key={task.id}
-                    className="flex items-center space-x-3 text-sm"
+                    className="flex items-center space-x-3 text-xs pt-3 first:pt-0"
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={task.previewUrl}
                       alt="preview"
-                      className="w-10 h-10 object-cover rounded-md border border-gray-200 dark:border-zinc-800"
+                      className="w-10 h-10 object-cover rounded-none border-2 border-black flex-shrink-0"
                     />
-                    <div className="flex-1">
-                      <div className="font-medium text-gray-800 dark:text-zinc-200">
+                    <div className="flex-1 min-w-0">
+                      <div className="font-bold text-black truncate uppercase">
                         {task.status === "COMPLETED"
-                          ? "검수 완료"
-                          : "AI 분석 중..."}
+                          ? "INSPECTED"
+                          : "AI ANALYZING..."}
                       </div>
-                      <div className="text-xs text-gray-500 dark:text-zinc-500">
+                      <div className="text-[9px] text-gray-400 uppercase tracking-widest mt-0.5">
                         {task.id.replace("local_", "REQ-")}
                       </div>
                     </div>
                     <div className="flex items-center">
                       {task.status === "COMPLETED" ? (
-                        <span className="w-5 h-5 rounded-full bg-green-100 dark:bg-green-950/30 flex items-center justify-center text-green-600 dark:text-green-400 text-xs">
+                        <span className="w-5 h-5 rounded-none border-2 border-black bg-[#F9F9F7] text-black flex items-center justify-center font-bold text-[10px]">
                           ✓
                         </span>
                       ) : (
-                        <span className="w-4 h-4 rounded-full border-2 border-blue-500 border-t-transparent animate-spin" />
+                        <span className="w-4 h-4 rounded-none border-2 border-black border-t-transparent animate-spin bg-white" />
                       )}
                     </div>
                   </div>

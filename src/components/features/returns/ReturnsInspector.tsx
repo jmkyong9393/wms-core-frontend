@@ -15,12 +15,7 @@ import {
   RotateCcw,
   Sparkles,
   ClipboardList,
-  AlertCircle,
   Clock,
-  ToggleLeft,
-  ToggleRight,
-  FileCheck2,
-  FileX2,
   ExternalLink,
   Camera,
   Loader2,
@@ -170,29 +165,21 @@ export default function ReturnsInspector() {
   const isWorking = isProcessingLocal || isCompressing || isUploading;
 
   return (
-    <div className="w-full max-w-md mx-auto space-y-4">
-      {/* Mock 모드 토글 바 */}
-      <div className="flex items-center justify-between bg-zinc-100 dark:bg-zinc-800/50 rounded-2xl px-4 py-2.5">
-        <span className="text-xs font-semibold text-zinc-600 dark:text-zinc-400">
-          Local Mock API 모사
+    <div className="w-full max-w-md mx-auto space-y-4 font-mono">
+      {/* Mock 모드 토글 바 (브루탈리즘화) */}
+      <div className="flex items-center justify-between bg-white border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] rounded-none px-4 py-2.5">
+        <span className="text-[10px] font-black text-black uppercase tracking-wider">
+          Local Mock API
         </span>
         <button
           type="button"
           onClick={handleToggleMock}
-          className="flex items-center gap-1.5 text-xs font-bold"
+          className="flex items-center gap-1.5 text-xs font-bold font-mono"
         >
           {mockActive ? (
-            <>
-              <ToggleRight className="w-5 h-5 text-emerald-500" />
-              <span className="text-emerald-600 dark:text-emerald-400">
-                활성화
-              </span>
-            </>
+            <span className="bg-black text-white border-2 border-black px-2 py-0.5 text-[9px] font-black rounded-none">ACTIVE</span>
           ) : (
-            <>
-              <ToggleLeft className="w-5 h-5 text-zinc-400" />
-              <span className="text-zinc-500">비활성화</span>
-            </>
+            <span className="bg-white text-black border-2 border-black px-2 py-0.5 text-[9px] font-black rounded-none">INACTIVE</span>
           )}
         </button>
       </div>
@@ -200,35 +187,35 @@ export default function ReturnsInspector() {
       {/* ─── Step 1: 모드 선택 ─── */}
       {step === "select_mode" && (
         <div className="space-y-3">
-          <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-50 flex items-center gap-2">
-            <ClipboardList className="w-5 h-5 text-indigo-500" />
-            검수 유형 선택
+          <h2 className="text-sm font-black tracking-wider text-black uppercase border-b-2 border-black pb-2 mb-4 flex items-center gap-2">
+            <ClipboardList className="w-4 h-4" />
+            SELECT INSPECTION TYPE
           </h2>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-4">
             <button
               type="button"
               onClick={() => handleSelectMode("NEW_RETURN")}
-              className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 text-center hover:border-indigo-500 dark:hover:border-indigo-400 transition-all hover:shadow-md group"
+              className="bg-white border-2 border-black rounded-none p-5 text-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] active:translate-x-[3px] active:translate-y-[3px] active:shadow-none transition-all cursor-pointer group"
             >
-              <BookOpen className="w-8 h-8 text-indigo-500 mx-auto mb-2 group-hover:scale-110 transition-transform" />
-              <span className="text-sm font-bold text-zinc-800 dark:text-zinc-200 block">
+              <BookOpen className="w-8 h-8 text-black mx-auto mb-2 group-hover:scale-105 transition-transform" />
+              <span className="text-xs font-black text-black block uppercase tracking-wider">
                 신간 반품
               </span>
-              <span className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 block">
-                표지 1장 촬영
+              <span className="text-[10px] text-gray-400 mt-1 block uppercase tracking-widest font-semibold">
+                FRONT COVER ONLY
               </span>
             </button>
             <button
               type="button"
               onClick={() => handleSelectMode("USED_PURCHASE")}
-              className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 text-center hover:border-indigo-500 dark:hover:border-indigo-400 transition-all hover:shadow-md group"
+              className="bg-white border-2 border-black rounded-none p-5 text-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] active:translate-x-[3px] active:translate-y-[3px] active:shadow-none transition-all cursor-pointer group"
             >
-              <TrendingDown className="w-8 h-8 text-amber-500 mx-auto mb-2 group-hover:scale-110 transition-transform" />
-              <span className="text-sm font-bold text-zinc-800 dark:text-zinc-200 block">
+              <TrendingDown className="w-8 h-8 text-black mx-auto mb-2 group-hover:scale-105 transition-transform" />
+              <span className="text-xs font-black text-black block uppercase tracking-wider">
                 중고 매입
               </span>
-              <span className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 block">
-                표지 + 속지 촬영
+              <span className="text-[10px] text-gray-400 mt-1 block uppercase tracking-widest font-semibold">
+                COVER + INSIDE PAGES
               </span>
             </button>
           </div>
@@ -238,14 +225,14 @@ export default function ReturnsInspector() {
       {/* ─── Step 2: 실시간 WebRTC 촬영 ─── */}
       {step === "capture" && (
         <div className="space-y-4">
-          <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-50 flex items-center gap-2">
-            <Camera className="w-5 h-5 text-indigo-500" />
-            {mode === "NEW_RETURN" ? "신간 반품 촬영" : "중고 매입 촬영"}
+          <h2 className="text-sm font-black tracking-wider text-black uppercase border-b-2 border-black pb-2 mb-4 flex items-center gap-2">
+            <Camera className="w-4 h-4" />
+            {mode === "NEW_RETURN" ? "NEW BOOK SCAN" : "USED BOOK SCAN"}
           </h2>
 
-          <div className="relative w-full aspect-[4/3] bg-black rounded-3xl overflow-hidden shadow-md">
+          <div className="relative w-full aspect-[4/3] bg-black border-2 border-black rounded-none overflow-hidden shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
             {cameraError && (
-              <div className="absolute inset-0 bg-zinc-950 text-white flex items-center justify-center p-4 text-center text-xs z-20">
+              <div className="absolute inset-0 bg-zinc-950 text-white flex items-center justify-center p-4 text-center text-xs z-20 font-black uppercase">
                 {cameraError}
               </div>
             )}
@@ -258,11 +245,11 @@ export default function ReturnsInspector() {
               className="w-full h-full object-cover"
             />
 
-            {/* 도서 정렬 가이드라인 박스 */}
+            {/* 도서 정렬 가이드라인 박스 (둥글기 엄격 배제) */}
             <div className="absolute inset-0 pointer-events-none flex items-center justify-center p-6 z-10">
-              <div className="w-full h-[80%] border-2 border-dashed border-white/60 rounded-xl relative flex items-center justify-center">
-                <span className="absolute top-2 text-white/80 text-[10px] bg-black/40 px-2 py-0.5 rounded-full">
-                  도서를 선 안에 정렬하세요
+              <div className="w-full h-[80%] border-2 border-dashed border-white rounded-none relative flex items-center justify-center">
+                <span className="absolute top-2 text-white text-[9px] font-black uppercase tracking-wider bg-black border border-white px-2 py-0.5 rounded-none">
+                  ALIGN BOOK WITHIN BOX
                 </span>
                 <div className="w-6 h-[2px] bg-white/40 absolute" />
                 <div className="w-[2px] h-6 bg-white/40 absolute" />
@@ -271,16 +258,15 @@ export default function ReturnsInspector() {
 
             {/* 흔들림 연산 및 로컬 전처리 처리 중 오버레이 */}
             {isProcessingLocal && (
-              <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center text-white text-xs z-20">
-                <Loader2 className="w-8 h-8 text-indigo-400 animate-spin mb-2" />
-                <span>흔들림 감지 판독 중...</span>
+              <div className="absolute inset-0 bg-black/80 flex flex-col items-center justify-center text-white text-xs z-20">
+                <Loader2 className="w-8 h-8 text-white animate-spin mb-2" />
+                <span className="font-black uppercase tracking-wider">BLUR CHECK RUNNING...</span>
               </div>
             )}
           </div>
 
           {(localError || uploadError) && (
-            <div className="p-2.5 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/30 rounded-xl text-center text-xs text-red-600">
-              <AlertCircle className="w-4 h-4 inline mr-1" />
+            <div className="p-3 bg-[#E60012]/10 border-2 border-black rounded-none text-center text-xs font-black text-black uppercase tracking-wider shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
               {localError || uploadError}
             </div>
           )}
@@ -289,19 +275,19 @@ export default function ReturnsInspector() {
             <button
               type="button"
               onClick={handleReset}
-              className="py-3 rounded-2xl border border-zinc-200 dark:border-zinc-800 text-xs font-semibold text-zinc-600 hover:bg-zinc-50 transition-colors"
+              className="py-3 rounded-none border-2 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none hover:bg-black hover:text-white transition-all bg-white text-black font-bold text-xs cursor-pointer uppercase"
             >
-              뒤로 가기
+              BACK
             </button>
             <button
               id="capture-btn"
               type="button"
               onClick={handleCapture}
               disabled={isWorking}
-              className="py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-lg shadow-indigo-600/10 flex items-center justify-center gap-2 disabled:opacity-50"
+              className="py-3 rounded-none bg-black text-white hover:bg-white hover:text-black border-2 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all text-xs font-bold flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer uppercase"
             >
               <Camera className="w-4 h-4" />
-              촬영하기
+              CAPTURE
             </button>
           </div>
         </div>
@@ -309,37 +295,36 @@ export default function ReturnsInspector() {
 
       {/* ─── Step 3: AI 분석 대기 ─── */}
       {step === "analyzing" && (
-        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-8 text-center">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-indigo-50 dark:bg-indigo-950/30 flex items-center justify-center">
+        <div className="bg-white border-2 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] rounded-none p-8 text-center">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-none border-2 border-black bg-black text-white flex items-center justify-center">
             {isWorking ? (
-              <Loader2 className="w-8 h-8 text-indigo-500 animate-spin" />
+              <Loader2 className="w-8 h-8 text-white animate-spin" />
             ) : (
-              <Sparkles className="w-8 h-8 text-indigo-500 animate-pulse" />
+              <Sparkles className="w-8 h-8 text-white animate-pulse" />
             )}
           </div>
-          <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-50 mb-1">
-            {isWorking ? "도서 이미지 처리 중..." : "AI 비전 판독 진행 중..."}
+          <h3 className="text-xs font-black text-black mb-2 uppercase tracking-widest">
+            {isWorking ? "PROCESSING IMAGE..." : "AI AGENT RUNNING..."}
           </h3>
-          <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-4">
+          <p className="text-[10px] text-gray-500 font-semibold mb-4 leading-relaxed uppercase">
             {isWorking
               ? isCompressing
-                ? "고효율 Web Worker 이미지 압축 실행 중"
-                : `S3 Direct 업로드 중... (${uploadProgress}%)`
+                ? "COMPRESSING SOURCE IMAGE VIA WEB WORKER..."
+                : `STREAMING TO S3 DIRECT UPLOAD... (${uploadProgress}%)`
               : jobStatus === "PENDING"
-                ? "검수 대기열에서 가용한 LangGraph 에이전트를 매칭하는 중입니다."
-                : "OpenCV를 통한 픽셀 BBox 피팅 및 UBCI 상태 수치를 취합하고 있습니다."}
+                ? "MATCHING AVAILABLE LANGGRAPH AGENT FROM WORK QUEUE..."
+                : "COLLECTING OPENCV BBOX COORDINATES AND UBCI DEFECT METRICS..."}
           </p>
 
           {(jobError || localError) && (
-            <div className="p-2.5 bg-red-50 dark:bg-red-950/20 rounded-xl text-xs text-red-600 mb-4">
-              <AlertCircle className="w-4 h-4 inline mr-1" />
+            <div className="p-3 bg-[#E60012]/10 border-2 border-black rounded-none text-xs font-black text-black mb-4 uppercase tracking-wider shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
               {jobError || localError}
             </div>
           )}
 
-          <div className="flex items-center justify-center gap-2 text-xs text-zinc-400">
-            <Clock className="w-3.5 h-3.5" />
-            {jobStatus || "CONNECTING"}
+          <div className="flex items-center justify-center gap-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+            <Clock className="w-3.5 h-3.5 text-black" />
+            STATUS: {jobStatus || "CONNECTING"}
           </div>
         </div>
       )}
@@ -359,49 +344,49 @@ export default function ReturnsInspector() {
           )}
 
           {/* AI 리포트 문서 */}
-          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-50 flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-indigo-500" />
-                AI 품질 판독 명세서
+          <div className="bg-white border-2 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] rounded-none p-6">
+            <div className="flex items-center justify-between mb-4 border-b-2 border-black pb-2">
+              <h3 className="text-xs font-black text-black flex items-center gap-2 uppercase tracking-widest">
+                <Sparkles className="w-4 h-4" />
+                AI QUALITY MANIFEST
               </h3>
               <span
-                className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                className={`text-[9px] font-black px-2 py-0.5 border-2 border-black rounded-none uppercase tracking-wider ${
                   jobStatus === "COMPLETED"
-                    ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400"
-                    : "bg-amber-100 text-amber-700 dark:bg-amber-950/30 dark:text-amber-400"
+                    ? "bg-black text-white"
+                    : "bg-[#E60012] text-white"
                 }`}
               >
-                {jobStatus === "COMPLETED" ? "자동 판정 완료" : "수동 승인 필요"}
+                {jobStatus === "COMPLETED" ? "AUTO PASSED" : "HITL PENDING"}
               </span>
             </div>
 
             {/* 품질 지표 명세 */}
-            <div className="grid grid-cols-3 gap-2.5 mb-4">
-              <div className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-100 dark:border-zinc-900 rounded-2xl p-3 text-center">
-                <p className="text-[10px] text-zinc-400 mb-0.5">판독 등급</p>
-                <p className="text-base font-black text-zinc-900 dark:text-zinc-50">
+            <div className="grid grid-cols-3 gap-3 mb-4">
+              <div className="bg-white border-2 border-black rounded-none p-3 text-center shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
+                <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest mb-1">GRADE</p>
+                <p className="text-sm font-black text-black uppercase">
                   {result.grade || "—"}
                 </p>
               </div>
-              <div className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-100 dark:border-zinc-900 rounded-2xl p-3 text-center">
-                <p className="text-[10px] text-zinc-400 mb-0.5">AI 신뢰도</p>
-                <p className="text-base font-black text-zinc-900 dark:text-zinc-50">
+              <div className="bg-white border-2 border-black rounded-none p-3 text-center shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
+                <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest mb-1">CONFIDENCE</p>
+                <p className="text-sm font-black text-black">
                   {result.confidenceScore != null
                     ? `${(result.confidenceScore * 100).toFixed(0)}%`
                     : "—"}
                 </p>
               </div>
-              <div className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-100 dark:border-zinc-900 rounded-2xl p-3 text-center">
-                <p className="text-[10px] text-zinc-400 mb-0.5">WMS 적재</p>
-                <p className="text-xs font-bold pt-0.5">
+              <div className="bg-white border-2 border-black rounded-none p-3 text-center shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
+                <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest mb-1">DECISION</p>
+                <p className="text-[10px] font-black uppercase">
                   {result.wmsDecision === "RESTOCKED" ? (
-                    <span className="text-emerald-600 flex items-center justify-center gap-0.5">
-                      <FileCheck2 className="w-3.5 h-3.5" /> 가용입고
+                    <span className="text-black flex items-center justify-center gap-0.5">
+                      STOCKABLE
                     </span>
                   ) : result.wmsDecision === "REJECTED" ? (
-                    <span className="text-red-600 flex items-center justify-center gap-0.5">
-                      <FileX2 className="w-3.5 h-3.5" /> 불합반려
+                    <span className="text-[#E60012] flex items-center justify-center gap-0.5">
+                      REJECTED
                     </span>
                   ) : (
                     "—"
@@ -412,12 +397,12 @@ export default function ReturnsInspector() {
 
             {/* OpenCV 검수 캔버스 피드백 */}
             {result.processedCoverImageUrl && (
-              <div className="space-y-2 mb-4">
-                <h4 className="text-xs font-bold text-zinc-700 dark:text-zinc-300 flex items-center gap-1">
-                  <ExternalLink className="w-3 h-3 text-indigo-500" />
-                  AI 판독 검출본 (BBox 맵핑)
+              <div className="space-y-2 mb-6">
+                <h4 className="text-[10px] font-black text-black flex items-center gap-1 uppercase tracking-widest">
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  BBOX LOG VISUALIZATION
                 </h4>
-                <div className="rounded-2xl overflow-hidden border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 aspect-video flex items-center justify-center">
+                <div className="rounded-none overflow-hidden border-2 border-black bg-white aspect-video flex items-center justify-center p-1">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={result.processedCoverImageUrl}

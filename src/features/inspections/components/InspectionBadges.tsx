@@ -11,16 +11,16 @@ interface InspectionBadgesProps {
 // 자동 처리 여부와 최종 등급을 함께 표시
 export default function InspectionBadges({ isFastTrack, finalGrade, className }: InspectionBadgesProps) {
   return (
-    <div className={cn('flex items-center gap-2', className)}>
-      {/* 자동 처리된 항목에만 표시 */}
+    <div className={cn('flex items-center gap-2 font-mono', className)}>
+      {/* 자동 처리된 항목에만 표시 (둥근 모서리 없이 블랙 고대비) */}
       {isFastTrack && (
-        <span className="text-xs font-semibold rounded-full px-2 py-0.5 bg-purple-100 text-purple-700">
+        <span className="text-[10px] font-black rounded-none border-2 border-black px-2 py-0.5 bg-black text-white uppercase tracking-wider">
           Fast-track
         </span>
       )}
 
       {/* 최종 등급에 맞는 색상 적용 */}
-      <span className={`text-xs font-semibold rounded-full px-2 py-0.5 ${GRADE_BADGE_STYLE[finalGrade]}`}>
+      <span className={`text-[10px] font-black rounded-none border-2 border-black px-2 py-0.5 ${GRADE_BADGE_STYLE[finalGrade]}`}>
         {finalGrade}
       </span>
     </div>

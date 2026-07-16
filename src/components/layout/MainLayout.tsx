@@ -56,7 +56,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
 
   // 로그인 상태일 때만 정상적인 어플리케이션 본문 노출
   return (
-    <div className="flex h-screen bg-gray-50 overflow-hidden font-sans">
+    <div className="flex h-screen bg-[#F9F9F7] overflow-hidden font-mono text-black">
       <Sidebar />
       <div className="flex-1 flex flex-col min-w-0">
         <Header />
