@@ -10,7 +10,7 @@ export const isSidebarOpenAtom = atom<boolean>(true);
 
 // 3. 사용자 정보 및 인증 상태 (Supabase users 테이블 매핑)
 export interface UserInfo {
-  id: string;
+  id?: string;
   employee_id: string;
   name: string;
   email: string | null;
