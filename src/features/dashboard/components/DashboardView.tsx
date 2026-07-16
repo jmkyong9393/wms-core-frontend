@@ -9,7 +9,7 @@ import SelectedTicketSummaryPanel from './SelectedTicketSummaryPanel';
 import SuggestedPoPlaceholder from './SuggestedPoPlaceholder';
 import InventoryPreview from './InventoryPreview';
 
-// 0으로 나누는 경우(큐가 비었을 때) NaN 대신 0%로 처리
+// 전체 건수가 0이면 NaN 대신 0%로 처리
 function toRatio(count: number, total: number): number {
   return total > 0 ? (count / total) * 100 : 0;
 }
@@ -29,7 +29,6 @@ export default function DashboardView() {
   const rejectionRatio = toRatio(rejectedCount, total);
   const pendingRatio = toRatio(pendingCount, total);
 
-  // 선택된 티켓이 승인/반려로 목록에서 사라지면 남은 첫 항목으로 자동 전환, 없으면 빈 상태
   const selectedItem = useMemo(() => {
     return (
       hitlQueue.find((item) => item.id === selectedTicketId) ??
@@ -47,7 +46,7 @@ export default function DashboardView() {
         <p className="text-sm text-gray-500 mt-1">실시간 AI 검수 현황 및 재고 요약</p>
       </div>
 
-      {/* KPI 카드 4개 (전부 hitlQueueAtom 파생값. 어제 대비 추세는 실제 일자별 집계가 없어 고정 mock값) */}
+      {/* KPI 카드 4개 (어제 대비 추세는 실제 일자별 집계가 없어 고정 mock값) */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <KpiDonutCard
           label="금일 누적 처리량"

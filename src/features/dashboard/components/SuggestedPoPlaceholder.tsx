@@ -1,6 +1,6 @@
 import { Truck } from 'lucide-react';
 
-// 발주 추천 데이터는 아직 백엔드 연동 전이므로 빈 상태 placeholder만 표시
+// 발주 추천 데이터는 아직 백엔드 연동 전이므로 빈 상태로 표시
 export default function SuggestedPoPlaceholder() {
   return (
     <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 flex flex-col items-center justify-center text-center min-h-[176px]">

@@ -46,7 +46,7 @@ function TicketChip({ item, selected, onSelect }: TicketChipProps) {
   );
 }
 
-// 관리자 대시보드용 HITL 처리 현황 3열 미리보기 (승인/반려는 /admin/queue에서 처리, 대기→검토중 전이만 드래그로 가능)
+// 관리자 대시보드용 HITL 처리 현황 3열 미리보기
 export default function HitlKanbanPreview({ queue, selectedId, onSelect }: HitlKanbanPreviewProps) {
   const startReview = useSetAtom(startReviewHitlItemAtom);
 

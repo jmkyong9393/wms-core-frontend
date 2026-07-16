@@ -1,13 +1,13 @@
 import { atom } from "jotai";
 
-// HITL(Human-in-the-Loop) 관리자 수동 승인 대기 큐
+// HITL 관리자 수동 승인 대기 큐
 // AI 판단이 애매한 경우 관리자가 확인할 목록
 export type HitlItemStatus = 'AWAITING_REVIEW' | 'IN_PROGRESS' | 'APPROVED' | 'REJECTED';
 
 // 로그인 연동 전까지 사용하는 고정 mock 심사자 이름
 export const MOCK_REVIEWER_NAME = '관리자A';
 
-// return_jobs.agent_logs (JSONB)에 대응하는 에이전트 대화 한 줄
+// 대응하는 에이전트 대화 한 줄
 export interface AgentLogEntry {
   agent: 'Vision' | 'Policy' | 'Critic' | 'Report';
   message: string;
