@@ -1,5 +1,6 @@
 import MainLayout from "@/components/layout/MainLayout";
 import HitlQueueSeeder from "@/features/queue/components/HitlQueueSeeder";
+import HitlActionErrorToast from "@/features/queue/components/HitlActionErrorToast";
 
 export default function AdminLayout({
   children,
@@ -9,6 +10,7 @@ export default function AdminLayout({
   return (
     <>
       <HitlQueueSeeder />
+      <HitlActionErrorToast />
       <MainLayout>{children}</MainLayout>
     </>
   );

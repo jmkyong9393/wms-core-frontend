@@ -4,7 +4,7 @@ import { atom } from "jotai";
 // AI 판단이 애매한 경우 관리자가 확인할 목록
 export type HitlItemStatus = 'AWAITING_REVIEW' | 'IN_PROGRESS' | 'APPROVED' | 'REJECTED';
 
-// 로그인 연동 전까지 사용하는 고정 mock 심사자 이름
+// 로그인 연동 전까지 사용하는 고정 mock 관리자 이름
 export const MOCK_REVIEWER_NAME = '관리자A';
 
 // 대응하는 에이전트 대화 한 줄
@@ -19,9 +19,9 @@ export interface HitlQueueItem {
   title?: string;
   ubciScore?: number;
   status: HitlItemStatus;
-  agentLogs?: AgentLogEntry[]; // return_jobs.agent_logs 대응
-  finalReport?: string; // return_jobs.final_report 대응
-  reviewer?: string; // 심사 중인 관리자 (동시 중복 심사 방지용 선점 표시)
+  agentLogs?: AgentLogEntry[];
+  finalReport?: string; 
+  reviewer?: string; 
 }
 
 // 관리자가 확인해야 하는 검수 목록
@@ -43,7 +43,7 @@ export const setHitlItemStatusAtom = atom(
   }
 );
 
-// 대기 티켓을 검토중으로 드래그했을 때 IN_PROGRESS로 전환하고 심사자를 선점 등록
+// 대기 티켓을 검토중으로 드래그했을 때 IN_PROGRESS로 전환하고 관리자를 선점 등록
 export const startReviewHitlItemAtom = atom(null, (get, set, id: string) => {
   set(hitlQueueAtom, (prev) =>
     prev.map((item) =>
@@ -62,7 +62,7 @@ export const rejectHitlItemAtom = atom(null, (get, set, id: string) => {
   set(setHitlItemStatusAtom, { id, status: 'REJECTED' });
 });
 
-// 재검토 버튼: 검토중 티켓을 다시 대기 상태로 되돌리고 리뷰어 선점 해제
+// 재검토 버튼: 검토중 티켓을 다시 대기 상태로 되돌리고 담당 관리자 제거
 export const requestReReviewHitlItemAtom = atom(null, (get, set, id: string) => {
   set(hitlQueueAtom, (prev) =>
     prev.map((item) =>
@@ -70,3 +70,15 @@ export const requestReReviewHitlItemAtom = atom(null, (get, set, id: string) => 
     )
   );
 });
+
+// API 처리 실패 시 티켓을 버튼 클릭 전 상태로 복구
+// 상태와 담당 관리자 정보를 함께 되돌림
+export const restoreHitlItemAtom = atom(null, (get, set, previousItem: HitlQueueItem) => {
+  set(hitlQueueAtom, (prev) =>
+    prev.map((item) => (item.id === previousItem.id ? previousItem : item))
+  );
+});
+
+// HITL 처리 실패 시 보여줄 오류 메시지
+// 카드가 화면에서 사라져도 메시지가 유지되도록 전역에서 관리
+export const hitlActionErrorAtom = atom<string | null>(null);
