@@ -30,19 +30,6 @@ export async function hashPassword(password: string): Promise<string> {
   return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
-/**
- * UUID v4 생성기 (클라이언트 사이드에서 신규 유저 등록 시 사용)
- */
-function generateUUID(): string {
-  if (typeof crypto !== "undefined" && crypto.randomUUID) {
-    return crypto.randomUUID();
-  }
-  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
-    const r = (Math.random() * 16) | 0;
-    const v = c === "x" ? r : (r & 0x3) | 0x8;
-    return v.toString(16);
-  });
-}
 
 // === Mock 데이터베이스용 인터페이스 (localStorage 기반 백업) ===
 interface MockUser extends UserInfo {
@@ -107,6 +94,17 @@ export const authService = {
     role: "MASTER" | "WORKER" | "GUEST" | "PENDING";
     companyCode: string;
   }): Promise<UserInfo> {
+    // 0. 사번(ID) 및 필수 필드 유효성 검증
+    if (!payload.employee_id || payload.employee_id.trim() === "") {
+      throw new Error("❌ 사원번호는 필수 입력 항목입니다.");
+    }
+    if (!payload.name || payload.name.trim() === "") {
+      throw new Error("❌ 이름은 필수 입력 항목입니다.");
+    }
+    if (!payload.password || payload.password.trim() === "") {
+      throw new Error("❌ 비밀번호는 필수 입력 항목입니다.");
+    }
+
     // 1. 사내 코드 일치 여부 확인
     if (payload.companyCode !== COMPANY_CODE) {
       throw new Error("❌ 올바른 사내 코드가 아닙니다. 외부인은 가입이 제한됩니다.");
@@ -117,11 +115,11 @@ export const authService = {
 
     // 2. Supabase 연동 분기
     if (isSupabaseConfigured) {
-      // 2.1 사번 중복 체크
+      // 2.1 사번 중복 체크 (employee_id가 PK이므로 employee_id 컬럼을 조회)
       const { data: existingUser, error: checkError } = await supabase
         .from("users")
-        .select("id")
-        .eq("employee_id", payload.employee_id)
+        .select("employee_id")
+        .eq("employee_id", payload.employee_id.trim())
         .maybeSingle();
 
       if (checkError) {
@@ -131,17 +129,16 @@ export const authService = {
         throw new Error("❌ 이미 존재하는 사번입니다. 다른 사번을 입력해 주세요.");
       }
 
-      // 2.2 신규 회원 등록
+      // 2.2 신규 회원 등록 (사번이 PK이므로 id 컬럼은 삽입하지 않음)
       const newUser = {
-        id: generateUUID(),
-        employee_id: payload.employee_id,
-        name: payload.name,
-        email: payload.email || null,
+        employee_id: payload.employee_id.trim(),
+        name: payload.name.trim(),
+        email: payload.email ? payload.email.trim() : null,
         password_hash: passwordHash,
         role: payload.role,
         status: "ACTIVE", // 기본 상태는 활성
         created_at: now,
-        update_at: now, // 스펙 파일에 맞춤
+        update_at: now,
       };
 
       const { data, error } = await supabase
@@ -155,7 +152,7 @@ export const authService = {
       }
 
       return {
-        id: data.id,
+        id: data.employee_id,
         employee_id: data.employee_id,
         name: data.name,
         email: data.email,
@@ -165,15 +162,15 @@ export const authService = {
     } else {
       // Mock 모드 동작
       const mockUsers = getMockUsers();
-      if (mockUsers.some((u) => u.employee_id === payload.employee_id)) {
+      if (mockUsers.some((u) => u.employee_id === payload.employee_id.trim())) {
         throw new Error("❌ 이미 존재하는 사번입니다. 다른 사번을 입력해 주세요. (Mock 모드)");
       }
 
       const newMockUser: MockUser = {
-        id: generateUUID(),
-        employee_id: payload.employee_id,
-        name: payload.name,
-        email: payload.email,
+        id: payload.employee_id.trim(),
+        employee_id: payload.employee_id.trim(),
+        name: payload.name.trim(),
+        email: payload.email ? payload.email.trim() : null,
         password_hash: passwordHash,
         role: payload.role,
         status: "ACTIVE",
@@ -185,7 +182,7 @@ export const authService = {
       saveMockUsers(mockUsers);
 
       return {
-        id: newMockUser.id,
+        id: newMockUser.employee_id,
         employee_id: newMockUser.employee_id,
         name: newMockUser.name,
         email: newMockUser.email,
@@ -232,12 +229,12 @@ export const authService = {
       await supabase
         .from("users")
         .update({ last_login: now })
-        .eq("id", user.id);
+        .eq("employee_id", user.employee_id);
 
-      const token = createFakeToken({ id: user.id, employee_id: user.employee_id, role: user.role });
+      const token = createFakeToken({ id: user.employee_id, employee_id: user.employee_id, role: user.role });
 
       const userInfo: UserInfo = {
-        id: user.id,
+        id: user.employee_id,
         employee_id: user.employee_id,
         name: user.name,
         email: user.email,
@@ -266,10 +263,10 @@ export const authService = {
       user.last_login = now;
       saveMockUsers(mockUsers);
 
-      const token = createFakeToken({ id: user.id, employee_id: user.employee_id, role: user.role });
+      const token = createFakeToken({ id: user.employee_id, employee_id: user.employee_id, role: user.role });
 
       const userInfo: UserInfo = {
-        id: user.id,
+        id: user.employee_id,
         employee_id: user.employee_id,
         name: user.name,
         email: user.email,
