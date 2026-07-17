@@ -43,11 +43,8 @@ export default function InboundPage() {
   }, [uploadQueue, setUploadQueue]);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-zinc-950 flex flex-col items-center p-4 font-sans">
+    <>
       <div className="w-full max-w-md mb-4">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-zinc-50 mb-1">
-          반품 도서 검수
-        </h1>
         <p className="text-sm text-gray-500 dark:text-zinc-400">
           {isFullInspectionMode
             ? "AI 멀티에이전트 전체 검수 플로우"
@@ -146,6 +143,6 @@ export default function InboundPage() {
           </div>
         </>
       )}
-    </div>
+    </>
   );
 }
