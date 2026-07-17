@@ -1,8 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { useSetAtom } from 'jotai';
-import { startReviewHitlItemAtom, type HitlQueueItem } from '@/features/queue/store/queueAtoms';
+import { type HitlQueueItem } from '@/features/queue/store/queueAtoms';
+import { useHitlQueueAction } from '@/features/queue/hooks/useHitlQueueAction';
 
 interface HitlKanbanPreviewProps {
   queue: HitlQueueItem[];
@@ -44,9 +44,9 @@ function TicketChip({ item, selected, onSelect }: TicketChipProps) {
   );
 }
 
-// 관리자 대시보드용 HITL 처리 현황 3열 미리보기
+// 관리자 대시보드용 HITL 처리 현황
 export default function HitlKanbanPreview({ queue, selectedId, onSelect }: HitlKanbanPreviewProps) {
-  const startReview = useSetAtom(startReviewHitlItemAtom);
+  const { runAction } = useHitlQueueAction();
 
   const awaiting = queue.filter((item) => item.status === 'AWAITING_REVIEW');
   const inProgress = queue.filter((item) => item.status === 'IN_PROGRESS');
@@ -79,7 +79,7 @@ export default function HitlKanbanPreview({ queue, selectedId, onSelect }: HitlK
               if (col.key !== 'in_progress') return;
               e.preventDefault();
               const id = e.dataTransfer.getData('text/plain');
-              if (id) startReview(id);
+              if (id) runAction('startReview', id);
             }}
           >
             <div className="flex items-center justify-between mb-2">
