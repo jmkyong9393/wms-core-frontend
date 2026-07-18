@@ -2,16 +2,26 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { PasswordInput } from "./PasswordInput";
-import { doPasswordsMatch, isRequiredFieldFilled } from "../utils/validation";
-import { resolveDevMockOutcome } from "../utils/devMock";
+import { PasswordInput } from "@/features/auth/components/PasswordInput";
+import { doPasswordsMatch, isRequiredFieldFilled } from "@/features/auth/utils/validation";
 import type {
   ChangePasswordFieldErrors,
   ChangePasswordFormStatus,
   ChangePasswordFormValues,
-} from "../types/authFormTypes";
+} from "@/features/auth/types/authFormTypes";
 
 const MOCK_SUBMIT_DELAY_MS = 700;
+
+ // 비밀번호 변경 API 미구현 상태
+ // 개발 환경에서 성공·실패 화면 확인을 위한 임시 Mock 처리
+ // 실제 백엔드 API 확정 후 MSW 또는 API 호출 방식으로 교체 필요
+function resolveLocalMockOutcome(): "success" | "error" {
+  if (process.env.NODE_ENV === "production") return "success";
+  if (typeof window === "undefined") return "success";
+  return new URLSearchParams(window.location.search).get("mock") === "error"
+    ? "error"
+    : "success";
+}
 
 export function ChangePasswordForm() {
   const [values, setValues] = useState<ChangePasswordFormValues>({
@@ -72,18 +82,18 @@ export function ChangePasswordForm() {
 
     setFieldErrors({});
 
-    // 운영 환경에서는 실제 인증 API가 없으므로 변경 요청을 실행하지 않음
+    // 운영 환경의 비밀번호 변경 가능 비활성화
     if (process.env.NODE_ENV === "production") {
       setStatus("unavailable");
       return;
     }
 
-    // 개발 환경에서만 제출 중·성공·실패 상태를 mock으로 확인
+    // 개발 환경의 Mock 제출 상태 처리
     setStatus("submitting");
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
     timeoutRef.current = setTimeout(() => {
       if (!isMountedRef.current) return;
-      const outcome = resolveDevMockOutcome() ?? "success";
+      const outcome = resolveLocalMockOutcome();
       setStatus(outcome);
     }, MOCK_SUBMIT_DELAY_MS);
   };

@@ -1,48 +1,32 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useStore } from "jotai";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { PasswordInput } from "./PasswordInput";
-import { isRequiredFieldFilled } from "../utils/validation";
-import {
-  DEV_MOCK_ROLE_ROUTE,
-  resolveDevMockOutcome,
-  resolveDevMockRole,
-  resolveMustChangePassword,
-} from "../utils/devMock";
-import type {
-  LoginFieldErrors,
-  LoginFormStatus,
-  LoginFormValues,
-} from "../types/authFormTypes";
-
-const MOCK_SUBMIT_DELAY_MS = 700;
+import { PasswordInput } from "@/features/auth/components/PasswordInput";
+import { isRequiredFieldFilled } from "@/features/auth/utils/validation";
+import { useLoginMutation } from "@/features/auth/hooks/useLoginMutation";
+import { currentUserAtom } from "@/features/auth/store/authAtoms";
+import { ROLE_HOME_ROUTE } from "@/features/auth/constants/roleRoutes";
+import type { LoginFieldErrors, LoginFormValues } from "@/features/auth/types/authFormTypes";
 
 export function LoginForm() {
   const router = useRouter();
+  const store = useStore();
+  const loginMutation = useLoginMutation();
+
   const [values, setValues] = useState<LoginFormValues>({
     employee_id: "",
     password: "",
   });
   const [fieldErrors, setFieldErrors] = useState<LoginFieldErrors>({});
-  const [status, setStatus] = useState<LoginFormStatus>("idle");
   const [guestPending, setGuestPending] = useState(false);
 
   const employeeIdRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const isMountedRef = useRef(true);
-
-  useEffect(() => {
-    isMountedRef.current = true;
-    return () => {
-      isMountedRef.current = false;
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    };
-  }, []);
 
   const handleSubmit = (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -57,7 +41,6 @@ export function LoginForm() {
 
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
-      setStatus("idle");
       if (errors.employee_id) {
         employeeIdRef.current?.focus();
       } else if (errors.password) {
@@ -69,49 +52,27 @@ export function LoginForm() {
     setFieldErrors({});
     setGuestPending(false);
 
-    // 실제 인증 API가 없으므로 로그인 요청을 실행하지 않음
-    if (process.env.NODE_ENV === "production") {
-      setStatus("unavailable");
-      return;
-    }
+    loginMutation.mutate(values, {
+      onSuccess: () => {
+        // 로그인 성공 후 전역 상태에 저장된 최신 사용자 정보 조회
+        const user = store.get(currentUserAtom);
+        if (!user) return;
 
-    // 개발 환경에서만 로그인 성공·실패와 역할별 이동을 mock으로 확인
-    setStatus("submitting");
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    timeoutRef.current = setTimeout(() => {
-      if (!isMountedRef.current) return;
-      const outcome = resolveDevMockOutcome() ?? "success";
+        if (user.role === "GUEST") {
+          // 사용자 정보 변환 실패 시 이동 중단
+          setGuestPending(true);
+          return;
+        }
 
-      if (outcome === "error") {
-        setStatus("error");
-        return;
-      }
-
-      // role 값에 따라 로그인 이후 목적지 결정
-      const role = resolveDevMockRole();
-
-      if (role === "GUEST") {
-        // 초기 비밀번호 사용 상태이면 이동한 화면에서 권장 팝업 표시
-        setStatus("idle");
-        setGuestPending(true);
-        return;
-      }
-
-      const destination = role ? DEV_MOCK_ROLE_ROUTE[role] : undefined;
-      if (destination) {
-        const suffix = resolveMustChangePassword()
-          ? "?must_change_password=true"
-          : "";
-        router.push(destination + suffix);
-        return;
-      }
-
-      // role 값이 없으면 화면 이동 없이 기존 로그인 성공 UI만 표시
-      setStatus("success");
-    }, MOCK_SUBMIT_DELAY_MS);
+        const destination = ROLE_HOME_ROUTE[user.role];
+        if (destination) {
+          router.push(destination);
+        }
+      },
+    });
   };
 
-  const isSubmitting = status === "submitting";
+  const isSubmitting = loginMutation.isPending;
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4" noValidate>
@@ -150,27 +111,15 @@ export function LoginForm() {
         disabled={isSubmitting}
       />
 
-      {status === "error" && (
+      {loginMutation.isError && (
         <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-center text-sm text-red-600 dark:border-red-900/30 dark:bg-red-950/20 dark:text-red-400">
-          사번 또는 비밀번호를 확인해 주세요.
-        </div>
-      )}
-
-      {status === "success" && (
-        <div className="rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-center text-sm text-blue-700 dark:border-blue-900/30 dark:bg-blue-950/20 dark:text-blue-400">
-          로그인 UI 데모 — 실제 인증은 아직 연결되지 않았습니다.
+          로그인에 실패했습니다. 사번/비밀번호를 확인하거나 잠시 후 다시 시도해 주세요.
         </div>
       )}
 
       {guestPending && (
         <div className="rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-center text-sm text-blue-700 dark:border-blue-900/30 dark:bg-blue-950/20 dark:text-blue-400">
           게스트 전용 화면은 준비 중입니다. 담당자에게 문의해 주세요.
-        </div>
-      )}
-
-      {status === "unavailable" && (
-        <div className="rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-center text-sm text-blue-700 dark:border-blue-900/30 dark:bg-blue-950/20 dark:text-blue-400">
-          현재 인증 API 연결 전입니다. 백엔드 연동 후 이용 가능합니다.
         </div>
       )}
 

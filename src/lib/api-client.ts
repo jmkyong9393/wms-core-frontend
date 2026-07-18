@@ -1,35 +1,40 @@
 import axios from "axios";
+import { AUTH_TOKEN_STORAGE_KEY } from "@/features/auth/store/authAtoms";
 
-// 환경변수에서 백엔드 API 주소를 가져옵니다. 기본값은 로컬호스트.
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+// 백엔드 API 기본 주소 
+// 환경변수 미설정 시 로컬 백엔드 주소 사용 
+// Axios 요청과 MSW Mock에서 동일한 주소 공유
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     "Content-Type": "application/json",
   },
-  // 타임아웃 10초 설정 (비전 검수 등 오래 걸리는 작업은 별도 처리 요망)
-  timeout: 10000, 
+  // API 응답 대기 시간 10초
+  timeout: 10000,
 });
 
-// 인터셉터 (요청 전)
+// API 요청 전 실행되는 공통 처리
 apiClient.interceptors.request.use(
   (config) => {
-    // TODO: 로컬 스토리지나 쿠키에서 토큰을 가져와 헤더에 주입
-    // const token = localStorage.getItem("token");
-    // if (token) {
-    //   config.headers.Authorization = `Bearer ${token}`;
-    // }
+    const token =
+      typeof window !== "undefined"
+        ? localStorage.getItem(AUTH_TOKEN_STORAGE_KEY)
+        : null;
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
     return config;
   },
   (error) => Promise.reject(error)
 );
 
-// 인터셉터 (응답 후)
+// API 응답 후 실행되는 공통 처리
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    // TODO: 전역 에러 핸들링 (예: 401 인증 만료 시 로그인 페이지 리다이렉트)
+    // TODO: 인증 만료 및 공통 오류 처리 추가
     return Promise.reject(error);
   }
 );

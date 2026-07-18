@@ -1,4 +1,4 @@
-import { ChangePasswordForm } from "./ChangePasswordForm";
+import { ChangePasswordForm } from "@/features/auth/components/ChangePasswordForm";
 
 export function ChangePasswordView() {
   return (

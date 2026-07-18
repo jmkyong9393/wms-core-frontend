@@ -1,10 +1,3 @@
-export type LoginFormStatus =
-  | "idle"
-  | "submitting"
-  | "success"
-  | "error"
-  | "unavailable";
-
 export interface LoginFormValues {
   employee_id: string;
   password: string;
