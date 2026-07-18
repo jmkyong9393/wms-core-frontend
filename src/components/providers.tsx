@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { Provider as JotaiProvider } from "jotai";
 import { useState } from "react";
+import { MustChangePasswordDialog } from "@/features/auth/components/MustChangePasswordDialog";
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   // QueryClient는 각 세션마다 독립적으로 인스턴스를 유지해야 하므로 useState 안에 선언
@@ -24,6 +25,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     <QueryClientProvider client={queryClient}>
       <JotaiProvider>
         {children}
+        <MustChangePasswordDialog />
       </JotaiProvider>
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
