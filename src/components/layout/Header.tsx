@@ -2,6 +2,7 @@
 
 import { useAtomValue } from 'jotai';
 import { pendingUploadCountAtom } from '@/features/inbound/store/uploadQueueAtoms';
+import { LogoutButton } from '@/features/auth/components/LogoutButton';
 import { Bell, User, CloudUpload, CloudOff } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 
@@ -62,6 +63,7 @@ export default function Header() {
           <span className="ml-2 text-sm font-medium text-gray-700 hidden md:block">
             현장 관리자
           </span>
+          <LogoutButton className="ml-3 p-2 text-gray-400 hover:text-gray-600 transition-colors rounded-full hover:bg-gray-100" />
         </div>
       </div>
     </header>
