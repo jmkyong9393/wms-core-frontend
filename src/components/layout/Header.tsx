@@ -18,6 +18,7 @@ export default function Header() {
   if (pathname === '/admin/queue') pageTitle = '검토 대기';
   if (pathname === '/admin/inspections') pageTitle = '검수 처리 내역';
   if (pathname === '/admin/inventory') pageTitle = '재고·출고 관리';
+  if (pathname === '/admin/employees') pageTitle = '직원 계정 관리';
 
   return (
     <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 lg:px-8">

@@ -12,7 +12,8 @@ import {
   X,
   ClipboardList,
   ListChecks,
-  Warehouse
+  Warehouse,
+  Users
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -27,6 +28,11 @@ const MENU_ITEMS = [
   { name: 'AI 품질 리포트', href: '/reports', icon: LineChart },
 ];
 
+// 운영 메뉴와 성격이 달라 구분선 아래 별도로 배치하는 관리자용 메뉴
+const ADMIN_MENU_ITEMS = [
+  { name: '직원 계정 관리', href: '/admin/employees', icon: Users },
+];
+
 const BOTTOM_MENU_ITEMS = [
   { name: '설정', href: '/settings', icon: Settings },
 ];
@@ -34,6 +40,25 @@ const BOTTOM_MENU_ITEMS = [
 export default function Sidebar() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
+
+  const renderMenuItem = (item: (typeof MENU_ITEMS)[number]) => {
+    const isActive = pathname === item.href;
+    return (
+      <Link
+        key={item.name}
+        href={item.href}
+        onClick={() => setIsOpen(false)}
+        className={`flex items-center px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+          isActive
+            ? 'bg-blue-50 text-blue-700'
+            : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+        }`}
+      >
+        <item.icon className={`w-5 h-5 mr-3 ${isActive ? 'text-blue-700' : 'text-gray-400'}`} />
+        {item.name}
+      </Link>
+    );
+  };
 
   return (
     <>
@@ -71,24 +96,9 @@ export default function Sidebar() {
           <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 px-3">
             Core Menus
           </div>
-          {MENU_ITEMS.map((item) => {
-            const isActive = pathname === item.href;
-            return (
-              <Link
-                key={item.name}
-                href={item.href}
-                onClick={() => setIsOpen(false)}
-                className={`flex items-center px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                  isActive 
-                    ? 'bg-blue-50 text-blue-700' 
-                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-                }`}
-              >
-                <item.icon className={`w-5 h-5 mr-3 ${isActive ? 'text-blue-700' : 'text-gray-400'}`} />
-                {item.name}
-              </Link>
-            );
-          })}
+          {MENU_ITEMS.map(renderMenuItem)}
+          <div className="my-2 border-t border-gray-100" />
+          {ADMIN_MENU_ITEMS.map(renderMenuItem)}
         </nav>
 
         {/* Bottom Menu */}
