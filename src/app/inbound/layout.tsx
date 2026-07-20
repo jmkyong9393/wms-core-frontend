@@ -1,5 +1,4 @@
 import { AuthGuard } from "@/features/auth/components/AuthGuard";
-import { MustChangePasswordDialog } from "@/features/auth/components/MustChangePasswordDialog";
 import { LogoutButton } from "@/features/auth/components/LogoutButton";
 
 export default function InboundLayout({
@@ -9,7 +8,6 @@ export default function InboundLayout({
 }>) {
   return (
     <AuthGuard allow={["WORKER"]}>
-      <MustChangePasswordDialog />
       <div className="min-h-screen bg-gray-50 dark:bg-zinc-950 font-sans">
         <header className="sticky top-0 z-30 h-14 flex items-center justify-between px-4 bg-white dark:bg-zinc-900 border-b border-gray-200 dark:border-zinc-800">
           <h1 className="text-base font-semibold text-gray-800 dark:text-zinc-100">

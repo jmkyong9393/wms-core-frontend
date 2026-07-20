@@ -1,29 +1,28 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useStore } from "jotai";
 import { Button } from "@/components/ui/button";
 import { PasswordInput } from "@/features/auth/components/PasswordInput";
 import { doPasswordsMatch, isRequiredFieldFilled } from "@/features/auth/utils/validation";
+import { useChangePasswordMutation } from "@/features/auth/hooks/useChangePasswordMutation";
+import { getMe } from "@/features/auth/api/authService";
+import { mapMeResponseToCurrentUser } from "@/features/auth/store/authSessionMapper";
+import { currentUserAtom, logoutAtom, sessionAtom } from "@/features/auth/store/authAtoms";
+import { ROLE_HOME_ROUTE } from "@/features/auth/constants/roleRoutes";
+import type { Role } from "@/features/auth/types/authTypes";
 import type {
   ChangePasswordFieldErrors,
   ChangePasswordFormStatus,
   ChangePasswordFormValues,
 } from "@/features/auth/types/authFormTypes";
 
-const MOCK_SUBMIT_DELAY_MS = 700;
-
- // 비밀번호 변경 API 미구현 상태
- // 개발 환경에서 성공·실패 화면 확인을 위한 임시 Mock 처리
- // 실제 백엔드 API 확정 후 MSW 또는 API 호출 방식으로 교체 필요
-function resolveLocalMockOutcome(): "success" | "error" {
-  if (process.env.NODE_ENV === "production") return "success";
-  if (typeof window === "undefined") return "success";
-  return new URLSearchParams(window.location.search).get("mock") === "error"
-    ? "error"
-    : "success";
-}
-
 export function ChangePasswordForm() {
+  const router = useRouter();
+  const store = useStore();
+  const changePasswordMutation = useChangePasswordMutation();
+
   const [values, setValues] = useState<ChangePasswordFormValues>({
     currentPassword: "",
     newPassword: "",
@@ -31,20 +30,41 @@ export function ChangePasswordForm() {
   });
   const [fieldErrors, setFieldErrors] = useState<ChangePasswordFieldErrors>({});
   const [status, setStatus] = useState<ChangePasswordFormStatus>("idle");
+  const [isRetrying, setIsRetrying] = useState(false);
 
   const currentPasswordRef = useRef<HTMLInputElement>(null);
   const newPasswordRef = useRef<HTMLInputElement>(null);
   const confirmPasswordRef = useRef<HTMLInputElement>(null);
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const isMountedRef = useRef(true);
 
-  useEffect(() => {
-    isMountedRef.current = true;
-    return () => {
-      isMountedRef.current = false;
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    };
-  }, []);
+  const navigateHome = (role: Role) => {
+    const destination = ROLE_HOME_ROUTE[role];
+    if (destination) router.push(destination);
+  };
+
+  const handleReLogin = () => {
+    store.set(logoutAtom);
+    router.push("/login");
+  };
+
+  const handleRetryProfile = async () => {
+    const session = store.get(sessionAtom);
+    if (!session) {
+      handleReLogin();
+      return;
+    }
+
+    setIsRetrying(true);
+    try {
+      const me = await getMe();
+      const user = mapMeResponseToCurrentUser(me, session);
+      store.set(currentUserAtom, user);
+      navigateHome(user.role);
+    } catch {
+      // 복구 화면 유지, 재시도 가능
+    } finally {
+      setIsRetrying(false);
+    }
+  };
 
   const handleSubmit = (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -81,24 +101,27 @@ export function ChangePasswordForm() {
     }
 
     setFieldErrors({});
+    setStatus("idle");
 
-    // 운영 환경의 비밀번호 변경 가능 비활성화
-    if (process.env.NODE_ENV === "production") {
-      setStatus("unavailable");
-      return;
-    }
-
-    // 개발 환경의 Mock 제출 상태 처리
-    setStatus("submitting");
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    timeoutRef.current = setTimeout(() => {
-      if (!isMountedRef.current) return;
-      const outcome = resolveLocalMockOutcome();
-      setStatus(outcome);
-    }, MOCK_SUBMIT_DELAY_MS);
+    changePasswordMutation.mutate(
+      { current_password: values.currentPassword, new_password: values.newPassword },
+      {
+        onSuccess: (result) => {
+          if (result.profileLoaded) {
+            navigateHome(result.user.role);
+            return;
+          }
+          setStatus("profileRecovery");
+        },
+        onError: () => {
+          setStatus("error");
+        },
+      }
+    );
   };
 
-  const isSubmitting = status === "submitting";
+  const isSubmitting = changePasswordMutation.isPending;
+  const showRecovery = status === "profileRecovery";
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4" noValidate>
@@ -112,7 +135,7 @@ export function ChangePasswordForm() {
         }
         autoComplete="current-password"
         error={fieldErrors.currentPassword}
-        disabled={isSubmitting}
+        disabled={isSubmitting || showRecovery}
       />
 
       <PasswordInput
@@ -123,7 +146,7 @@ export function ChangePasswordForm() {
         onChange={(value) => setValues((v) => ({ ...v, newPassword: value }))}
         autoComplete="new-password"
         error={fieldErrors.newPassword}
-        disabled={isSubmitting}
+        disabled={isSubmitting || showRecovery}
       />
 
       <PasswordInput
@@ -136,30 +159,45 @@ export function ChangePasswordForm() {
         }
         autoComplete="new-password"
         error={fieldErrors.confirmPassword}
-        disabled={isSubmitting}
+        disabled={isSubmitting || showRecovery}
       />
 
       {status === "error" && (
         <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-center text-sm text-red-600 dark:border-red-900/30 dark:bg-red-950/20 dark:text-red-400">
-          비밀번호 변경에 실패했습니다. 다시 시도해 주세요.
+          비밀번호 변경에 실패했습니다. 현재 비밀번호를 확인하거나 다시 시도해 주세요.
         </div>
       )}
 
-      {status === "success" && (
-        <div className="rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-center text-sm text-green-700 dark:border-green-900/30 dark:bg-green-950/20 dark:text-green-400">
-          비밀번호 변경 UI 데모 — 실제 저장은 아직 연결되지 않았습니다.
-        </div>
-      )}
-
-      {status === "unavailable" && (
+      {showRecovery && (
         <div className="rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-center text-sm text-blue-700 dark:border-blue-900/30 dark:bg-blue-950/20 dark:text-blue-400">
-          현재 인증 API 연결 전입니다. 백엔드 연동 후 이용 가능합니다.
+          비밀번호는 변경되었지만 사용자 정보를 불러오지 못했습니다.
         </div>
       )}
 
-      <Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
-        {isSubmitting ? "변경 중..." : "비밀번호 변경"}
-      </Button>
+      {showRecovery ? (
+        <div className="flex gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            className="flex-1"
+            onClick={handleReLogin}
+          >
+            다시 로그인
+          </Button>
+          <Button
+            type="button"
+            className="flex-1"
+            onClick={handleRetryProfile}
+            disabled={isRetrying}
+          >
+            {isRetrying ? "다시 시도 중..." : "다시 시도"}
+          </Button>
+        </div>
+      ) : (
+        <Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
+          {isSubmitting ? "변경 중..." : "비밀번호 변경"}
+        </Button>
+      )}
     </form>
   );
 }
