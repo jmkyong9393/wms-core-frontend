@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Providers from "@/components/providers";
 import { A2HSBanner } from "@/components/a2hs-banner";
+import { ServiceWorkerRegistry } from "@/components/service-worker-registry";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -59,6 +60,7 @@ export default function RootLayout({
         <Providers>
           {children}
           <A2HSBanner />
+          <ServiceWorkerRegistry />
         </Providers>
       </body>
     </html>
