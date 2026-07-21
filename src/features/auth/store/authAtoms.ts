@@ -43,25 +43,32 @@ export const mustChangePasswordAtom = atomWithStorage<boolean>(
   false
 );
 
-// JWT에서 인증과 라우팅에 필요한 세션 정보 추출
+// 토큰에서 로그인 세션 정보 생성
 export const sessionAtom = atom<AuthSession | null>((get) => {
   const token = get(authTokenAtom);
   if (!token) return null;
   return mapTokenToSession(token);
 });
 
-// 유효한 세션 존재 여부
+// 로그인 여부 확인
 export const isAuthenticatedAtom = atom((get) => get(sessionAtom) !== null);
 
-// /auth/me에서 받은 사용자 프로필 저장
+// 로그인 사용자 정보 저장
 export const currentUserAtom = atomWithStorage<CurrentUser | null>(
   CURRENT_USER_STORAGE_KEY,
-  null
+  null,
+  undefined,
+  { getOnInit: true }
 );
 
-// 전체 인증 상태 초기화
+// 현재 세션의 서버 확인 완료 상태
+// 새로고침 시 초기화
+export const sessionVerifiedAtom = atom<string | null>(null);
+
+// 로그인 정보 전체 초기화
 export const logoutAtom = atom(null, (_get, set) => {
   set(authTokenAtom, null);
   set(mustChangePasswordAtom, false);
   set(currentUserAtom, null);
+  set(sessionVerifiedAtom, null);
 });

@@ -31,6 +31,7 @@ export function ChangePasswordForm() {
   const [fieldErrors, setFieldErrors] = useState<ChangePasswordFieldErrors>({});
   const [status, setStatus] = useState<ChangePasswordFormStatus>("idle");
   const [isRetrying, setIsRetrying] = useState(false);
+  const [retryError, setRetryError] = useState<string | null>(null);
 
   const currentPasswordRef = useRef<HTMLInputElement>(null);
   const newPasswordRef = useRef<HTMLInputElement>(null);
@@ -54,13 +55,14 @@ export function ChangePasswordForm() {
     }
 
     setIsRetrying(true);
+    setRetryError(null);
     try {
       const me = await getMe();
       const user = mapMeResponseToCurrentUser(me, session);
       store.set(currentUserAtom, user);
       navigateHome(user.role);
     } catch {
-      // 복구 화면 유지, 재시도 가능
+      setRetryError("사용자 정보를 확인하지 못했습니다. 잠시 후 다시 시도해 주세요.");
     } finally {
       setIsRetrying(false);
     }
@@ -174,6 +176,12 @@ export function ChangePasswordForm() {
         </div>
       )}
 
+      {showRecovery && retryError && (
+        <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-center text-sm text-red-600 dark:border-red-900/30 dark:bg-red-950/20 dark:text-red-400">
+          {retryError}
+        </div>
+      )}
+
       {showRecovery ? (
         <div className="flex gap-2">
           <Button
@@ -190,7 +198,7 @@ export function ChangePasswordForm() {
             onClick={handleRetryProfile}
             disabled={isRetrying}
           >
-            {isRetrying ? "다시 시도 중..." : "다시 시도"}
+            {isRetrying ? "사용자 정보 확인 중..." : "다시 시도"}
           </Button>
         </div>
       ) : (

@@ -3,8 +3,13 @@
 import { useMutation } from "@tanstack/react-query";
 import { useStore } from "jotai";
 import { getMe, login } from "@/features/auth/api/authService";
-import { mapMeResponseToCurrentUser, mapTokenToSession } from "@/features/auth/store/authSessionMapper";
-import { authTokenAtom, currentUserAtom, mustChangePasswordAtom } from "@/features/auth/store/authAtoms";
+import { getSessionKey, mapMeResponseToCurrentUser, mapTokenToSession } from "@/features/auth/store/authSessionMapper";
+import {
+  authTokenAtom,
+  currentUserAtom,
+  mustChangePasswordAtom,
+  sessionVerifiedAtom,
+} from "@/features/auth/store/authAtoms";
 import type { LoginRequest } from "@/features/auth/types/authApiTypes";
 import type { CurrentUser } from "@/features/auth/types/authTypes";
 
@@ -41,6 +46,7 @@ export function useLoginMutation() {
         const me = await getMe();
         const user = mapMeResponseToCurrentUser(me, session);
         store.set(currentUserAtom, user);
+        store.set(sessionVerifiedAtom, getSessionKey(session));
         return { mustChangePassword: false, user };
       } catch (err) {
         // 사용자 조회 실패 시 로그인 상태 초기화

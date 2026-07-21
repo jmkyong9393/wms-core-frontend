@@ -3,32 +3,34 @@
 import { useMutation } from "@tanstack/react-query";
 import { useStore } from "jotai";
 import { changePassword, getMe } from "@/features/auth/api/authService";
-import { mapMeResponseToCurrentUser } from "@/features/auth/store/authSessionMapper";
+import { getSessionKey, mapMeResponseToCurrentUser } from "@/features/auth/store/authSessionMapper";
 import {
   authTokenAtom,
   currentUserAtom,
   mustChangePasswordAtom,
   sessionAtom,
+  sessionVerifiedAtom,
 } from "@/features/auth/store/authAtoms";
 import type { ChangePasswordRequest } from "@/features/auth/types/authApiTypes";
 import type { CurrentUser } from "@/features/auth/types/authTypes";
 
 export type ChangePasswordResult =
   | { profileLoaded: true; user: CurrentUser }
-  | { profileLoaded: false }; // 비밀번호 변경은 성공, 프로필 재조회만 실패
+  | { profileLoaded: false }; // 비밀번호 변경은 성공했지만 사용자 정보 조회 실패
 
-// 비밀번호 변경 요청 처리 훅
-// 비밀번호 변경 자체가 성공하면 mustChangePasswordAtom을 확정하고,
-// 이후 /auth/me 재조회가 실패해도 이 값은 되돌리지 않음(이미 일어난 성공을 취소하지 않음)
+// 비밀번호 변경과 사용자 정보 조회 처리
 export function useChangePasswordMutation() {
   const store = useStore();
 
   return useMutation({
     mutationFn: async (payload: ChangePasswordRequest): Promise<ChangePasswordResult> => {
+      // 비밀번호 변경
       await changePassword(payload);
+      // 비밀번호 변경 필요 상태 해제
       store.set(mustChangePasswordAtom, false);
 
       const session = store.get(sessionAtom);
+      // 로그인 세션이 없으면 인증 정보 초기화
       if (!session) {
         store.set(authTokenAtom, null);
         store.set(currentUserAtom, null);
@@ -36,12 +38,15 @@ export function useChangePasswordMutation() {
       }
 
       try {
+        // 변경 후 사용자 정보 다시 조회
         const me = await getMe();
         const user = mapMeResponseToCurrentUser(me, session);
+        // 사용자 정보와 세션 확인 상태 저장
         store.set(currentUserAtom, user);
+        store.set(sessionVerifiedAtom, getSessionKey(session));
         return { profileLoaded: true, user };
       } catch {
-        // 비밀번호 변경 자체는 성공했으므로 에러로 처리하지 않음
+         // 비밀번호 변경은 성공했으므로 조회 실패만 전달
         return { profileLoaded: false };
       }
     },
