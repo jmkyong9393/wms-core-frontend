@@ -2,13 +2,10 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createStore, Provider as JotaiProvider } from "jotai";
-import type { Role } from "@/features/auth/types/authTypes";
+import type { CurrentUser, Role } from "@/features/auth/types/authTypes";
 import type { MockAccount } from "@/mocks/data/accounts";
 
-// jsdom/Node의 localStorage 충돌을 피하기 위해 returnService.test.ts / getPresignedUrl.test.ts와
-// 동일하게 in-memory mock으로 전역 localStorage를 stub한다.
-// authAtoms.ts는 모듈 로드 시점에 atomWithStorage(...)를 즉시 실행하므로,
-// 이 stub이 먼저 걸려 있어야 하고 EmployeeManagementView는 동적 import로 그 이후에 불러온다.
+// 테스트용 메모리 localStorage
 const localStorageMock = (() => {
   let store: Record<string, string> = {};
   return {
@@ -46,21 +43,38 @@ vi.mock("@/features/employees/api/employeeService", () => ({
   updateEmployeeRole: vi.fn(),
 }));
 
+// 역할별 인증 상태로 직원 관리 화면 렌더링
 async function renderAs(role: Role) {
   const { EmployeeManagementView } = await import("./EmployeeManagementView");
-  const { authTokenAtom } = await import("@/features/auth/store/authAtoms");
+  const { authTokenAtom, currentUserAtom } = await import("@/features/auth/store/authAtoms");
   const { buildMockJwt } = await import("@/mocks/mockJwt");
 
+  const employeeId = role === "MASTER" ? "M0001" : "A0001";
+  const name = role === "MASTER" ? "장문경" : "소한민";
+
   const account: MockAccount = {
-    employee_id: role === "MASTER" ? "M0001" : "A0001",
+    id: role === "MASTER" ? "test-master-id" : "test-admin-id",
+    employee_id: employeeId,
     password: "irrelevant",
     role,
-    name: role === "MASTER" ? "장문경" : "소한민",
+    name,
+    email: null,
+    status: "ACTIVE",
     must_change_password: false,
   };
 
+  const currentUser: CurrentUser = {
+    employeeId,
+    name,
+    role,
+    mustChangePassword: false,
+    tenantId: "wms-local",
+  };
+
   const store = createStore();
+  // JWT 세션과 사용자 프로필 설정
   store.set(authTokenAtom, buildMockJwt(account));
+  store.set(currentUserAtom, currentUser);
 
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
 

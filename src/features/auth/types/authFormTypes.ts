@@ -8,12 +8,11 @@ export interface LoginFieldErrors {
   password?: string;
 }
 
+// 비밀번호 변경 화면 상태
 export type ChangePasswordFormStatus =
   | "idle"
-  | "submitting"
-  | "success"
   | "error"
-  | "unavailable";
+  | "profileRecovery"; 
 
 export interface ChangePasswordFormValues {
   currentPassword: string;
