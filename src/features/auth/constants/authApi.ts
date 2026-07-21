@@ -5,3 +5,5 @@
  * 로그인 주소 변경 시 이 파일만 수정
  */
 export const LOGIN_ENDPOINT = "/api/v1/auth/login";
+export const ME_ENDPOINT = "/api/v1/auth/me";
+export const CHANGE_PASSWORD_ENDPOINT = "/api/v1/auth/password";

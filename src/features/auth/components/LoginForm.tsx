@@ -2,20 +2,17 @@
 
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useStore } from "jotai";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PasswordInput } from "@/features/auth/components/PasswordInput";
 import { isRequiredFieldFilled } from "@/features/auth/utils/validation";
 import { useLoginMutation } from "@/features/auth/hooks/useLoginMutation";
-import { currentUserAtom } from "@/features/auth/store/authAtoms";
 import { ROLE_HOME_ROUTE } from "@/features/auth/constants/roleRoutes";
 import type { LoginFieldErrors, LoginFormValues } from "@/features/auth/types/authFormTypes";
 
 export function LoginForm() {
   const router = useRouter();
-  const store = useStore();
   const loginMutation = useLoginMutation();
 
   const [values, setValues] = useState<LoginFormValues>({
@@ -53,18 +50,18 @@ export function LoginForm() {
     setGuestPending(false);
 
     loginMutation.mutate(values, {
-      onSuccess: () => {
-        // 로그인 성공 후 전역 상태에 저장된 최신 사용자 정보 조회
-        const user = store.get(currentUserAtom);
-        if (!user) return;
+      onSuccess: (result) => {
+        if (result.mustChangePassword) {
+          router.push("/change-password");
+          return;
+        }
 
-        if (user.role === "GUEST") {
-          // 사용자 정보 변환 실패 시 이동 중단
+        if (result.user.role === "GUEST") {
           setGuestPending(true);
           return;
         }
 
-        const destination = ROLE_HOME_ROUTE[user.role];
+        const destination = ROLE_HOME_ROUTE[result.user.role];
         if (destination) {
           router.push(destination);
         }

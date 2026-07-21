@@ -3,11 +3,14 @@
 import { useAtomValue } from 'jotai';
 import { pendingUploadCountAtom } from '@/features/inbound/store/uploadQueueAtoms';
 import { LogoutButton } from '@/features/auth/components/LogoutButton';
+import { currentUserAtom } from '@/features/auth/store/authAtoms';
+import { maskName } from '@/features/auth/utils/maskName';
 import { Bell, User, CloudUpload, CloudOff } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 
 export default function Header() {
   const pendingCount = useAtomValue(pendingUploadCountAtom);
+  const currentUser = useAtomValue(currentUserAtom);
   const isOnline = true; // 추후 PWA navigator.onLine 연동
 
   const pathname = usePathname();
@@ -62,7 +65,7 @@ export default function Header() {
             <User className="w-4 h-4" />
           </div>
           <span className="ml-2 text-sm font-medium text-gray-700 hidden md:block">
-            현장 관리자
+            {currentUser ? maskName(currentUser.name) : '현장 관리자'}
           </span>
           <LogoutButton className="ml-3 p-2 text-gray-400 hover:text-gray-600 transition-colors rounded-full hover:bg-gray-100" />
         </div>
