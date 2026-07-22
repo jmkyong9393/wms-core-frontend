@@ -1,5 +1,5 @@
 import type { ColumnDef } from '@tanstack/react-table';
-import { getInventoryGradeBadgeStyle } from '@/features/inventory/utils/gradeBadge';
+import { getInventoryGradeBadgeStyle, getInventoryGradeLabel } from '@/features/inventory/utils/gradeBadge';
 import type { InventoryRow } from '@/features/inventory/types/inventoryRow';
 
 export const inventoryColumns: ColumnDef<InventoryRow>[] = [
@@ -21,7 +21,7 @@ export const inventoryColumns: ColumnDef<InventoryRow>[] = [
       const grade = getValue<string>();
       return (
         <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${getInventoryGradeBadgeStyle(grade)}`}>
-          {grade}
+          {getInventoryGradeLabel(grade)}
         </span>
       );
     },

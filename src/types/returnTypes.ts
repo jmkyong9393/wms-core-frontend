@@ -4,6 +4,7 @@
  * AI 멀티에이전트 파이프라인의 검수 상태(PENDING → PROCESSING → COMPLETED/HITL_WAITING)와
  * WMS 재고 라우팅 결정(RESTOCKED/REJECTED)을 프론트엔드에서 타입 안전하게 다루기 위한 정의.
  */
+import type { BookGrade } from "@/features/inspections/types/inspection";
 
 /** 검수 작업의 비동기 대기열 상태 */
 export type InspectionJobStatus =
@@ -15,8 +16,8 @@ export type InspectionJobStatus =
 /** 검수 모드 (신간 반품 vs 중고 매입) */
 export type InspectionMode = "NEW_RETURN" | "USED_PURCHASE";
 
-/** 도서 상태 등급 (5단계) */
-export type BookGrade = "MINT" | "EXCELLENT" | "GOOD" | "FAIR" | "SCRAP";
+/** 도서 상태 등급 (4단계) */
+export type { BookGrade };
 
 /** WMS 재고 라우팅 결정 */
 export type WmsDecision = "RESTOCKED" | "REJECTED";

@@ -14,7 +14,7 @@ const BOOKS: Array<{ title: string; isbn: string }> = [
 
 const ZONES = ['A-1-3', 'A-1-4', 'B-2-1', 'B-2-2', 'C-1-1'];
 
-const GRADES: readonly InventoryGrade[] = ['MINT', 'EXCELLENT', 'GOOD', 'NORMAL', 'REJECT'];
+const GRADES: readonly InventoryGrade[] = ['MINT', 'EXCELLENT', 'NORMAL', 'REJECT'];
 
 // 테스트용 재고 데이터 생성
 function buildInventorySeed(): InventoryRow[] {

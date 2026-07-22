@@ -30,6 +30,7 @@ import InspectionBadges from '@/features/inspections/components/InspectionBadges
 import { useInspectionHistoryQuery } from '@/features/inspections/hooks/useInspectionHistoryQuery';
 import { inspectionHistoryColumns } from '@/features/inspections/components/inspectionHistoryColumns';
 import { BOOK_GRADES, type BookGrade } from '@/features/inspections/types/inspection';
+import { getGradeLabel } from '@/features/inspections/utils/gradeBadge';
 import type { InspectionHistoryRow } from '@/features/inspections/types/inspectionHistory';
 import { toInspectionHistoryExportRow } from '@/features/inspections/utils/toInspectionHistoryExportRow';
 import { exportRowsToCsv, exportRowsToXlsx } from '@/lib/export/tableExport';
@@ -126,7 +127,7 @@ export function InspectionHistoryGridView() {
             <SelectItem value={GRADE_FILTER_ALL}>전체 등급</SelectItem>
             {BOOK_GRADES.map((grade) => (
               <SelectItem key={grade} value={grade}>
-                {grade}
+                {getGradeLabel(grade)}
               </SelectItem>
             ))}
           </SelectContent>

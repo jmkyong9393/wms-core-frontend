@@ -13,7 +13,7 @@ export interface AgentLogStep {
   reasonCode?: string;
 }
 
-export const BOOK_GRADES = ['MINT', 'EXCELLENT', 'GOOD', 'FAIR', 'SCRAP'] as const;
+export const BOOK_GRADES = ['MINT', 'EXCELLENT', 'NORMAL', 'REJECT'] as const;
 
 export type BookGrade = (typeof BOOK_GRADES)[number];
 

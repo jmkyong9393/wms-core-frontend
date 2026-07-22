@@ -39,7 +39,7 @@ export const mockInspectionRecords: MockInspectionRecord[] = [
   {
     id: 'insp_002',
     bookTitle: '프로젝트 헤일메리',
-    finalGrade: 'GOOD',
+    finalGrade: 'NORMAL',
     isFastTrack: false,
     inspectedAt: '2026-07-03T10:30:00.000Z',
     steps: [
@@ -69,7 +69,7 @@ export const mockInspectionRecords: MockInspectionRecord[] = [
         stepOrder: 4,
         agentName: 'Report',
         executionStatus: 'COMPLETED',
-        resultSummary: 'GOOD 등급 판정, 감가 매입 처리 및 사유서 작성',
+        resultSummary: 'NORMAL 등급 판정, 감가 매입 처리 및 사유서 작성',
       },
     ],
   },
@@ -113,7 +113,7 @@ export const mockInspectionRecords: MockInspectionRecord[] = [
   {
     id: 'insp_004',
     bookTitle: '사피엔스',
-    finalGrade: 'FAIR',
+    finalGrade: 'NORMAL',
     isFastTrack: false,
     inspectedAt: '2026-07-06T11:05:00.000Z',
     steps: [
@@ -128,8 +128,8 @@ export const mockInspectionRecords: MockInspectionRecord[] = [
         stepOrder: 2,
         agentName: 'Policy',
         executionStatus: 'COMPLETED',
-        resultSummary: 'UBCI 감점 58점 산출 (내지 손상 다수로 매입 기준 미달)',
-        reasoning: '페이지 단위 감점 누적 결과 매입 가능 등급 하한 미달',
+        resultSummary: 'UBCI 감점 58점 산출 (내지 손상 다수, 구조 결함 감점 반영)',
+        reasoning: '페이지 단위 감점 누적 결과 B등급(NORMAL) 구간 내 매입 가능 판정',
       },
       {
         stepOrder: 3,
@@ -137,13 +137,13 @@ export const mockInspectionRecords: MockInspectionRecord[] = [
         executionStatus: 'COMPLETED',
         resultSummary: 'Vision/Policy 판정 교차 검증 완료, 환각 소견 없음',
         reasoning: '탐지된 결함 개수와 감점 근거가 일치함을 확인',
-        reasonCode: 'PURCHASE_REJECTED',
+        reasonCode: 'DEFECT_CONFIRMED',
       },
       {
         stepOrder: 4,
         agentName: 'Report',
         executionStatus: 'COMPLETED',
-        resultSummary: 'FAIR 등급 판정, 매입 불가(반송) 처리 및 거절 사유서 작성',
+        resultSummary: 'NORMAL 등급 판정, 감가 매입 처리 및 사유서 작성',
       },
     ],
   },
@@ -184,7 +184,7 @@ export const mockInspectionRecords: MockInspectionRecord[] = [
   {
     id: 'insp_006',
     bookTitle: '코스모스',
-    finalGrade: 'GOOD',
+    finalGrade: 'NORMAL',
     isFastTrack: false,
     inspectedAt: '2026-07-08T13:15:00.000Z',
     steps: [
@@ -212,7 +212,7 @@ export const mockInspectionRecords: MockInspectionRecord[] = [
         stepOrder: 4,
         agentName: 'Report',
         executionStatus: 'COMPLETED',
-        resultSummary: 'GOOD 등급 판정, 감가 매입 처리 및 사유서 작성',
+        resultSummary: 'NORMAL 등급 판정, 감가 매입 처리 및 사유서 작성',
       },
     ],
   },
@@ -253,7 +253,7 @@ export const mockInspectionRecords: MockInspectionRecord[] = [
   {
     id: 'insp_008',
     bookTitle: '데미안',
-    finalGrade: 'SCRAP',
+    finalGrade: 'REJECT',
     isFastTrack: false,
     inspectedAt: '2026-07-10T16:30:00.000Z',
     steps: [
@@ -281,7 +281,7 @@ export const mockInspectionRecords: MockInspectionRecord[] = [
         stepOrder: 4,
         agentName: 'Report',
         executionStatus: 'COMPLETED',
-        resultSummary: 'SCRAP 등급 판정, 즉시 폐기 처리 및 거절 사유서 작성',
+        resultSummary: 'REJECT 판정, 즉시 폐기 처리 및 거절 사유서 작성',
       },
     ],
   },
@@ -321,7 +321,7 @@ export const mockInspectionRecords: MockInspectionRecord[] = [
   {
     id: 'insp_010',
     bookTitle: '넛지',
-    finalGrade: 'FAIR',
+    finalGrade: 'NORMAL',
     isFastTrack: false,
     inspectedAt: '2026-07-12T11:45:00.000Z',
     steps: [
@@ -342,20 +342,20 @@ export const mockInspectionRecords: MockInspectionRecord[] = [
         agentName: 'Critic',
         executionStatus: 'COMPLETED',
         resultSummary: 'Vision/Policy 판정 교차 검증 완료, 환각 소견 없음',
-        reasonCode: 'PURCHASE_REJECTED',
+        reasonCode: 'DEFECT_CONFIRMED',
       },
       {
         stepOrder: 4,
         agentName: 'Report',
         executionStatus: 'COMPLETED',
-        resultSummary: 'FAIR 등급 판정, 매입 불가(반송) 처리 및 거절 사유서 작성',
+        resultSummary: 'NORMAL 등급 판정, 감가 매입 처리 및 사유서 작성',
       },
     ],
   },
   {
     id: 'insp_011',
     bookTitle: '팩트풀니스',
-    finalGrade: 'GOOD',
+    finalGrade: 'NORMAL',
     isFastTrack: false,
     inspectedAt: '2026-07-13T09:00:00.000Z',
     steps: [
@@ -382,7 +382,7 @@ export const mockInspectionRecords: MockInspectionRecord[] = [
         stepOrder: 4,
         agentName: 'Report',
         executionStatus: 'COMPLETED',
-        resultSummary: 'GOOD 등급 판정, 감가 매입 처리 및 사유서 작성',
+        resultSummary: 'NORMAL 등급 판정, 감가 매입 처리 및 사유서 작성',
       },
     ],
   },

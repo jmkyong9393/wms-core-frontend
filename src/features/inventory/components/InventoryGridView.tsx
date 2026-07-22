@@ -22,6 +22,7 @@ import {
 import { useInventoryQuery } from '@/features/inventory/hooks/useInventoryQuery';
 import { inventoryColumns } from '@/features/inventory/components/inventoryColumns';
 import { INVENTORY_GRADES, type InventoryGrade } from '@/features/inventory/constants/grades';
+import { getInventoryGradeLabel } from '@/features/inventory/utils/gradeBadge';
 import { toInventoryExportRow } from '@/features/inventory/utils/toInventoryExportRow';
 import { exportRowsToCsv, exportRowsToXlsx } from '@/lib/export/tableExport';
 
@@ -112,7 +113,7 @@ export function InventoryGridView() {
             <SelectItem value={GRADE_FILTER_ALL}>전체 등급</SelectItem>
             {INVENTORY_GRADES.map((grade) => (
               <SelectItem key={grade} value={grade}>
-                {grade}
+                {getInventoryGradeLabel(grade)}
               </SelectItem>
             ))}
           </SelectContent>

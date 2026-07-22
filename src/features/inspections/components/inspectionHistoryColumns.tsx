@@ -1,5 +1,5 @@
 import type { ColumnDef } from '@tanstack/react-table';
-import { GRADE_BADGE_STYLE } from '@/features/inspections/utils/gradeBadge';
+import { getGradeBadgeStyle, getGradeLabel } from '@/features/inspections/utils/gradeBadge';
 import type { InspectionHistoryRow } from '@/features/inspections/types/inspectionHistory';
 
 export const inspectionHistoryColumns: ColumnDef<InspectionHistoryRow>[] = [
@@ -15,8 +15,8 @@ export const inspectionHistoryColumns: ColumnDef<InspectionHistoryRow>[] = [
     cell: ({ getValue }) => {
       const grade = getValue<InspectionHistoryRow['finalGrade']>();
       return (
-        <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${GRADE_BADGE_STYLE[grade]}`}>
-          {grade}
+        <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${getGradeBadgeStyle(grade)}`}>
+          {getGradeLabel(grade)}
         </span>
       );
     },

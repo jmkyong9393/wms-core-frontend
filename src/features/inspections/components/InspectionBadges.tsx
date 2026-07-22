@@ -1,5 +1,5 @@
 import { cn } from '@/lib/utils';
-import { GRADE_BADGE_STYLE } from '@/features/inspections/utils/gradeBadge';
+import { getGradeBadgeStyle, getGradeLabel } from '@/features/inspections/utils/gradeBadge';
 import type { BookGrade } from '@/features/inspections/types/inspection';
 
 interface InspectionBadgesProps {
@@ -20,8 +20,8 @@ export default function InspectionBadges({ isFastTrack, finalGrade, className }:
       )}
 
       {/* 최종 등급에 맞는 색상 적용 */}
-      <span className={`text-xs font-semibold rounded-full px-2 py-0.5 ${GRADE_BADGE_STYLE[finalGrade]}`}>
-        {finalGrade}
+      <span className={`text-xs font-semibold rounded-full px-2 py-0.5 ${getGradeBadgeStyle(finalGrade)}`}>
+        {getGradeLabel(finalGrade)}
       </span>
     </div>
   );
