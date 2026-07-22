@@ -56,9 +56,7 @@ export const isAuthenticatedAtom = atom((get) => get(sessionAtom) !== null);
 // 로그인 사용자 정보 저장
 export const currentUserAtom = atomWithStorage<CurrentUser | null>(
   CURRENT_USER_STORAGE_KEY,
-  null,
-  undefined,
-  { getOnInit: true }
+  null
 );
 
 // 현재 세션의 서버 확인 완료 상태
