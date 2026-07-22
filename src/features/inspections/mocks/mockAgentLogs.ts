@@ -1,13 +1,19 @@
 import type { MockInspectionRecord } from '@/features/inspections/types/inspection';
 
-// 검수 처리 내역 화면에서 사용할 임시 데이터
+// 검수 이력 화면용 mock 데이터
+// TODO: 백엔드 검수 이력 API 연동 후 실제 응답으로 교체
 export const mockInspectionRecords: MockInspectionRecord[] = [
   {
     id: 'insp_001',
+    bookId: 'book_001',
     bookTitle: '싯다르타',
     finalGrade: 'MINT',
     isFastTrack: true,
+    status: 'APPROVED',
+    ubciScore: 100,
+    finalReport: 'Auto-refund 승인 및 UBCI 디지털 품질 보증서 발급',
     inspectedAt: '2026-07-01T09:12:00.000Z',
+    updatedAt: '2026-07-01T09:14:00.000Z',
     steps: [
       {
         stepOrder: 1,
@@ -38,10 +44,16 @@ export const mockInspectionRecords: MockInspectionRecord[] = [
   },
   {
     id: 'insp_002',
+    bookId: 'book_002',
     bookTitle: '프로젝트 헤일메리',
     finalGrade: 'NORMAL',
     isFastTrack: false,
+    status: 'APPROVED',
+    ubciScore: 88,
+    finalReport: 'NORMAL 등급 판정, 감가 매입 처리 및 사유서 작성',
+    reasonCodes: ['DEFECT_CONFIRMED'],
     inspectedAt: '2026-07-03T10:30:00.000Z',
+    updatedAt: '2026-07-03T10:34:00.000Z',
     steps: [
       {
         stepOrder: 1,
@@ -75,10 +87,16 @@ export const mockInspectionRecords: MockInspectionRecord[] = [
   },
   {
     id: 'insp_003',
+    bookId: 'book_003',
     bookTitle: '신경끄기의 기술',
     finalGrade: 'EXCELLENT',
     isFastTrack: false,
+    status: 'APPROVED',
+    ubciScore: 96,
+    finalReport: 'EXCELLENT 등급 판정, 정상 재고 편입 및 사유서 작성',
+    reasonCodes: ['DEFECT_CONFIRMED'],
     inspectedAt: '2026-07-05T14:20:00.000Z',
+    updatedAt: '2026-07-05T14:23:00.000Z',
     steps: [
       {
         stepOrder: 1,
@@ -112,10 +130,16 @@ export const mockInspectionRecords: MockInspectionRecord[] = [
   },
   {
     id: 'insp_004',
+    bookId: 'book_004',
     bookTitle: '사피엔스',
     finalGrade: 'NORMAL',
     isFastTrack: false,
+    status: 'APPROVED',
+    ubciScore: 42,
+    finalReport: 'NORMAL 등급 판정, 감가 매입 처리 및 사유서 작성',
+    reasonCodes: ['DEFECT_CONFIRMED'],
     inspectedAt: '2026-07-06T11:05:00.000Z',
+    updatedAt: '2026-07-06T11:11:00.000Z',
     steps: [
       {
         stepOrder: 1,
@@ -149,10 +173,15 @@ export const mockInspectionRecords: MockInspectionRecord[] = [
   },
   {
     id: 'insp_005',
+    bookId: 'book_005',
     bookTitle: '이기적 유전자',
     finalGrade: 'MINT',
     isFastTrack: true,
+    status: 'APPROVED',
+    ubciScore: 100,
+    finalReport: 'Auto-refund 승인 및 UBCI 디지털 품질 보증서 발급',
     inspectedAt: '2026-07-07T09:40:00.000Z',
+    updatedAt: '2026-07-07T09:42:00.000Z',
     steps: [
       {
         stepOrder: 1,
@@ -183,10 +212,16 @@ export const mockInspectionRecords: MockInspectionRecord[] = [
   },
   {
     id: 'insp_006',
+    bookId: 'book_006',
     bookTitle: '코스모스',
     finalGrade: 'NORMAL',
     isFastTrack: false,
+    status: 'APPROVED',
+    ubciScore: 92,
+    finalReport: 'NORMAL 등급 판정, 감가 매입 처리 및 사유서 작성',
+    reasonCodes: ['DEFECT_CONFIRMED'],
     inspectedAt: '2026-07-08T13:15:00.000Z',
+    updatedAt: '2026-07-08T13:19:00.000Z',
     steps: [
       {
         stepOrder: 1,
@@ -218,10 +253,16 @@ export const mockInspectionRecords: MockInspectionRecord[] = [
   },
   {
     id: 'insp_007',
+    bookId: 'book_007',
     bookTitle: '총, 균, 쇠',
     finalGrade: 'EXCELLENT',
     isFastTrack: false,
+    status: 'APPROVED',
+    ubciScore: 97,
+    finalReport: 'EXCELLENT 등급 판정, 정상 재고 편입 및 사유서 작성',
+    reasonCodes: ['DEFECT_CONFIRMED'],
     inspectedAt: '2026-07-09T15:50:00.000Z',
+    updatedAt: '2026-07-09T15:54:00.000Z',
     steps: [
       {
         stepOrder: 1,
@@ -252,10 +293,16 @@ export const mockInspectionRecords: MockInspectionRecord[] = [
   },
   {
     id: 'insp_008',
+    bookId: 'book_008',
     bookTitle: '데미안',
     finalGrade: 'REJECT',
     isFastTrack: false,
+    status: 'REJECTED',
+    ubciScore: 10,
+    finalReport: 'REJECT 판정, 즉시 폐기 처리 및 거절 사유서 작성',
+    reasonCodes: ['PURCHASE_REJECTED'],
     inspectedAt: '2026-07-10T16:30:00.000Z',
+    updatedAt: '2026-07-10T16:36:00.000Z',
     steps: [
       {
         stepOrder: 1,
@@ -287,10 +334,15 @@ export const mockInspectionRecords: MockInspectionRecord[] = [
   },
   {
     id: 'insp_009',
+    bookId: 'book_009',
     bookTitle: '유혹하는 글쓰기',
     finalGrade: 'MINT',
     isFastTrack: true,
+    status: 'APPROVED',
+    ubciScore: 100,
+    finalReport: 'Auto-refund 승인 및 UBCI 디지털 품질 보증서 발급',
     inspectedAt: '2026-07-11T10:05:00.000Z',
+    updatedAt: '2026-07-11T10:07:00.000Z',
     steps: [
       {
         stepOrder: 1,
@@ -320,10 +372,16 @@ export const mockInspectionRecords: MockInspectionRecord[] = [
   },
   {
     id: 'insp_010',
+    bookId: 'book_010',
     bookTitle: '넛지',
     finalGrade: 'NORMAL',
     isFastTrack: false,
+    status: 'APPROVED',
+    ubciScore: 55,
+    finalReport: 'NORMAL 등급 판정, 감가 매입 처리 및 사유서 작성',
+    reasonCodes: ['DEFECT_CONFIRMED'],
     inspectedAt: '2026-07-12T11:45:00.000Z',
+    updatedAt: '2026-07-12T11:50:00.000Z',
     steps: [
       {
         stepOrder: 1,
@@ -354,10 +412,16 @@ export const mockInspectionRecords: MockInspectionRecord[] = [
   },
   {
     id: 'insp_011',
+    bookId: 'book_011',
     bookTitle: '팩트풀니스',
     finalGrade: 'NORMAL',
     isFastTrack: false,
+    status: 'APPROVED',
+    ubciScore: 90,
+    finalReport: 'NORMAL 등급 판정, 감가 매입 처리 및 사유서 작성',
+    reasonCodes: ['DEFECT_CONFIRMED'],
     inspectedAt: '2026-07-13T09:00:00.000Z',
+    updatedAt: '2026-07-13T09:05:00.000Z',
     steps: [
       {
         stepOrder: 1,
@@ -388,10 +452,16 @@ export const mockInspectionRecords: MockInspectionRecord[] = [
   },
   {
     id: 'insp_012',
+    bookId: 'book_012',
     bookTitle: '군주론',
     finalGrade: 'EXCELLENT',
     isFastTrack: false,
+    status: 'APPROVED',
+    ubciScore: 95,
+    finalReport: 'EXCELLENT 등급 판정, 정상 재고 편입 및 사유서 작성',
+    reasonCodes: ['DEFECT_CONFIRMED'],
     inspectedAt: '2026-07-14T14:00:00.000Z',
+    updatedAt: '2026-07-14T14:04:00.000Z',
     steps: [
       {
         stepOrder: 1,

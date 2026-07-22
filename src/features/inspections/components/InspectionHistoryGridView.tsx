@@ -19,23 +19,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import AgentLogAccordion from '@/features/inspections/components/AgentLogAccordion';
-import InspectionBadges from '@/features/inspections/components/InspectionBadges';
 import { useInspectionHistoryQuery } from '@/features/inspections/hooks/useInspectionHistoryQuery';
-import { inspectionHistoryColumns } from '@/features/inspections/components/inspectionHistoryColumns';
-import { BOOK_GRADES, type BookGrade } from '@/features/inspections/types/inspection';
+import { createInspectionHistoryColumns } from '@/features/inspections/components/inspectionHistoryColumns';
+import { InspectionHistoryDetailDialog } from '@/features/inspections/components/InspectionHistoryDetailDialog';
+import { BOOK_GRADES, INSPECTION_STATUSES, type BookGrade, type InspectionStatus } from '@/features/inspections/types/inspection';
 import { getGradeLabel } from '@/features/inspections/utils/gradeBadge';
+import { getStatusLabel } from '@/features/inspections/utils/statusBadge';
 import type { InspectionHistoryRow } from '@/features/inspections/types/inspectionHistory';
 import { toInspectionHistoryExportRow } from '@/features/inspections/utils/toInspectionHistoryExportRow';
 import { exportRowsToCsv, exportRowsToXlsx } from '@/lib/export/tableExport';
 
 const GRADE_FILTER_ALL = 'ALL' as const;
+const STATUS_FILTER_ALL = 'ALL' as const;
 const FAST_TRACK_ALL = 'ALL' as const;
 const FAST_TRACK_ONLY = 'FAST_TRACK' as const;
 const FAST_TRACK_NORMAL = 'NORMAL' as const;
@@ -43,12 +38,16 @@ type FastTrackFilter = typeof FAST_TRACK_ALL | typeof FAST_TRACK_ONLY | typeof F
 
 const EXPORT_FILENAME = '검수_이력';
 
+// mock 데이터 기반 검수 이력 필터 및 Export
+// TODO: 백엔드 검수 이력 API 연동 후 교체
 export function InspectionHistoryGridView() {
   const { data, isLoading, isError } = useInspectionHistoryQuery();
 
   const [keyword, setKeyword] = useState('');
   const [gradeFilter, setGradeFilter] = useState<BookGrade | typeof GRADE_FILTER_ALL>(GRADE_FILTER_ALL);
+  const [statusFilter, setStatusFilter] = useState<InspectionStatus | typeof STATUS_FILTER_ALL>(STATUS_FILTER_ALL);
   const [fastTrackFilter, setFastTrackFilter] = useState<FastTrackFilter>(FAST_TRACK_ALL);
+  const [reasonKeyword, setReasonKeyword] = useState('');
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
 
@@ -61,26 +60,44 @@ export function InspectionHistoryGridView() {
   const filteredRows = useMemo(() => {
     const rows = data ?? [];
     const normalizedKeyword = keyword.trim().toLowerCase();
+    const normalizedReasonKeyword = reasonKeyword.trim().toLowerCase();
 
     return rows.filter((row) => {
       const matchesKeyword = !normalizedKeyword || row.bookTitle.toLowerCase().includes(normalizedKeyword);
       const matchesGrade = gradeFilter === GRADE_FILTER_ALL || row.finalGrade === gradeFilter;
+      const matchesStatus = statusFilter === STATUS_FILTER_ALL || row.status === statusFilter;
       const matchesFastTrack =
         fastTrackFilter === FAST_TRACK_ALL ||
         (fastTrackFilter === FAST_TRACK_ONLY && row.isFastTrack) ||
         (fastTrackFilter === FAST_TRACK_NORMAL && !row.isFastTrack);
+      const matchesReasonKeyword =
+        !normalizedReasonKeyword ||
+        (row.reasonCodes ?? []).some((code) => code.toLowerCase().includes(normalizedReasonKeyword));
 
       const rowDate = row.inspectedAt.slice(0, 10);
       const matchesDateFrom = !dateFrom || rowDate >= dateFrom;
       const matchesDateTo = !dateTo || rowDate <= dateTo;
 
-      return matchesKeyword && matchesGrade && matchesFastTrack && matchesDateFrom && matchesDateTo;
+      return (
+        matchesKeyword &&
+        matchesGrade &&
+        matchesStatus &&
+        matchesFastTrack &&
+        matchesReasonKeyword &&
+        matchesDateFrom &&
+        matchesDateTo
+      );
     });
-  }, [data, keyword, gradeFilter, fastTrackFilter, dateFrom, dateTo]);
+  }, [data, keyword, gradeFilter, statusFilter, fastTrackFilter, reasonKeyword, dateFrom, dateTo]);
+
+  const columns = useMemo(
+    () => createInspectionHistoryColumns({ onOpenDetail: setSelectedRow }),
+    [],
+  );
 
   const table = useReactTable({
     data: filteredRows,
-    columns: inspectionHistoryColumns,
+    columns,
     state: { sorting, pagination },
     onSortingChange: setSorting,
     onPaginationChange: setPagination,
@@ -148,6 +165,34 @@ export function InspectionHistoryGridView() {
             <SelectItem value={FAST_TRACK_NORMAL}>표준 검수</SelectItem>
           </SelectContent>
         </Select>
+        <Select
+          value={statusFilter}
+          onValueChange={(value) => {
+            setStatusFilter(value as InspectionStatus | typeof STATUS_FILTER_ALL);
+            resetToFirstPage();
+          }}
+        >
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={STATUS_FILTER_ALL}>전체 상태</SelectItem>
+            {INSPECTION_STATUSES.map((status) => (
+              <SelectItem key={status} value={status}>
+                {getStatusLabel(status)}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Input
+          value={reasonKeyword}
+          onChange={(e) => {
+            setReasonKeyword(e.target.value);
+            resetToFirstPage();
+          }}
+          placeholder="AI 판정 사유 검색"
+          className="max-w-xs"
+        />
         <Input
           type="date"
           value={dateFrom}
@@ -199,19 +244,7 @@ export function InspectionHistoryGridView() {
         onRowClick={(row) => setSelectedRow(row)}
       />
 
-      <Dialog open={selectedRow !== null} onOpenChange={(open) => !open && setSelectedRow(null)}>
-        <DialogContent>
-          {selectedRow && (
-            <>
-              <DialogHeader>
-                <DialogTitle>{selectedRow.bookTitle}</DialogTitle>
-                <InspectionBadges isFastTrack={selectedRow.isFastTrack} finalGrade={selectedRow.finalGrade} />
-              </DialogHeader>
-              <AgentLogAccordion record={selectedRow} />
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
+      <InspectionHistoryDetailDialog row={selectedRow} onClose={() => setSelectedRow(null)} />
     </div>
   );
 }

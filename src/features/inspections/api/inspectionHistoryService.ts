@@ -2,16 +2,21 @@ import { mockInspectionRecords } from '@/features/inspections/mocks/mockAgentLog
 import type { MockInspectionRecord } from '@/features/inspections/types/inspection';
 import type { InspectionHistoryRow } from '@/features/inspections/types/inspectionHistory';
 
-// 검수 이력 데이터 조회
-// 현재는 임시 데이터를 사용하며, 추후 실제 API 요청으로 변경
-
+// mock 검수 데이터를 이력 Grid 형식으로 변환 
+// TODO: 백엔드 검수 이력 조회 API 연동 후 교체
 function toInspectionHistoryRow(record: MockInspectionRecord): InspectionHistoryRow {
   return {
     id: record.id,
+    bookId: record.bookId,
     bookTitle: record.bookTitle,
     finalGrade: record.finalGrade,
     isFastTrack: record.isFastTrack,
+    status: record.status,
+    ubciScore: record.ubciScore,
+    finalReport: record.finalReport,
+    reasonCodes: record.reasonCodes,
     inspectedAt: record.inspectedAt,
+    updatedAt: record.updatedAt,
     steps: record.steps,
   };
 }
