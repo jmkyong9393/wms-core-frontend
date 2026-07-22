@@ -1,5 +1,5 @@
-import InspectionsView from '@/features/inspections/components/InspectionsView';
+import { InspectionHistoryGridView } from '@/features/inspections/components/InspectionHistoryGridView';
 
 export default function InspectionsPage() {
-  return <InspectionsView />;
+  return <InspectionHistoryGridView />;
 }

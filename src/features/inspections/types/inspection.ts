@@ -13,12 +13,15 @@ export interface AgentLogStep {
   reasonCode?: string;
 }
 
-export type BookGrade = 'MINT' | 'EXCELLENT' | 'GOOD' | 'FAIR' | 'SCRAP';
+export const BOOK_GRADES = ['MINT', 'EXCELLENT', 'GOOD', 'FAIR', 'SCRAP'] as const;
+
+export type BookGrade = (typeof BOOK_GRADES)[number];
 
 export interface MockInspectionRecord {
   id: string;
   bookTitle: string;
   finalGrade: BookGrade;
   isFastTrack: boolean;
+  inspectedAt: string;
   steps: AgentLogStep[];
 }
