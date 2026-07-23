@@ -1,7 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // 모바일 테스트를 위한 로컬 IP 허용
+  allowedDevOrigins: ['192.168.0.50'],
 };
 
 export default nextConfig;
