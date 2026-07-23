@@ -5,7 +5,8 @@ import { useAtom } from "jotai";
 import { uploadQueueAtom } from "@/features/inbound/store/uploadQueueAtoms";
 import CameraScanner from "@/features/inbound/components/CameraScanner";
 import ReturnsInspector from "@/components/features/returns/ReturnsInspector";
-import { ToggleLeft, ToggleRight } from "lucide-react";
+import { ToggleLeft, ToggleRight, Package, ShoppingCart } from "lucide-react";
+import Link from "next/link";
 
 /**
  * InboundView — 반품 도서 검수 메인 화면
@@ -50,6 +51,24 @@ export default function InboundView() {
             ? "AI 멀티에이전트 전체 검수 플로우"
             : "가이드라인에 맞춰 도서를 촬영해주세요."}
         </p>
+      </div>
+
+      {/* FE-3.8 바코드 스캐너 기능 이동 버튼 */}
+      <div className="w-full max-w-md mb-4 flex gap-2">
+        <Link 
+          href="/inbound/putaway"
+          className="flex-1 flex items-center justify-center gap-2 bg-blue-50 hover:bg-blue-100 text-blue-700 py-3 rounded-xl font-semibold transition-colors border border-blue-200"
+        >
+          <Package className="h-5 w-5" />
+          입고 적치
+        </Link>
+        <Link 
+          href="/outbound/picking"
+          className="flex-1 flex items-center justify-center gap-2 bg-orange-50 hover:bg-orange-100 text-orange-700 py-3 rounded-xl font-semibold transition-colors border border-orange-200"
+        >
+          <ShoppingCart className="h-5 w-5" />
+          출고 피킹
+        </Link>
       </div>
 
       {/* 전체 AI 검수 모드 토글 */}
