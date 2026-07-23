@@ -1,0 +1,250 @@
+'use client';
+
+import { useMemo, useState } from 'react';
+import {
+  getCoreRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  useReactTable,
+  type PaginationState,
+  type SortingState,
+} from '@tanstack/react-table';
+import { DataGrid } from '@/components/common/data-grid/DataGrid';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { useInspectionHistoryQuery } from '@/features/inspections/hooks/useInspectionHistoryQuery';
+import { createInspectionHistoryColumns } from '@/features/inspections/components/inspectionHistoryColumns';
+import { InspectionHistoryDetailDialog } from '@/features/inspections/components/InspectionHistoryDetailDialog';
+import { BOOK_GRADES, INSPECTION_STATUSES, type BookGrade, type InspectionStatus } from '@/features/inspections/types/inspection';
+import { getGradeLabel } from '@/features/inspections/utils/gradeBadge';
+import { getStatusLabel } from '@/features/inspections/utils/statusBadge';
+import type { InspectionHistoryRow } from '@/features/inspections/types/inspectionHistory';
+import { toInspectionHistoryExportRow } from '@/features/inspections/utils/toInspectionHistoryExportRow';
+import { exportRowsToCsv, exportRowsToXlsx } from '@/lib/export/tableExport';
+
+const GRADE_FILTER_ALL = 'ALL' as const;
+const STATUS_FILTER_ALL = 'ALL' as const;
+const FAST_TRACK_ALL = 'ALL' as const;
+const FAST_TRACK_ONLY = 'FAST_TRACK' as const;
+const FAST_TRACK_NORMAL = 'NORMAL' as const;
+type FastTrackFilter = typeof FAST_TRACK_ALL | typeof FAST_TRACK_ONLY | typeof FAST_TRACK_NORMAL;
+
+const EXPORT_FILENAME = '검수_이력';
+
+// mock 데이터 기반 검수 이력 필터 및 Export
+// TODO: 백엔드 검수 이력 API 연동 후 교체
+export function InspectionHistoryGridView() {
+  const { data, isLoading, isError } = useInspectionHistoryQuery();
+
+  const [keyword, setKeyword] = useState('');
+  const [gradeFilter, setGradeFilter] = useState<BookGrade | typeof GRADE_FILTER_ALL>(GRADE_FILTER_ALL);
+  const [statusFilter, setStatusFilter] = useState<InspectionStatus | typeof STATUS_FILTER_ALL>(STATUS_FILTER_ALL);
+  const [fastTrackFilter, setFastTrackFilter] = useState<FastTrackFilter>(FAST_TRACK_ALL);
+  const [reasonKeyword, setReasonKeyword] = useState('');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
+
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: 10 });
+  const [selectedRow, setSelectedRow] = useState<InspectionHistoryRow | null>(null);
+
+  const resetToFirstPage = () => setPagination((p) => ({ ...p, pageIndex: 0 }));
+
+  const filteredRows = useMemo(() => {
+    const rows = data ?? [];
+    const normalizedKeyword = keyword.trim().toLowerCase();
+    const normalizedReasonKeyword = reasonKeyword.trim().toLowerCase();
+
+    return rows.filter((row) => {
+      const matchesKeyword = !normalizedKeyword || row.bookTitle.toLowerCase().includes(normalizedKeyword);
+      const matchesGrade = gradeFilter === GRADE_FILTER_ALL || row.finalGrade === gradeFilter;
+      const matchesStatus = statusFilter === STATUS_FILTER_ALL || row.status === statusFilter;
+      const matchesFastTrack =
+        fastTrackFilter === FAST_TRACK_ALL ||
+        (fastTrackFilter === FAST_TRACK_ONLY && row.isFastTrack) ||
+        (fastTrackFilter === FAST_TRACK_NORMAL && !row.isFastTrack);
+      const matchesReasonKeyword =
+        !normalizedReasonKeyword ||
+        (row.reasonCodes ?? []).some((code) => code.toLowerCase().includes(normalizedReasonKeyword));
+
+      const rowDate = row.inspectedAt.slice(0, 10);
+      const matchesDateFrom = !dateFrom || rowDate >= dateFrom;
+      const matchesDateTo = !dateTo || rowDate <= dateTo;
+
+      return (
+        matchesKeyword &&
+        matchesGrade &&
+        matchesStatus &&
+        matchesFastTrack &&
+        matchesReasonKeyword &&
+        matchesDateFrom &&
+        matchesDateTo
+      );
+    });
+  }, [data, keyword, gradeFilter, statusFilter, fastTrackFilter, reasonKeyword, dateFrom, dateTo]);
+
+  const columns = useMemo(
+    () => createInspectionHistoryColumns({ onOpenDetail: setSelectedRow }),
+    [],
+  );
+
+  const table = useReactTable({
+    data: filteredRows,
+    columns,
+    state: { sorting, pagination },
+    onSortingChange: setSorting,
+    onPaginationChange: setPagination,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+  });
+
+  const exportRows = table
+    .getPrePaginationRowModel()
+    .rows.map((row) => toInspectionHistoryExportRow(row.original));
+  const canExport = exportRows.length > 0;
+
+  return (
+    <div className="max-w-6xl mx-auto space-y-6">
+      <div>
+        <h2 className="text-2xl font-bold text-gray-800">검수 이력</h2>
+        <p className="text-sm text-gray-500 mt-1">
+          AI Agent 검수 결과 이력을 조회합니다. 행을 클릭하면 단계별 로그를 확인할 수 있습니다.
+        </p>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-2">
+        <Input
+          value={keyword}
+          onChange={(e) => {
+            setKeyword(e.target.value);
+            resetToFirstPage();
+          }}
+          placeholder="도서명 검색"
+          className="max-w-xs"
+        />
+        <Select
+          value={gradeFilter}
+          onValueChange={(value) => {
+            setGradeFilter(value as BookGrade | typeof GRADE_FILTER_ALL);
+            resetToFirstPage();
+          }}
+        >
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={GRADE_FILTER_ALL}>전체 등급</SelectItem>
+            {BOOK_GRADES.map((grade) => (
+              <SelectItem key={grade} value={grade}>
+                {getGradeLabel(grade)}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select
+          value={fastTrackFilter}
+          onValueChange={(value) => {
+            setFastTrackFilter(value as FastTrackFilter);
+            resetToFirstPage();
+          }}
+        >
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={FAST_TRACK_ALL}>전체</SelectItem>
+            <SelectItem value={FAST_TRACK_ONLY}>신속 검수</SelectItem>
+            <SelectItem value={FAST_TRACK_NORMAL}>표준 검수</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select
+          value={statusFilter}
+          onValueChange={(value) => {
+            setStatusFilter(value as InspectionStatus | typeof STATUS_FILTER_ALL);
+            resetToFirstPage();
+          }}
+        >
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={STATUS_FILTER_ALL}>전체 상태</SelectItem>
+            {INSPECTION_STATUSES.map((status) => (
+              <SelectItem key={status} value={status}>
+                {getStatusLabel(status)}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Input
+          value={reasonKeyword}
+          onChange={(e) => {
+            setReasonKeyword(e.target.value);
+            resetToFirstPage();
+          }}
+          placeholder="AI 판정 사유 검색"
+          className="max-w-xs"
+        />
+        <Input
+          type="date"
+          value={dateFrom}
+          onChange={(e) => {
+            setDateFrom(e.target.value);
+            resetToFirstPage();
+          }}
+          className="max-w-[160px]"
+        />
+        <span className="text-sm text-gray-400">~</span>
+        <Input
+          type="date"
+          value={dateTo}
+          onChange={(e) => {
+            setDateTo(e.target.value);
+            resetToFirstPage();
+          }}
+          className="max-w-[160px]"
+        />
+
+        <div className="ml-auto flex items-center gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={!canExport}
+            onClick={() => exportRowsToCsv(EXPORT_FILENAME, exportRows)}
+          >
+            CSV 내보내기
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={!canExport}
+            onClick={() => exportRowsToXlsx(EXPORT_FILENAME, exportRows)}
+          >
+            Excel 내보내기
+          </Button>
+        </div>
+      </div>
+
+      {!canExport && <p className="text-xs text-gray-400">내보낼 데이터가 없습니다.</p>}
+
+      <DataGrid
+        table={table}
+        isLoading={isLoading}
+        isError={isError}
+        onRowClick={(row) => setSelectedRow(row)}
+      />
+
+      <InspectionHistoryDetailDialog row={selectedRow} onClose={() => setSelectedRow(null)} />
+    </div>
+  );
+}

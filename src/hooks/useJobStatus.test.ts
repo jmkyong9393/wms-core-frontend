@@ -128,7 +128,7 @@ describe("useJobStatus Hook", () => {
       jobId: "job-1",
       status: "COMPLETED",
       bookTitle: "Fallback Polled",
-      grade: "GOOD",
+      grade: "NORMAL",
       confidenceScore: 0.8,
       reasons: [],
       wmsDecision: "RESTOCKED",

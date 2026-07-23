@@ -8,6 +8,7 @@ import {
   setMockMode,
 } from "@/services/returnService";
 import type { InspectionMode, InspectionResult } from "@/types/returnTypes";
+import { getGradeLabel } from "@/features/inspections/utils/gradeBadge";
 import ReturnsHitlPanel from "./ReturnsHitlPanel";
 import {
   BookOpen,
@@ -381,7 +382,7 @@ export default function ReturnsInspector() {
               <div className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-100 dark:border-zinc-900 rounded-2xl p-3 text-center">
                 <p className="text-[10px] text-zinc-400 mb-0.5">판독 등급</p>
                 <p className="text-base font-black text-zinc-900 dark:text-zinc-50">
-                  {result.grade || "—"}
+                  {result.grade ? getGradeLabel(result.grade) : "—"}
                 </p>
               </div>
               <div className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-100 dark:border-zinc-900 rounded-2xl p-3 text-center">

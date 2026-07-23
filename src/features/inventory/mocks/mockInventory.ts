@@ -26,7 +26,7 @@ export const mockInventoryItems: InventoryItem[] = [
   {
     id: 'inv_003',
     bookTitle: '프로젝트 헤일메리',
-    grade: 'GOOD',
+    grade: 'NORMAL',
     ubciScore: 78,
     virtualStock: 5,
     location: 'A-2-1',
@@ -36,7 +36,7 @@ export const mockInventoryItems: InventoryItem[] = [
   {
     id: 'inv_004',
     bookTitle: '돈의 심리학',
-    grade: 'GOOD',
+    grade: 'NORMAL',
     ubciScore: 72,
     virtualStock: 3,
     location: 'B-3-4',
