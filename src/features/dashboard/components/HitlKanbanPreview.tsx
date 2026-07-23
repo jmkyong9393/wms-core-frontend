@@ -40,10 +40,10 @@ function TicketChip({ item, selected, onSelect }: TicketChipProps) {
         <p className="text-xs text-gray-500 mt-1">UBCI {item.ubciScore}점</p>
       )}
       {item.status === 'IN_PROGRESS' && item.reviewer && (
-        <p className="text-xs text-amber-600 mt-1">👤 {item.reviewer} 심사중</p>
+        <p className="text-xs text-amber-600 mt-1">👤 관리자 {item.reviewer} 심사 중</p>
       )}
       {item.status === 'PROCESSING' && item.reviewer && (
-        <p className="text-xs text-blue-600 mt-1">👤 {item.reviewer} 처리 중</p>
+        <p className="text-xs text-blue-600 mt-1">👤 관리자 {item.reviewer} 처리 중</p>
       )}
     </button>
   );

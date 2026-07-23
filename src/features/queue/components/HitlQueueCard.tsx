@@ -35,7 +35,7 @@ export default function HitlQueueCard({ item }: HitlQueueCardProps) {
         <div className="flex items-center gap-3 mt-1 text-xs text-gray-500">
           {item.ubciScore !== undefined && <span>UBCI {item.ubciScore}점</span>}
           {item.status === 'IN_PROGRESS' && item.reviewer && (
-            <span className="text-amber-600">👤 {item.reviewer} 심사중</span>
+            <span className="text-amber-600">👤 관리자 {item.reviewer} 심사 중</span>
           )}
         </div>
       </div>

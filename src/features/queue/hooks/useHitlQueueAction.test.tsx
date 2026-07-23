@@ -7,6 +7,25 @@ import { useHitlQueueAction } from './useHitlQueueAction';
 import { hitlQueueAtom, hitlActionErrorAtom, type HitlQueueItem } from '@/features/queue/store/queueAtoms';
 import { submitHitlDecision, startReviewHitlItem } from '@/features/queue/api/hitlQueueService';
 import type { HitlDecisionResponse } from '@/features/queue/api/hitlQueueService';
+import { currentUserAtom } from '@/features/auth/store/authAtoms';
+import type { CurrentUser } from '@/features/auth/types/authTypes';
+
+// 테스트용 localStorage 설정
+vi.hoisted(() => {
+  const store: Record<string, string> = {};
+  vi.stubGlobal('localStorage', {
+    getItem: (key: string) => store[key] ?? null,
+    setItem: (key: string, value: string) => {
+      store[key] = String(value);
+    },
+    removeItem: (key: string) => {
+      delete store[key];
+    },
+    clear: () => {
+      Object.keys(store).forEach((key) => delete store[key]);
+    },
+  });
+});
 
 vi.mock('@/features/queue/api/hitlQueueService', () => ({
   submitHitlDecision: vi.fn(),
@@ -20,10 +39,20 @@ const seedItem: HitlQueueItem = {
   reviewer: '관리자A',
 };
 
-// 매 테스트마다 격리된 jotai/react-query 컨텍스트로 훅을 렌더링
-function setupHook(initialQueue: HitlQueueItem[] = [seedItem]) {
+// AuthGuard를 거치지 않는 훅 단위 테스트이므로, 실제 화면에서는 항상 보장되는
+// "로그인 완료 상태"를 setupHook 기본값으로 직접 채워준다
+const DEFAULT_CURRENT_USER: CurrentUser = {
+  employeeId: 'W0001',
+  name: '관리자테스트',
+  role: 'ADMIN',
+  mustChangePassword: false,
+};
+
+// 테스트별 독립 상태 생성
+function setupHook(initialQueue: HitlQueueItem[] = [seedItem], currentUser: CurrentUser = DEFAULT_CURRENT_USER) {
   const store = createStore();
   store.set(hitlQueueAtom, initialQueue);
+  store.set(currentUserAtom, currentUser);
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
 
   const wrapper = ({ children }: { children: ReactNode }) => (
@@ -120,7 +149,7 @@ describe('useHitlQueueAction', () => {
         action: 'APPROVE_NORMAL',
         reviewerReasonCode: 'FP_SHADOW',
       });
-      // 첫 요청이 아직 처리 중인 같은 틱에서 곧바로 재시도(연타 시나리오)
+      // 첫 요청 처리 중 같은 요청 재시도
       secondPromise = result.current.runDecision('hitl_1', {
         action: 'APPROVE_NORMAL',
         reviewerReasonCode: 'FP_SHADOW',
@@ -146,6 +175,24 @@ describe('useHitlQueueAction', () => {
 
     await waitFor(() => {
       expect(store.get(hitlQueueAtom).find((item) => item.id === 'hitl_2')?.status).toBe('IN_PROGRESS');
+    });
+  });
+
+  it('startReview sets reviewer to the masked name of the logged-in user', async () => {
+    vi.mocked(startReviewHitlItem).mockResolvedValueOnce(undefined);
+    const { result, store } = setupHook([{ id: 'hitl_2', status: 'AWAITING_REVIEW' }], {
+      employeeId: 'W0001',
+      name: '장문경',
+      role: 'ADMIN',
+      mustChangePassword: false,
+    });
+
+    act(() => {
+      result.current.startReview('hitl_2');
+    });
+
+    await waitFor(() => {
+      expect(store.get(hitlQueueAtom).find((item) => item.id === 'hitl_2')?.reviewer).toBe('장*경');
     });
   });
 });
