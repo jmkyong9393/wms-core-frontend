@@ -1,11 +1,16 @@
 import { atom } from "jotai";
+import type { HitlDecisionAction } from "@/features/queue/constants/hitlReasonCodes";
+import { currentUserAtom } from "@/features/auth/store/authAtoms";
+import { maskName } from "@/features/auth/utils/maskName";
 
-// HITL 관리자 수동 승인 대기 큐
-// AI 판단이 애매한 경우 관리자가 확인할 목록
-export type HitlItemStatus = 'AWAITING_REVIEW' | 'IN_PROGRESS' | 'APPROVED' | 'REJECTED';
-
-// 로그인 연동 전까지 사용하는 고정 mock 관리자 이름
-export const MOCK_REVIEWER_NAME = '관리자A';
+// HITL 티켓 상태
+export type HitlItemStatus =
+  | 'AWAITING_REVIEW'
+  | 'IN_PROGRESS'
+  | 'PROCESSING'
+  | 'RECHECK_REQUIRED'
+  | 'APPROVED'
+  | 'REJECTED';
 
 // 대응하는 에이전트 대화 한 줄
 export interface AgentLogEntry {
@@ -43,33 +48,23 @@ export const setHitlItemStatusAtom = atom(
   }
 );
 
-// 대기 티켓을 검토중으로 드래그했을 때 IN_PROGRESS로 전환하고 관리자를 선점 등록
+// 대기 티켓을 검토중으로 드래그했을 때 IN_PROGRESS로 전환하고 담당자를 로그인한 관리자로 선점 등록
+// AuthGuard가 로그인 완료(currentUser 확정) 후에만 이 액션에 닿는 화면을 렌더링하므로 currentUser는 항상 존재
 export const startReviewHitlItemAtom = atom(null, (get, set, id: string) => {
+  const reviewer = maskName(get(currentUserAtom)!.name);
   set(hitlQueueAtom, (prev) =>
-    prev.map((item) =>
-      item.id === id ? { ...item, status: 'IN_PROGRESS', reviewer: MOCK_REVIEWER_NAME } : item
-    )
+    prev.map((item) => (item.id === id ? { ...item, status: 'IN_PROGRESS', reviewer } : item))
   );
 });
 
-// 승인 버튼을 눌렀을 때 APPROVED 상태로 변경
-export const approveHitlItemAtom = atom(null, (get, set, id: string) => {
-  set(setHitlItemStatusAtom, { id, status: 'APPROVED' });
-});
-
-// 반려 버튼을 눌렀을 때 REJECTED 상태로 변경
-export const rejectHitlItemAtom = atom(null, (get, set, id: string) => {
-  set(setHitlItemStatusAtom, { id, status: 'REJECTED' });
-});
-
-// 재검토 버튼: 검토중 티켓을 다시 대기 상태로 되돌리고 담당 관리자 제거
-export const requestReReviewHitlItemAtom = atom(null, (get, set, id: string) => {
-  set(hitlQueueAtom, (prev) =>
-    prev.map((item) =>
-      item.id === id ? { ...item, status: 'AWAITING_REVIEW', reviewer: undefined } : item
-    )
-  );
-});
+// 관리자 판정 결과를 먼저 화면에 반영
+export const applyHitlDecisionAtom = atom(
+  null,
+  (get, set, update: { id: string; action: HitlDecisionAction }) => {
+    const status: HitlItemStatus = update.action === 'RE_CHECK' ? 'RECHECK_REQUIRED' : 'PROCESSING';
+    set(setHitlItemStatusAtom, { id: update.id, status });
+  }
+);
 
 // API 처리 실패 시 티켓을 버튼 클릭 전 상태로 복구
 // 상태와 담당 관리자 정보를 함께 되돌림

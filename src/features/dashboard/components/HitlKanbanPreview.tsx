@@ -16,7 +16,9 @@ interface TicketChipProps {
   onSelect: (id: string) => void;
 }
 
+// HITL 티켓 요약 카드
 function TicketChip({ item, selected, onSelect }: TicketChipProps) {
+  // 대기 상태에서만 드래그 허용
   const draggable = item.status === 'AWAITING_REVIEW';
 
   return (
@@ -38,7 +40,10 @@ function TicketChip({ item, selected, onSelect }: TicketChipProps) {
         <p className="text-xs text-gray-500 mt-1">UBCI {item.ubciScore}점</p>
       )}
       {item.status === 'IN_PROGRESS' && item.reviewer && (
-        <p className="text-xs text-amber-600 mt-1">👤 {item.reviewer} 심사중</p>
+        <p className="text-xs text-amber-600 mt-1">👤 관리자 {item.reviewer} 심사 중</p>
+      )}
+      {item.status === 'PROCESSING' && item.reviewer && (
+        <p className="text-xs text-blue-600 mt-1">👤 관리자 {item.reviewer} 처리 중</p>
       )}
     </button>
   );
@@ -46,11 +51,13 @@ function TicketChip({ item, selected, onSelect }: TicketChipProps) {
 
 // 관리자 대시보드용 HITL 처리 현황
 export default function HitlKanbanPreview({ queue, selectedId, onSelect }: HitlKanbanPreviewProps) {
-  const { runAction } = useHitlQueueAction();
+  const { startReview } = useHitlQueueAction();
 
   const awaiting = queue.filter((item) => item.status === 'AWAITING_REVIEW');
-  const inProgress = queue.filter((item) => item.status === 'IN_PROGRESS');
+  // PROCESSING(판정 제출 후 서버 처리 중)도 관리자가 이미 착수한 건이라 검토중에 포함
+  const inProgress = queue.filter((item) => item.status === 'IN_PROGRESS' || item.status === 'PROCESSING');
   const resolved = queue.filter((item) => item.status === 'APPROVED' || item.status === 'REJECTED');
+  // RECHECK_REQUIRED(재촬영 대기)는 모바일 작업자의 후속 조치가 필요한 상태라 세 컬럼 어디에도 표시하지 않음
 
   const columns = [
     { key: 'todo', label: '대기', items: awaiting },
@@ -79,7 +86,7 @@ export default function HitlKanbanPreview({ queue, selectedId, onSelect }: HitlK
               if (col.key !== 'in_progress') return;
               e.preventDefault();
               const id = e.dataTransfer.getData('text/plain');
-              if (id) runAction('startReview', id);
+              if (id) startReview(id);
             }}
           >
             <div className="flex items-center justify-between mb-2">
