@@ -13,7 +13,7 @@ vi.mock("@/services/returnService", () => {
 describe("ReturnsHitlPanel Component", () => {
   const defaultProps = {
     jobId: "job-123",
-    initialGrade: "GOOD" as const,
+    initialGrade: "NORMAL" as const,
     initialReasons: [],
     onOverrideComplete: vi.fn(),
     onCancel: vi.fn(),
@@ -26,51 +26,51 @@ describe("ReturnsHitlPanel Component", () => {
   it("should render with initial data and standard buttons", () => {
     render(<ReturnsHitlPanel {...defaultProps} />);
 
-    // Verify header exists
+    // 화면 제목 표시 확인
     expect(
       screen.getByText("Human-in-the-Loop 관리자 보정 대기 중")
     ).toBeInTheDocument();
 
-    // Verify grades are rendered
-    expect(screen.getByRole("radio", { name: "GOOD" })).toBeInTheDocument();
-    expect(screen.getByRole("radio", { name: "GOOD" })).toHaveAttribute(
+    // 초기 등급과 선택 상태 확인
+    expect(screen.getByRole("radio", { name: "B등급" })).toBeInTheDocument();
+    expect(screen.getByRole("radio", { name: "B등급" })).toHaveAttribute(
       "aria-checked",
       "true"
     );
 
-    // Verify WMS buttons are rendered
+    // 재고 처리 버튼 표시 확인
     expect(screen.getByText("재고 적재 (+1 입고)")).toBeInTheDocument();
     expect(screen.getByText("매입 반려 (폐기)")).toBeInTheDocument();
   });
 
-  it("should auto-switch WMS policy to REJECTED when FAIR or SCRAP grade is selected", () => {
+  it("should auto-switch WMS policy to REJECTED when REJECT grade is selected", () => {
     render(<ReturnsHitlPanel {...defaultProps} />);
 
-    const scrapBtn = screen.getByRole("radio", { name: "SCRAP" });
-    fireEvent.click(scrapBtn);
+    const rejectGradeBtn = screen.getByRole("radio", { name: "반려/폐기" });
+    fireEvent.click(rejectGradeBtn);
 
-    // After clicking SCRAP, the REJECTED policy should be selected (bg-red-500)
-    const rejectBtn = screen.getByText("매입 반려 (폐기)");
-    expect(rejectBtn).toHaveClass("bg-red-500");
+    // 반려 등급 선택 시 반려 정책 자동 선택 확인
+    const rejectPolicyBtn = screen.getByText("매입 반려 (폐기)");
+    expect(rejectPolicyBtn).toHaveClass("bg-red-500");
   });
 
   it("should toggle standard reason codes on click", () => {
     render(<ReturnsHitlPanel {...defaultProps} />);
 
-    // Initially says no defect code
+    // 처음에는 선택된 훼손 사유가 없는지 확인
     expect(
       screen.getByText("훼손 코드 없음 (정상 상태 판정 보정)")
     ).toBeInTheDocument();
 
-    // Click "표지 얼룩 오염"
+    // 표지 얼룩 오염 사유 선택
     const reasonBtn = screen.getByText("표지 얼룩 오염");
     fireEvent.click(reasonBtn);
 
-    // Now it should show in the selected reasons area
+    // 선택한 사유가 화면에 표시되는지 확인
     const removeBtn = screen.getByLabelText("표지 얼룩 오염 사유 삭제");
     expect(removeBtn).toBeInTheDocument();
 
-    // Click again to toggle it off
+    // 다시 클릭해 사유 선택 해제
     fireEvent.click(reasonBtn);
     expect(
       screen.getByText("훼손 코드 없음 (정상 상태 판정 보정)")
@@ -86,11 +86,11 @@ describe("ReturnsHitlPanel Component", () => {
     fireEvent.change(input, { target: { value: "내지에 심한 얼룩" } });
     fireEvent.submit(addBtn);
 
-    // Custom reason should be added
+    // 직접 입력한 사유 추가 확인
     const customReasonText = screen.getByText("내지에 심한 얼룩");
     expect(customReasonText).toBeInTheDocument();
 
-    // Remove it
+    // 직접 입력한 사유 삭제
     const removeBtn = screen.getByLabelText("내지에 심한 얼룩 사유 삭제");
     fireEvent.click(removeBtn);
 
@@ -123,7 +123,7 @@ describe("ReturnsHitlPanel Component", () => {
 
     await waitFor(() => {
       expect(submitHitlOverride).toHaveBeenCalledWith("job-123", {
-        grade: "GOOD",
+        grade: "NORMAL",
         reasons: [{ code: "NONE", description: "관리자 직권 무결 판정" }],
         decision: "RESTOCKED",
       });

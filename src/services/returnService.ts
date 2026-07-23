@@ -116,7 +116,7 @@ function simulateMockJobTransition(jobId: string): InspectionResult {
     jobId,
     status,
     bookTitle: jobData.payload?.bookTitle ?? "Mock 검수 도서",
-    grade: isTerminal ? "GOOD" : null,
+    grade: isTerminal ? "NORMAL" : null,
     confidenceScore: isTerminal
       ? status === "HITL_WAITING"
         ? 0.45

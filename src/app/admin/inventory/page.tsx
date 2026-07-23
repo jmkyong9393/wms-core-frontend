@@ -1,5 +1,5 @@
-import InventoryTableView from '@/features/inventory/components/InventoryTableView';
+import { InventoryGridView } from '@/features/inventory/components/InventoryGridView';
 
 export default function InventoryPage() {
-  return <InventoryTableView />;
+  return <InventoryGridView />;
 }

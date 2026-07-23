@@ -2,6 +2,8 @@
 
 import React, { useState } from "react";
 import type { BookGrade, WmsDecision, DefectReason, InspectionResult } from "@/types/returnTypes";
+import { BOOK_GRADES } from "@/features/inspections/types/inspection";
+import { getGradeLabel } from "@/features/inspections/utils/gradeBadge";
 import { submitHitlOverride } from "@/services/returnService";
 import { Check, X, ShieldAlert, Plus, HelpCircle } from "lucide-react";
 
@@ -13,7 +15,7 @@ interface ReturnsHitlPanelProps {
   onCancel: () => void;
 }
 
-const GRADES: BookGrade[] = ["MINT", "EXCELLENT", "GOOD", "FAIR", "SCRAP"];
+const GRADES: readonly BookGrade[] = BOOK_GRADES;
 const STANDARD_REASONS: DefectReason[] = [
   { code: "STAIN_COVER", description: "표지 얼룩 오염" },
   { code: "SCRATCH_COVER", description: "표지 긁힘 스크래치" },
@@ -31,7 +33,7 @@ export default function ReturnsHitlPanel({
   onCancel,
 }: ReturnsHitlPanelProps) {
   const [selectedGrade, setSelectedGrade] = useState<BookGrade>(
-    initialGrade || "GOOD"
+    initialGrade || "NORMAL"
   );
   const [decision, setDecision] = useState<WmsDecision>("RESTOCKED");
   const [reasons, setReasons] = useState<DefectReason[]>(initialReasons);
@@ -42,7 +44,7 @@ export default function ReturnsHitlPanel({
   /** 등급 변경 시 WMS Decision 자동 매칭 (악성 재고 방지) */
   const handleGradeChange = (grade: BookGrade) => {
     setSelectedGrade(grade);
-    if (grade === "FAIR" || grade === "SCRAP") {
+    if (grade === "REJECT") {
       setDecision("REJECTED");
     } else {
       setDecision("RESTOCKED");
@@ -129,7 +131,7 @@ export default function ReturnsHitlPanel({
           <label className="text-xs font-bold text-zinc-700 dark:text-zinc-300 block">
             도서 등급 강제 오버라이드
           </label>
-          <div className="grid grid-cols-5 gap-1.5" role="radiogroup" aria-label="도서 등급 선택">
+          <div className="grid grid-cols-4 gap-1.5" role="radiogroup" aria-label="도서 등급 선택">
             {GRADES.map((grade) => {
               const isSelected = selectedGrade === grade;
               return (
@@ -145,7 +147,7 @@ export default function ReturnsHitlPanel({
                       : "bg-white dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-900"
                   }`}
                 >
-                  {grade}
+                  {getGradeLabel(grade)}
                 </button>
               );
             })}

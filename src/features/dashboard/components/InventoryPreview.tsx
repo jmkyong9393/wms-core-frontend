@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { mockInventoryItems } from '@/features/inventory/mocks/mockInventory';
-import { GRADE_BADGE_STYLE } from '@/features/inspections/utils/gradeBadge';
+import { getGradeBadgeStyle, getGradeLabel } from '@/features/inspections/utils/gradeBadge';
 
 const PREVIEW_LIMIT = 3;
 
@@ -29,9 +29,9 @@ export default function InventoryPreview() {
 
               {/* 등급에 맞는 배지 색상 적용 */}
               <span
-                className={`text-xs font-semibold rounded-full px-2 py-0.5 shrink-0 ${GRADE_BADGE_STYLE[item.grade]}`}
+                className={`text-xs font-semibold rounded-full px-2 py-0.5 shrink-0 ${getGradeBadgeStyle(item.grade)}`}
               >
-                {item.grade}
+                {getGradeLabel(item.grade)}
               </span>
               <span className="text-sm font-medium text-gray-700 truncate">{item.bookTitle}</span>
             </div>

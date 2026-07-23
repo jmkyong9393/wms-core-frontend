@@ -148,7 +148,7 @@ describe("returnService", () => {
 
       statusRes = await getJobStatus(jobId);
       expect(["COMPLETED", "HITL_WAITING"]).toContain(statusRes.status);
-      expect(statusRes.grade).toBe("GOOD");
+      expect(statusRes.grade).toBe("NORMAL");
       expect(statusRes.ubciScore).toBe(78);
     });
 
