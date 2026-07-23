@@ -44,6 +44,13 @@ export function BarcodeScanner({ onScan, isActive = true }: BarcodeScannerProps)
   const lastScannedRef = useRef<string | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
 
+  const onScanRef = useRef(onScan);
+  
+  // onScan 함수 참조가 변경되어도 카메라 재시작(useEffect)이 일어나지 않도록 최신 콜백을 Ref에 저장
+  useEffect(() => {
+    onScanRef.current = onScan;
+  }, [onScan]);
+
   useEffect(() => {
     if (!isActive || !videoRef.current) return;
 
@@ -181,7 +188,7 @@ export function BarcodeScanner({ onScan, isActive = true }: BarcodeScannerProps)
                   // 순수 DOM 알림 (React 엔진 정지 상태에서도 확인 가능)
                   showNativeToast(`스캔 완료: ${text}`);
                   
-                  onScan(text);
+                  onScanRef.current(text);
 
                   setTimeout(() => {
                     lastScannedRef.current = null;
@@ -250,7 +257,7 @@ export function BarcodeScanner({ onScan, isActive = true }: BarcodeScannerProps)
         videoRef.current.onloadeddata = null;
       }
     };
-  }, [isActive, onScan]);
+  }, [isActive]);
 
   if (hasPermission === false) {
     return (
