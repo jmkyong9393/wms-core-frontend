@@ -2,8 +2,8 @@ import type { InspectionHistoryRow } from '@/features/inspections/types/inspecti
 import { getGradeLabel } from '@/features/inspections/utils/gradeBadge';
 import { getStatusLabel } from '@/features/inspections/utils/statusBadge';
 
-// 검수 이력 데이터를 CSV·Excel 내보내기 형식으로 변환
-// NOTE: mockInspectionRecords 기반 프론트 전용 변환이며, 백엔드 Export API 연동 전 임시 구현이다.
+// 검수 이력을 내보내기 형식으로 변환
+// TODO: 백엔드 Export API 연동 후 교체
 export function toInspectionHistoryExportRow(row: InspectionHistoryRow): Record<string, string> {
   return {
     도서명: row.bookTitle,
