@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Providers from "@/components/providers";
 import { A2HSBanner } from "@/components/a2hs-banner";
+// import { TestErrorButton } from "@/components/test-error-button";
 import { ServiceWorkerRegistry } from "@/components/service-worker-registry";
 
 const geistSans = Geist({
@@ -60,6 +61,8 @@ export default function RootLayout({
         <Providers>
           {children}
           <A2HSBanner />
+          {/* [FE-3.7] 에러 바운더리 테스트용 폭탄 버튼 (필요 시 주석 해제하여 사용) */}
+          {/* <TestErrorButton /> */}
           <ServiceWorkerRegistry />
         </Providers>
       </body>
