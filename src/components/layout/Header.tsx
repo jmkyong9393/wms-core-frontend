@@ -5,7 +5,8 @@ import { pendingUploadCountAtom } from '@/features/inbound/store/uploadQueueAtom
 import { LogoutButton } from '@/features/auth/components/LogoutButton';
 import { currentUserAtom } from '@/features/auth/store/authAtoms';
 import { maskName } from '@/features/auth/utils/maskName';
-import { Bell, User, CloudUpload, CloudOff } from 'lucide-react';
+import { NotificationBell } from '@/features/notifications/components/NotificationBell';
+import { User, CloudUpload, CloudOff } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 
 export default function Header() {
@@ -52,12 +53,7 @@ export default function Header() {
         </div>
 
         {/* Notifications */}
-        <button className="relative p-2 text-gray-400 hover:text-gray-600 transition-colors rounded-full hover:bg-gray-100">
-          <Bell className="w-5 h-5" />
-          {pendingCount > 0 && (
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
-          )}
-        </button>
+        <NotificationBell />
 
         {/* User Profile */}
         <div className="flex items-center pl-2 border-l border-gray-200">
