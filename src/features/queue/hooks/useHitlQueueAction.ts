@@ -1,57 +1,56 @@
 'use client';
 
+import { useRef } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { useStore, type WritableAtom } from 'jotai';
+import { useStore } from 'jotai';
 import {
   hitlQueueAtom,
   hitlActionErrorAtom,
   restoreHitlItemAtom,
-  approveHitlItemAtom,
-  rejectHitlItemAtom,
-  requestReReviewHitlItemAtom,
+  applyHitlDecisionAtom,
   startReviewHitlItemAtom,
   type HitlQueueItem,
 } from '@/features/queue/store/queueAtoms';
 import {
-  approveHitlItem,
-  rejectHitlItem,
-  requestReReviewHitlItem,
+  submitHitlDecision,
   startReviewHitlItem,
-  type HitlQueueActionType,
+  type HitlDecisionPayload,
 } from '@/features/queue/api/hitlQueueService';
 
-interface HitlQueueActionVariables {
-  type: HitlQueueActionType;
-  id: string;
-}
-
-interface HitlQueueActionContext {
+interface OptimisticContext {
   previousItem: HitlQueueItem | undefined;
 }
 
-// 액션별 낙관적 업데이트 atom과 서비스 함수를 한곳에서 관리
-const HITL_ACTION_MAP: Record<
-  HitlQueueActionType,
-  { optimisticAtom: WritableAtom<null, [string], void>; request: (id: string) => Promise<void> }
-> = {
-  startReview: { optimisticAtom: startReviewHitlItemAtom, request: startReviewHitlItem },
-  approve: { optimisticAtom: approveHitlItemAtom, request: approveHitlItem },
-  reject: { optimisticAtom: rejectHitlItemAtom, request: rejectHitlItem },
-  reReview: { optimisticAtom: requestReReviewHitlItemAtom, request: requestReReviewHitlItem },
-};
-
-// HITL 큐 승인/반려/재검토/검토시작 액션 공용 훅
-// 낙관적 Jotai 업데이트 후 axios 서비스 호출
-// 실패 시 이전 상태로 롤백 + 에러 토스트 표시
+// HITL 큐 검토 시작(드래그) 액션 - 판정 API와 무관한 로컬 상태 전환
 export function useHitlQueueAction() {
   const store = useStore();
 
-  const mutation = useMutation<void, Error, HitlQueueActionVariables, HitlQueueActionContext>({
-    mutationKey: ['hitlQueueAction'],
-    mutationFn: ({ type, id }) => HITL_ACTION_MAP[type].request(id),
-    onMutate: ({ type, id }) => {
+  const startReviewMutation = useMutation<void, Error, string, OptimisticContext>({
+    mutationKey: ['hitlStartReview'],
+    mutationFn: (id) => startReviewHitlItem(id),
+    onMutate: (id) => {
       const previousItem = store.get(hitlQueueAtom).find((item) => item.id === id);
-      store.set(HITL_ACTION_MAP[type].optimisticAtom, id);
+      store.set(startReviewHitlItemAtom, id);
+      return { previousItem };
+    },
+    onError: (_err, _id, context) => {
+      if (context?.previousItem) store.set(restoreHitlItemAtom, context.previousItem);
+      store.set(hitlActionErrorAtom, '❌ 서버 오류로 실패했습니다. 다시 시도해 주세요.');
+    },
+  });
+
+  // 관리자 HITL 최종 판정(승인/반려/재검토) 제출
+  const decisionMutation = useMutation<
+    void,
+    Error,
+    { id: string; payload: HitlDecisionPayload },
+    OptimisticContext
+  >({
+    mutationKey: ['hitlDecision'],
+    mutationFn: ({ id, payload }) => submitHitlDecision(id, payload).then(() => undefined),
+    onMutate: ({ id, payload }) => {
+      const previousItem = store.get(hitlQueueAtom).find((item) => item.id === id);
+      store.set(applyHitlDecisionAtom, { id, action: payload.action });
       return { previousItem };
     },
     onError: (_err, _vars, context) => {
@@ -60,10 +59,36 @@ export function useHitlQueueAction() {
     },
   });
 
-  const runAction = (type: HitlQueueActionType, id: string) => {
-    if (mutation.isPending) return; // 중복 클릭 방지
-    mutation.mutate({ type, id });
+  // mutation.isPending은 다음 렌더에서야 갱신되어 같은 틱 안의 연속 호출을 막지 못하므로
+  // ref로 즉시(synchronous) 중복 제출을 차단
+  const isStartReviewInFlightRef = useRef(false);
+  const isDecisionInFlightRef = useRef(false);
+
+  const startReview = (id: string) => {
+    if (isStartReviewInFlightRef.current) return; // 중복 클릭 방지
+    isStartReviewInFlightRef.current = true;
+    startReviewMutation.mutate(id, {
+      onSettled: () => {
+        isStartReviewInFlightRef.current = false;
+      },
+    });
   };
 
-  return { runAction, isLoading: mutation.isPending };
+  // 다이얼로그가 실패 시 입력값을 유지한 채 재시도할 수 있도록 Promise를 그대로 반환
+  // 이미 처리 중이면 reject하여 다이얼로그가 닫히지 않고 에러를 표시하도록 함(중복 제출 방지)
+  const runDecision = (id: string, payload: HitlDecisionPayload) => {
+    if (isDecisionInFlightRef.current) {
+      return Promise.reject(new Error('이미 처리 중입니다. 잠시 후 다시 시도해 주세요.'));
+    }
+    isDecisionInFlightRef.current = true;
+    return decisionMutation.mutateAsync({ id, payload }).finally(() => {
+      isDecisionInFlightRef.current = false;
+    });
+  };
+
+  return {
+    startReview,
+    runDecision,
+    isLoading: startReviewMutation.isPending || decisionMutation.isPending,
+  };
 }

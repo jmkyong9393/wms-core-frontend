@@ -6,6 +6,7 @@ import { useHitlQueueAction } from '@/features/queue/hooks/useHitlQueueAction';
 import { STATUS_LABEL } from '@/features/queue/utils/statusLabel';
 import { Button } from '@/components/ui/button';
 import AgentConversationModal from './AgentConversationModal';
+import HitlDecisionActions from './HitlDecisionActions';
 
 interface HitlQueueCardProps {
   item: HitlQueueItem;
@@ -14,13 +15,15 @@ interface HitlQueueCardProps {
 const STATUS_BADGE_STYLE: Record<HitlQueueItem['status'], string> = {
   AWAITING_REVIEW: 'bg-yellow-100 text-yellow-700',
   IN_PROGRESS: 'bg-amber-100 text-amber-700',
+  PROCESSING: 'bg-blue-100 text-blue-700',
+  RECHECK_REQUIRED: 'bg-purple-100 text-purple-700',
   APPROVED: 'bg-green-100 text-green-700',
   REJECTED: 'bg-red-100 text-red-700',
 };
 
 export default function HitlQueueCard({ item }: HitlQueueCardProps) {
   const [isLogModalOpen, setIsLogModalOpen] = useState(false);
-  const { runAction, isLoading } = useHitlQueueAction();
+  const { startReview, isLoading } = useHitlQueueAction();
 
   return (
     <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 flex items-center justify-between gap-3">
@@ -52,39 +55,12 @@ export default function HitlQueueCard({ item }: HitlQueueCardProps) {
         </button>
 
         {item.status === 'AWAITING_REVIEW' && (
-          <Button size="sm" disabled={isLoading} onClick={() => runAction('startReview', item.id)}>
+          <Button size="sm" disabled={isLoading} onClick={() => startReview(item.id)}>
             검토 시작
           </Button>
         )}
 
-        {item.status === 'IN_PROGRESS' && (
-          <div className="grid grid-cols-3 gap-2">
-            <button
-              type="button"
-              disabled={isLoading}
-              onClick={() => runAction('approve', item.id)}
-              className="text-xs font-semibold text-green-700 bg-green-50 border border-green-100 rounded-lg py-2 px-2 hover:bg-green-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              ✓ 승인 (정상)
-            </button>
-            <button
-              type="button"
-              disabled={isLoading}
-              onClick={() => runAction('reject', item.id)}
-              className="text-xs font-semibold text-red-700 bg-red-50 border border-red-100 rounded-lg py-2 px-2 hover:bg-red-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              ✕ 반려 (결함)
-            </button>
-            <button
-              type="button"
-              disabled={isLoading}
-              onClick={() => runAction('reReview', item.id)}
-              className="text-xs font-semibold text-gray-600 bg-gray-50 border border-gray-200 rounded-lg py-2 px-2 hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              ↻ 재검토
-            </button>
-          </div>
-        )}
+        {item.status === 'IN_PROGRESS' && <HitlDecisionActions item={item} />}
       </div>
 
       {isLogModalOpen && (

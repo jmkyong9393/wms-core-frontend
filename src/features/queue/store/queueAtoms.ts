@@ -1,8 +1,14 @@
 import { atom } from "jotai";
+import type { HitlDecisionAction } from "@/features/queue/constants/hitlReasonCodes";
 
-// HITL 관리자 수동 승인 대기 큐
-// AI 판단이 애매한 경우 관리자가 확인할 목록
-export type HitlItemStatus = 'AWAITING_REVIEW' | 'IN_PROGRESS' | 'APPROVED' | 'REJECTED';
+// HITL 티켓 상태
+export type HitlItemStatus =
+  | 'AWAITING_REVIEW'
+  | 'IN_PROGRESS'
+  | 'PROCESSING'
+  | 'RECHECK_REQUIRED'
+  | 'APPROVED'
+  | 'REJECTED';
 
 // 로그인 연동 전까지 사용하는 고정 mock 관리자 이름
 export const MOCK_REVIEWER_NAME = '관리자A';
@@ -52,24 +58,14 @@ export const startReviewHitlItemAtom = atom(null, (get, set, id: string) => {
   );
 });
 
-// 승인 버튼을 눌렀을 때 APPROVED 상태로 변경
-export const approveHitlItemAtom = atom(null, (get, set, id: string) => {
-  set(setHitlItemStatusAtom, { id, status: 'APPROVED' });
-});
-
-// 반려 버튼을 눌렀을 때 REJECTED 상태로 변경
-export const rejectHitlItemAtom = atom(null, (get, set, id: string) => {
-  set(setHitlItemStatusAtom, { id, status: 'REJECTED' });
-});
-
-// 재검토 버튼: 검토중 티켓을 다시 대기 상태로 되돌리고 담당 관리자 제거
-export const requestReReviewHitlItemAtom = atom(null, (get, set, id: string) => {
-  set(hitlQueueAtom, (prev) =>
-    prev.map((item) =>
-      item.id === id ? { ...item, status: 'AWAITING_REVIEW', reviewer: undefined } : item
-    )
-  );
-});
+// 관리자 판정 결과를 먼저 화면에 반영
+export const applyHitlDecisionAtom = atom(
+  null,
+  (get, set, update: { id: string; action: HitlDecisionAction }) => {
+    const status: HitlItemStatus = update.action === 'RE_CHECK' ? 'RECHECK_REQUIRED' : 'PROCESSING';
+    set(setHitlItemStatusAtom, { id: update.id, status });
+  }
+);
 
 // API 처리 실패 시 티켓을 버튼 클릭 전 상태로 복구
 // 상태와 담당 관리자 정보를 함께 되돌림
