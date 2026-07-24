@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { ImageOff } from 'lucide-react';
 import {
   Dialog,
@@ -5,7 +6,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import AgentLogAccordion from '@/features/inspections/components/AgentLogAccordion';
+import { ErrorBoundary } from '@/components/error-boundary';
+import AgentLogSection from '@/features/inspections/components/AgentLogSection';
 import InspectionBadges from '@/features/inspections/components/InspectionBadges';
 import { getStatusLabel } from '@/features/inspections/utils/statusBadge';
 import type { InspectionHistoryRow } from '@/features/inspections/types/inspectionHistory';
@@ -69,7 +71,15 @@ export function InspectionHistoryDetailDialog({ row, onClose }: InspectionHistor
               {/* 에이전트 실행 로그 */}
               <section className="border-t border-gray-100 pt-4">
                 <h4 className="mb-2 text-sm font-semibold text-gray-800">Agent 로그</h4>
-                <AgentLogAccordion record={row} />
+                {/* 검수 건 변경 시 에러 상태 초기화 */}
+                <ErrorBoundary
+                  key={row.id}
+                  fallback={<p className="text-sm text-red-500">Agent 로그를 불러오는데 실패했습니다.</p>}
+                >
+                  <Suspense fallback={<p className="text-sm text-gray-400">Agent 로그 불러오는 중...</p>}>
+                    <AgentLogSection inspectionId={row.id} />
+                  </Suspense>
+                </ErrorBoundary>
               </section>
 
               {/* 미연동 정보 안내 */}
