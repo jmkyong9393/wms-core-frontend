@@ -14,14 +14,14 @@ import { MAX_NOTIFICATION_HISTORY } from '@/features/notifications/constants/not
 
 // 테스트용 알림 데이터
 const fdsInput: NotificationInput = {
-  category: 'FDS',
+  type: 'FDS_ALERT',
   severity: 'CRITICAL',
   title: 'FDS 이상거래 적발',
   message: '위험점수 87점',
 };
 
 const agentInput: NotificationInput = {
-  category: 'AGENT_ANOMALY',
+  type: 'AGENT_ALERT',
   severity: 'WARNING',
   title: 'Vision 신뢰도 낮음',
   message: '재검토가 필요합니다',
@@ -54,8 +54,8 @@ describe('notificationAtoms', () => {
     store.set(pushNotificationAtom, agentInput);
 
     const history = store.get(notificationsAtom);
-    expect(history[0].category).toBe('AGENT_ANOMALY');
-    expect(history[1].category).toBe('FDS');
+    expect(history[0].type).toBe('AGENT_ALERT');
+    expect(history[1].type).toBe('FDS_ALERT');
   });
 
   it('caps history at MAX_NOTIFICATION_HISTORY', () => {
