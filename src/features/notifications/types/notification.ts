@@ -1,9 +1,9 @@
-export type NotificationCategory = 'FDS' | 'AGENT_ANOMALY';
+export type NotificationType = 'AGENT_ALERT' | 'FDS_ALERT' | 'RESTOCK_ALERT';
 export type NotificationSeverity = 'CRITICAL' | 'WARNING' | 'INFO';
 
 export interface NotificationItem {
   id: string;
-  category: NotificationCategory;
+  type: NotificationType;
   severity: NotificationSeverity;
   title: string;
   message: string;

@@ -2,7 +2,7 @@
 
 import type { NotificationItem } from '@/features/notifications/types/notification';
 import {
-  NOTIFICATION_CATEGORY_LABEL,
+  NOTIFICATION_TYPE_LABEL,
   NOTIFICATION_SEVERITY_STYLE,
 } from '@/features/notifications/constants/notificationDisplay';
 import { formatRelativeTime } from '@/features/notifications/utils/formatRelativeTime';
@@ -25,7 +25,7 @@ export function NotificationListItem({ item, onClick }: NotificationListItemProp
     >
       <div className="flex items-center justify-between gap-2">
         <span className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${style.badgeClass}`}>
-          {NOTIFICATION_CATEGORY_LABEL[item.category]}
+          {NOTIFICATION_TYPE_LABEL[item.type]}
         </span>
         <span className="flex items-center gap-1.5 text-[11px] text-gray-400">
           {!item.read && <span className={`h-1.5 w-1.5 rounded-full ${style.dotClass}`} />}
