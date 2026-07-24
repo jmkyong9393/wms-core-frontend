@@ -4,17 +4,17 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import type { MockInspectionRecord } from '@/features/inspections/types/inspection';
+import type { AgentLogStep } from '@/features/inspections/types/inspection';
 
 interface AgentLogAccordionProps {
-  record: MockInspectionRecord;
+  steps: AgentLogStep[];
 }
 
-export default function AgentLogAccordion({ record }: AgentLogAccordionProps) {
+export default function AgentLogAccordion({ steps }: AgentLogAccordionProps) {
   return (
     <Accordion multiple defaultValue={[]}>
       {/* 검수 단계별 로그를 아코디언 항목으로 표시 */}
-      {record.steps.map((step) => (
+      {steps.map((step) => (
         <AccordionItem key={step.stepOrder} value={`step-${step.stepOrder}`}>
           <AccordionTrigger>
             <span className="flex items-center gap-2">
