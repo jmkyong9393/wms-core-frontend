@@ -13,7 +13,8 @@ import {
   ClipboardList,
   ListChecks,
   Warehouse,
-  Users
+  Users,
+  Package
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -26,6 +27,7 @@ const MENU_ITEMS = [
   { name: '재고·출고 관리', href: '/admin/inventory', icon: Warehouse },
   { name: '자동 발주 현황', href: '/po', icon: ShoppingCart },
   { name: 'AI 품질 리포트', href: '/reports', icon: LineChart },
+  { name: '스마트 패킹', href: '/outbound/packing', icon: Package },
 ];
 
 // 운영 메뉴와 성격이 달라 구분선 아래 별도로 배치하는 관리자용 메뉴
