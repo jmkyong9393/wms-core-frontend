@@ -8,7 +8,7 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
  */
 const s3Client = new S3Client({
   region: process.env.OSS_REGION || "ap-northeast-2",
-  endpoint: process.env.OSS_ENDPOINT || "https://oss-ap-northeast-2.aliyuncs.com",
+  endpoint: process.env.OSS_ENDPOINT || "https://s3.ap-northeast-2.amazonaws.com",
   credentials: {
     accessKeyId: process.env.OSS_ACCESS_KEY_ID || "",
     secretAccessKey: process.env.OSS_ACCESS_KEY_SECRET || "",
@@ -39,12 +39,9 @@ export async function POST(request: Request) {
     // Generate Presigned URL valid for 10 minutes (600 seconds)
     const uploadUrl = await getSignedUrl(s3Client, command, { expiresIn: 600 });
 
-    // Generate Presigned GET URL valid for 7 days for reading the private object
-    const getCommand = new GetObjectCommand({
-      Bucket: bucketName,
-      Key: objectKey,
-    });
-    const publicUrl = await getSignedUrl(s3Client, getCommand, { expiresIn: 604800 });
+    // CloudFront 도메인을 통해 CDN URL 생성
+    const cloudfrontDomain = process.env.CLOUDFRONT_DOMAIN || "https://d1xxxxxx.cloudfront.net";
+    const publicUrl = `${cloudfrontDomain}/${objectKey}`;
 
     return NextResponse.json({ uploadUrl, publicUrl });
   } catch (error: unknown) {
