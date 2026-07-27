@@ -1,4 +1,5 @@
 import { Suspense } from 'react';
+import Link from 'next/link';
 import { ImageOff } from 'lucide-react';
 import {
   Dialog,
@@ -68,7 +69,7 @@ export function InspectionHistoryDetailDialog({ row, onClose }: InspectionHistor
                 </div>
               </section>
 
-              {/* 에이전트 실행 로그 */}
+              {/* Agent 로그 */}
               <section className="border-t border-gray-100 pt-4">
                 <h4 className="mb-2 text-sm font-semibold text-gray-800">Agent 로그</h4>
                 {/* 검수 건 변경 시 에러 상태 초기화 */}
@@ -88,9 +89,20 @@ export function InspectionHistoryDetailDialog({ row, onClose }: InspectionHistor
                   <ImageOff className="mb-2 h-6 w-6" />
                   <span className="text-xs">사진 연동 방식 협의 필요</span>
                 </div>
-                <div className="flex flex-col items-center justify-center rounded-xl border border-gray-100 bg-gray-50 p-4 text-center text-gray-400">
-                  <span className="text-xs">품질 보증서는 추후 연동 예정입니다.</span>
-                </div>
+                {row.finalGrade ? (
+                  // 목업에서는 검수 이력 id를 임시 token으로 사용
+                  <Link
+                    href={`/certificate/${row.id}`}
+                    target="_blank"
+                    className="flex flex-col items-center justify-center rounded-xl border border-gray-100 bg-gray-50 p-4 text-center text-blue-600 hover:bg-gray-100"
+                  >
+                    <span className="text-xs font-semibold">보증서 미리보기</span>
+                  </Link>
+                ) : (
+                  <div className="flex flex-col items-center justify-center rounded-xl border border-gray-100 bg-gray-50 p-4 text-center text-gray-400">
+                    <span className="text-xs">판정 완료 후 보증서를 확인할 수 있습니다.</span>
+                  </div>
+                )}
               </section>
             </div>
           </>
