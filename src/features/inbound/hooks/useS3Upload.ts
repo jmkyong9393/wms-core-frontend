@@ -8,7 +8,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import imageCompression from "browser-image-compression";
+
 import { getPresignedUrl } from "@/features/inbound/api/getPresignedUrl";
 
 interface UploadResult {
@@ -43,34 +43,25 @@ export function useS3Upload(): UseS3UploadReturn {
         setError(null);
         setUploadProgress(0);
 
-        // 1단계: Web Worker 기반 이미지 압축
-        setIsCompressing(true);
-        const compressedFile = await imageCompression(file, {
-          maxSizeMB: 1,
-          maxWidthOrHeight: 1600,
-          useWebWorker: true,
-          fileType: "image/jpeg",
-          initialQuality: 0.8,
-        });
-        setIsCompressing(false);
-
+        // 1단계: 압축은 Canvas(image-processor)에서 이미 최적화되었으므로 바로 전송합니다.
+        
         // 2단계: Pre-signed URL 요청
         setIsUploading(true);
         setUploadProgress(10);
 
-        const filename = `inspection_${Date.now()}_${compressedFile.name}`;
+        const filename = file.name;
         const { uploadUrl, publicUrl } = await getPresignedUrl(
           filename,
-          compressedFile.type
+          file.type
         );
         setUploadProgress(30);
 
         // 3단계: S3 Direct PUT 업로드
         const uploadResponse = await fetch(uploadUrl, {
           method: "PUT",
-          body: compressedFile,
+          body: file,
           headers: {
-            "Content-Type": compressedFile.type,
+            "Content-Type": file.type,
           },
         });
 
