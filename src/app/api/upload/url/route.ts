@@ -27,7 +27,7 @@ export async function POST(request: Request) {
     }
 
     const bucketName = process.env.OSS_BUCKET_NAME || "wms-book-photos";
-    const objectKey = `uploads/${Date.now()}_${filename}`;
+    const objectKey = `uploads/${crypto.randomUUID()}_${filename}`;
 
     // Create S3 PUT command
     const command = new PutObjectCommand({
