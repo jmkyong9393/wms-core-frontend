@@ -76,6 +76,7 @@ export default function ComprehensiveStatsTab() {
   const [successKey, setSuccessKey] = useState<string | null>(null);
   const [editValues, setEditValues] = useState<Record<string, number>>({});
   const [isApiFallback, setIsApiFallback] = useState(false);
+  const [isPolicyOpen, setIsPolicyOpen] = useState(false);
 
   const loadData = async () => {
     try {
@@ -358,137 +359,172 @@ export default function ComprehensiveStatsTab() {
         </div>
       </div>
 
-      {/* ─── 하단 2분할 영역: FDS 이상 유저 리스트 vs FDS 룰셋 실시간 조절 ─── */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* FDS 위험군 인벤토리 리스트 */}
-        <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm lg:col-span-2 flex flex-col">
-          <div className="flex justify-between items-center mb-4">
-            <div>
-              <h3 className="text-base font-bold text-gray-800">FDS 탐지 악성/의심 고객 리스트</h3>
-              <p className="text-xs text-gray-400 mt-0.5">반품 주기, 환불금액 임계치 및 UBCI 지수를 종합한 AI 위험 분석 결과</p>
-            </div>
+      {/* ─── FDS 이상 유저 리스트 영역 ─── */}
+      <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex flex-col">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mb-4">
+          <div>
+            <h3 className="text-base font-bold text-gray-800">FDS 탐지 악성/의심 고객 리스트</h3>
+            <p className="text-xs text-gray-400 mt-0.5">반품 주기, 환불금액 임계치 및 UBCI 지수를 종합한 AI 위험 분석 결과</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setIsPolicyOpen(true)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors cursor-pointer"
+            >
+              <Settings className="w-3.5 h-3.5" />
+              임계값 설정 조절
+            </button>
             <span className="text-xs bg-rose-50 text-rose-600 px-2.5 py-1 rounded-full font-bold">
               이상거래 감지 활성
             </span>
           </div>
-
-          <div className="overflow-x-auto flex-1">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="border-b border-gray-100 text-gray-400 text-xs font-bold uppercase tracking-wider">
-                  <th className="py-3 px-2">고객명</th>
-                  <th className="py-3 px-2">위험 등급</th>
-                  <th className="py-3 px-2">판정 근거 및 감지 룰</th>
-                  <th className="py-3 px-2 text-right">감지 시각</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-50 text-sm">
-                {fdsReports.length > 0 ? (
-                  fdsReports.map((report) => {
-                    const isCritical = report.fraud_score >= 90;
-                    return (
-                      <tr key={report.id} className="hover:bg-gray-50/50 transition-colors">
-                        <td className="py-3.5 px-2 font-semibold text-gray-700">
-                          {report.customer_name || '비공개'}
-                          <span className="text-xs text-gray-400 block font-normal mt-0.5">ID: {report.customer_id}</span>
-                        </td>
-                        <td className="py-3.5 px-2">
-                          <span
-                            className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold ${
-                              isCritical
-                                ? 'bg-rose-50 text-rose-600 border border-rose-100'
-                                : 'bg-amber-50 text-amber-600 border border-amber-100'
-                            }`}
-                          >
-                            <span className={`w-1.5 h-1.5 rounded-full ${isCritical ? 'bg-rose-500' : 'bg-amber-400'}`}></span>
-                            {isCritical ? `Critical (${report.fraud_score}점)` : `Warning (${report.fraud_score}점)`}
-                          </span>
-                        </td>
-                        <td className="py-3.5 px-2 text-xs text-gray-500 max-w-[250px] truncate" title={report.fraud_reason || ''}>
-                          {report.fraud_reason || '사유가 기록되지 않았습니다.'}
-                        </td>
-                        <td className="py-3.5 px-2 text-right text-gray-400 text-xs font-medium">
-                          {new Date(report.detected_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-                        </td>
-                      </tr>
-                    );
-                  })
-                ) : (
-                  <tr>
-                    <td colSpan={4} className="py-8 text-center text-gray-400 text-sm">
-                      현재 탐지된 위협 또는 이상 징후가 없습니다.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
         </div>
 
-        {/* FDS 룰셋 임계값 설정 패널 */}
-        <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex flex-col">
-          <div className="mb-4">
-            <h3 className="text-base font-bold text-gray-800 flex items-center gap-1.5">
-              <Settings className="w-4 h-4 text-indigo-500" />
-              FDS 룰셋 실시간 임계값 조절
-            </h3>
-            <p className="text-xs text-gray-400 mt-0.5">이상거래 탐지 임계값을 변경하면 룰 엔진이 실시간으로 적용해 감지 리스트를 재평가합니다.</p>
-          </div>
-
-          <div className="space-y-4 flex-1">
-            {fdsPolicies.map((policy) => {
-              const currentValue = editValues[policy.policy_key] ?? Number(policy.policy_value);
-              const isUpdating = updatingKey === policy.policy_key;
-              const isSuccess = successKey === policy.policy_key;
-
-              return (
-                <div key={policy.policy_key} className="p-3 bg-gray-50 rounded-xl space-y-2.5 border border-gray-100">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <span className="font-bold text-xs text-indigo-600 block">
-                        {POLICY_FRIENDLY_NAMES[policy.policy_key] || policy.policy_key}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="number"
-                      className="w-full bg-white border border-gray-200 rounded-lg px-2.5 py-1 text-sm font-semibold text-gray-800 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                      value={currentValue}
-                      onChange={(e) => handlePolicyChange(policy.policy_key, parseFloat(e.target.value) || 0)}
-                      disabled={isUpdating}
-                    />
-                    <button
-                      type="button"
-                      className={`shrink-0 px-3 py-1 text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-1 ${
-                        isSuccess
-                          ? 'bg-emerald-500 text-white'
-                          : isUpdating
-                          ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                          : 'bg-indigo-600 text-white hover:bg-indigo-700'
-                      }`}
-                      onClick={() => handlePolicySubmit(policy.policy_key)}
-                      disabled={isUpdating || isSuccess}
-                    >
-                      {isSuccess ? (
-                        <>
-                          <Check className="w-3 h-3" />
-                          완료
-                        </>
-                      ) : isUpdating ? (
-                        <RefreshCw className="w-3 h-3 animate-spin" />
-                      ) : (
-                        '적용'
-                      )}
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="border-b border-gray-100 text-gray-400 text-xs font-bold uppercase tracking-wider">
+                <th className="py-3 px-2">고객명</th>
+                <th className="py-3 px-2">위험 등급</th>
+                <th className="py-3 px-2">판정 근거 및 감지 룰</th>
+                <th className="py-3 px-2 text-right">감지 시각</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-50 text-sm">
+              {fdsReports.length > 0 ? (
+                fdsReports.map((report) => {
+                  const isCritical = report.fraud_score >= 90;
+                  return (
+                    <tr key={report.id} className="hover:bg-gray-50/50 transition-colors">
+                      <td className="py-3.5 px-2 font-semibold text-gray-700">
+                        {report.customer_name || '비공개'}
+                        <span className="text-xs text-gray-400 block font-normal mt-0.5">ID: {report.customer_id}</span>
+                      </td>
+                      <td className="py-3.5 px-2">
+                        <span
+                          className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold ${
+                            isCritical
+                              ? 'bg-rose-50 text-rose-600 border border-rose-100'
+                              : 'bg-amber-50 text-amber-600 border border-amber-100'
+                          }`}
+                        >
+                          <span className={`w-1.5 h-1.5 rounded-full ${isCritical ? 'bg-rose-500' : 'bg-amber-400'}`}></span>
+                          {isCritical ? `Critical (${report.fraud_score}점)` : `Warning (${report.fraud_score}점)`}
+                        </span>
+                      </td>
+                      <td className="py-3.5 px-2 text-xs text-gray-500 max-w-[250px] truncate" title={report.fraud_reason || ''}>
+                        {report.fraud_reason || '사유가 기록되지 않았습니다.'}
+                      </td>
+                      <td className="py-3.5 px-2 text-right text-gray-400 text-xs font-medium">
+                        {new Date(report.detected_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                      </td>
+                    </tr>
+                  );
+                })
+              ) : (
+                <tr>
+                  <td colSpan={4} className="py-8 text-center text-gray-400 text-sm">
+                    현재 탐지된 위협 또는 이상 징후가 없습니다.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
+
+      {/* Slide-over Drawer for FDS Policy Config */}
+      {isPolicyOpen && (
+        <div className="fixed inset-0 z-50 overflow-hidden" aria-labelledby="slide-over-title" role="dialog" aria-modal="true">
+          <div className="absolute inset-0 overflow-hidden">
+            {/* Backdrop */}
+            <div 
+              className="absolute inset-0 bg-gray-500/20 backdrop-blur-xs transition-opacity duration-300 ease-in-out" 
+              onClick={() => setIsPolicyOpen(false)}
+            ></div>
+
+            <div className="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10">
+              <div className="pointer-events-auto w-screen max-w-md transform transition duration-500 ease-in-out sm:duration-700 bg-white shadow-2xl border-l border-gray-100 flex flex-col h-full">
+                {/* Header */}
+                <div className="px-5 py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+                  <div>
+                    <h2 className="text-base font-bold text-gray-800 flex items-center gap-1.5" id="slide-over-title">
+                      <Settings className="w-4 h-4 text-indigo-500" />
+                      FDS 룰셋 실시간 설정
+                    </h2>
+                    <p className="text-xs text-gray-400 mt-0.5">이상거래 감지 임계값을 조절하여 룰을 수정합니다.</p>
+                  </div>
+                  <button 
+                    type="button" 
+                    className="rounded-lg p-1.5 text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none transition-colors cursor-pointer"
+                    onClick={() => setIsPolicyOpen(false)}
+                  >
+                    <span className="sr-only">Close panel</span>
+                    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" aria-hidden="true">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+
+                {/* Content */}
+                <div className="flex-1 overflow-y-auto px-5 py-6 space-y-4">
+                  {fdsPolicies.map((policy) => {
+                    const currentValue = editValues[policy.policy_key] ?? Number(policy.policy_value);
+                    const isUpdating = updatingKey === policy.policy_key;
+                    const isSuccess = successKey === policy.policy_key;
+
+                    return (
+                      <div key={policy.policy_key} className="p-4 bg-gray-50 rounded-xl space-y-2.5 border border-gray-100">
+                        <div>
+                          <span className="font-bold text-xs text-indigo-600 block">
+                            {POLICY_FRIENDLY_NAMES[policy.policy_key] || policy.policy_key}
+                          </span>
+                          <span className="text-[11px] text-gray-400 leading-tight block mt-1">
+                            {policy.description}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="number"
+                            className="w-full bg-white border border-gray-200 rounded-lg px-2.5 py-1.5 text-sm font-semibold text-gray-800 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                            value={currentValue}
+                            onChange={(e) => handlePolicyChange(policy.policy_key, parseFloat(e.target.value) || 0)}
+                            disabled={isUpdating}
+                          />
+                          <button
+                            type="button"
+                            className={`shrink-0 px-3 py-1.5 text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-1 cursor-pointer ${
+                              isSuccess
+                                ? 'bg-emerald-500 text-white'
+                                : isUpdating
+                                ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                                : 'bg-indigo-600 text-white hover:bg-indigo-700'
+                            }`}
+                            onClick={() => handlePolicySubmit(policy.policy_key)}
+                            disabled={isUpdating || isSuccess}
+                          >
+                            {isSuccess ? (
+                              <>
+                                <Check className="w-3.5 h-3.5" />
+                                완료
+                              </>
+                            ) : isUpdating ? (
+                              <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                            ) : (
+                              '적용'
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ─── 최하단 3분할 그리드: 분석 핫스팟 (Analytics Hotspots Grid) ─── */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
