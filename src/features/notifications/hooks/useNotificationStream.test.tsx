@@ -16,7 +16,7 @@ vi.mock('@/features/notifications/api/notificationService', () => ({
   issueNotificationStreamTicket: vi.fn(),
 }));
 
-// 모듈 로드 전에 localStorage 등록
+// 테스트용 localStorage 설정
 vi.hoisted(() => {
   const store: Record<string, string> = {};
   vi.stubGlobal('localStorage', {
@@ -210,6 +210,42 @@ describe('useNotificationStream', () => {
       // 중복 알림 제외
       act(() => {
         es.dispatch('notification', payload);
+      });
+      expect(store.get(notificationsAtom)).toHaveLength(1);
+      expect(store.get(unreadNotificationCountAtom)).toBe(1);
+    });
+
+    it('adds an FDS_ALERT item via the same notification event path as other categories, with HIGH severity', async () => {
+      localStorage.setItem('wms_mock_mode', 'false');
+      const { store } = setupHook();
+      await act(async () => {
+        await flushMicrotasks();
+      });
+
+      const es = MockEventSource.instances[0];
+      const fdsPayload = {
+        id: 'fds-1',
+        category: 'FDS_ALERT',
+        severity: 'HIGH',
+        title: '반품·환불 이상거래 탐지',
+        message: '홍길동 고객의 이상거래가 탐지되었습니다. 90일간 반품 5건, 환불 요청 4건.',
+        // 백엔드의 offset 없는 UTC 형식
+        timestamp: '2026-07-29T01:23:45.678901',
+        read: false,
+      };
+
+      act(() => {
+        es.dispatch('notification', fdsPayload);
+      });
+
+      const items = store.get(notificationsAtom);
+      expect(items).toHaveLength(1);
+      expect(items[0]).toMatchObject({ id: 'fds-1', category: 'FDS_ALERT', severity: 'HIGH' });
+      expect(store.get(unreadNotificationCountAtom)).toBe(1);
+
+      // 동일 ID 중복 수신 제외
+      act(() => {
+        es.dispatch('notification', fdsPayload);
       });
       expect(store.get(notificationsAtom)).toHaveLength(1);
       expect(store.get(unreadNotificationCountAtom)).toBe(1);
