@@ -33,6 +33,11 @@ import {
   getFdsReports,
   getFdsPolicies,
   updateFdsPolicy,
+  getMockInspectionMetrics,
+  getMockWeeklyInsights,
+  getMockFdsReports,
+  getMockFdsPolicies,
+  updateMockFdsPolicy,
 } from '@/services/dashboardService';
 import type {
   InspectionMetrics,
@@ -42,6 +47,13 @@ import type {
 } from '@/types/dashboardTypes';
 
 const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
+
+const POLICY_FRIENDLY_NAMES: Record<string, string> = {
+  MAX_RETURN_30D: '최근 30일 최대 반품 제한 횟수',
+  MIN_UBCI_SCORE: '최소 허용 UBCI 품질 점수',
+  MAX_RETURN_90D: '최근 90일 최대 반품 제한 횟수',
+  MAX_REFUND_AMT: '최대 누적 환불 제한 금액',
+};
 
 // 일별 입출고 추이 시뮬레이션용 시계열 데이터
 const MOCK_DAILY_FLOW = [
@@ -63,16 +75,33 @@ export default function ComprehensiveStatsTab() {
   const [updatingKey, setUpdatingKey] = useState<string | null>(null);
   const [successKey, setSuccessKey] = useState<string | null>(null);
   const [editValues, setEditValues] = useState<Record<string, number>>({});
+  const [isApiFallback, setIsApiFallback] = useState(false);
 
   const loadData = async () => {
     try {
       setLoading(true);
-      const [fetchedMetrics, fetchedInsights, fetchedReports, fetchedPolicies] = await Promise.all([
-        getInspectionMetrics(),
-        getWeeklyInsights(),
-        getFdsReports(),
-        getFdsPolicies(),
-      ]);
+      let fetchedMetrics: InspectionMetrics;
+      let fetchedInsights: WeeklyInsight[];
+      let fetchedReports: FdsReport[];
+      let fetchedPolicies: FdsPolicy[];
+
+      try {
+        [fetchedMetrics, fetchedInsights, fetchedReports, fetchedPolicies] = await Promise.all([
+          getInspectionMetrics(),
+          getWeeklyInsights(),
+          getFdsReports(),
+          getFdsPolicies(),
+        ]);
+        setIsApiFallback(false);
+      } catch (error) {
+        console.warn('실제 백엔드 API 연동 실패, Mock 시뮬레이션 데이터로 대체 로드합니다:', error);
+        setIsApiFallback(true);
+        fetchedMetrics = getMockInspectionMetrics();
+        fetchedInsights = getMockWeeklyInsights();
+        fetchedReports = getMockFdsReports();
+        fetchedPolicies = getMockFdsPolicies();
+      }
+
       setMetrics(fetchedMetrics);
       setInsights(fetchedInsights);
       setFdsReports(fetchedReports);
@@ -85,7 +114,7 @@ export default function ComprehensiveStatsTab() {
       });
       setEditValues(initialEditValues);
     } catch (error) {
-      console.error('대시보드 통계 데이터를 불러오는 중 에러 발생:', error);
+      console.error('대시보드 데이터 로드 중 치명적 오류:', error);
     } finally {
       setLoading(false);
     }
@@ -103,10 +132,43 @@ export default function ComprehensiveStatsTab() {
   };
 
   const handlePolicySubmit = async (key: string) => {
+    const updatedValue = editValues[key];
+
+    // 입력값 유효성 검증 (Validation)
+    if (key === 'MAX_RETURN_30D' || key === 'MAX_RETURN_90D') {
+      if (updatedValue < 1 || !Number.isInteger(updatedValue)) {
+        alert('반품 횟수 임계값은 1 이상의 정수여야 합니다.');
+        return;
+      }
+    }
+    if (key === 'MIN_UBCI_SCORE') {
+      if (updatedValue < 0 || updatedValue > 100) {
+        alert('UBCI 최하 한계 점수는 0에서 100 사이의 숫자여야 합니다.');
+        return;
+      }
+    }
+    if (key === 'MAX_REFUND_AMT') {
+      if (updatedValue < 0) {
+        alert('최대 허용 환불 금액은 0원 이상이어야 합니다.');
+        return;
+      }
+    }
+
     try {
       setUpdatingKey(key);
-      const updatedValue = editValues[key];
-      await updateFdsPolicy(key, updatedValue);
+      
+      if (isApiFallback) {
+        updateMockFdsPolicy(key, updatedValue);
+      } else {
+        try {
+          await updateFdsPolicy(key, updatedValue);
+        } catch (apiError) {
+          console.warn('API로 정책 업데이트 실패, 로컬 Mock 모드로 반영합니다:', apiError);
+          setIsApiFallback(true);
+          updateMockFdsPolicy(key, updatedValue);
+        }
+      }
+
       setSuccessKey(key);
       
       // 1.5초 후 성공 표시 초기화
@@ -115,10 +177,24 @@ export default function ComprehensiveStatsTab() {
       }, 1500);
 
       // 데이터 갱신
-      const [fetchedReports, fetchedPolicies] = await Promise.all([
-        getFdsReports(),
-        getFdsPolicies(),
-      ]);
+      let fetchedReports: FdsReport[];
+      let fetchedPolicies: FdsPolicy[];
+
+      if (isApiFallback) {
+        fetchedReports = getMockFdsReports();
+        fetchedPolicies = getMockFdsPolicies();
+      } else {
+        try {
+          [fetchedReports, fetchedPolicies] = await Promise.all([
+            getFdsReports(),
+            getFdsPolicies(),
+          ]);
+        } catch (error) {
+          fetchedReports = getMockFdsReports();
+          fetchedPolicies = getMockFdsPolicies();
+        }
+      }
+
       setFdsReports(fetchedReports);
       setFdsPolicies(fetchedPolicies);
     } catch (error) {
@@ -169,6 +245,15 @@ export default function ComprehensiveStatsTab() {
 
   return (
     <div className="space-y-4 max-w-[1600px] mx-auto animate-fade-in pb-8">
+      {/* API 연결 상태 경고 배너 */}
+      {isApiFallback && (
+        <div className="bg-amber-50 border border-amber-200 text-amber-800 text-xs px-4 py-2.5 rounded-xl flex items-center gap-2">
+          <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+          <span>
+            <strong>백엔드 API 미연결 안내</strong>: 백엔드에 대시보드 API 엔드포인트가 연동되지 않아 모의(Mock) 데이터 시뮬레이션 모드로 자동 대체되었습니다. 임계치 수정은 로컬 브라우저 세션에 정상 기록됩니다.
+          </span>
+        </div>
+      )}
       {/* ─── 상단 요약 카드 행 (KPI Summary) ─── */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* KPI 1: 누적 인건비 절감액 */}
@@ -360,9 +445,8 @@ export default function ComprehensiveStatsTab() {
                 <div key={policy.policy_key} className="p-3 bg-gray-50 rounded-xl space-y-2.5 border border-gray-100">
                   <div className="flex justify-between items-start">
                     <div>
-                      <span className="font-bold text-xs text-indigo-600 block">{policy.policy_key}</span>
-                      <span className="text-[11px] text-gray-400 leading-tight block mt-0.5">
-                        {policy.description}
+                      <span className="font-bold text-xs text-indigo-600 block">
+                        {POLICY_FRIENDLY_NAMES[policy.policy_key] || policy.policy_key}
                       </span>
                     </div>
                   </div>
