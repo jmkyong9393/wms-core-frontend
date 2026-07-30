@@ -4,6 +4,7 @@ import HitlActionErrorToast from "@/features/queue/components/HitlActionErrorToa
 import { AuthGuard } from "@/features/auth/components/AuthGuard";
 import { NotificationStreamProvider } from "@/features/notifications/components/NotificationStreamProvider";
 import { NotificationToastContainer } from "@/features/notifications/components/NotificationToastContainer";
+import { NotificationActionErrorToast } from "@/features/notifications/components/NotificationActionErrorToast";
 
 export default function AdminLayout({
   children,
@@ -16,6 +17,7 @@ export default function AdminLayout({
       <HitlActionErrorToast />
       <NotificationStreamProvider />
       <NotificationToastContainer />
+      <NotificationActionErrorToast />
       <MainLayout>{children}</MainLayout>
     </AuthGuard>
   );

@@ -1,14 +1,16 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { useAtomValue, useSetAtom } from 'jotai';
+import { useAtomValue } from 'jotai';
 import { Bell } from 'lucide-react';
 import {
   notificationsAtom,
   unreadNotificationCountAtom,
-  markNotificationReadAtom,
-  markAllNotificationsReadAtom,
 } from '@/features/notifications/store/notificationAtoms';
+import {
+  useMarkNotificationReadMutation,
+  useMarkAllNotificationsReadMutation,
+} from '@/features/notifications/hooks/useNotificationMutations';
 import { NotificationListItem } from '@/features/notifications/components/NotificationListItem';
 
 export function NotificationBell() {
@@ -17,8 +19,8 @@ export function NotificationBell() {
 
   const notifications = useAtomValue(notificationsAtom);
   const unreadCount = useAtomValue(unreadNotificationCountAtom);
-  const markRead = useSetAtom(markNotificationReadAtom);
-  const markAllRead = useSetAtom(markAllNotificationsReadAtom);
+  const markReadMutation = useMarkNotificationReadMutation();
+  const markAllReadMutation = useMarkAllNotificationsReadMutation();
 
   useEffect(() => {
     if (!open) return;
@@ -53,7 +55,7 @@ export function NotificationBell() {
             <span className="text-sm font-semibold text-gray-800">알림</span>
             <button
               type="button"
-              onClick={() => markAllRead()}
+              onClick={() => markAllReadMutation.mutate()}
               className="text-xs font-medium text-blue-600 hover:text-blue-700"
             >
               모두 읽음
@@ -64,7 +66,11 @@ export function NotificationBell() {
               <p className="px-4 py-8 text-center text-sm text-gray-400">새로운 알림이 없습니다</p>
             ) : (
               notifications.map((item) => (
-                <NotificationListItem key={item.id} item={item} onClick={markRead} />
+                <NotificationListItem
+                  key={item.id}
+                  item={item}
+                  onClick={(id) => markReadMutation.mutate(id)}
+                />
               ))
             )}
           </div>

@@ -1,4 +1,4 @@
-export const MAX_NOTIFICATION_HISTORY = 30;
+export const MAX_NOTIFICATION_HISTORY = 50;
 export const TOAST_AUTO_DISMISS_MS = 4000;
 export const MOCK_INTERVAL_MIN_MS = 8000;
 export const MOCK_INTERVAL_MAX_MS = 20000;
