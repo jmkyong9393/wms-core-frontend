@@ -25,7 +25,7 @@ const MENU_ITEMS = [
   { name: '검토 대기', href: '/admin/queue', icon: ListChecks },
   { name: '검수 처리 내역', href: '/admin/inspections', icon: ClipboardList },
   { name: '재고·출고 관리', href: '/admin/inventory', icon: Warehouse },
-  { name: '자동 발주 현황', href: '/po', icon: ShoppingCart },
+  { name: '발주 추천안', href: '/admin/restock', icon: ShoppingCart },
   { name: 'AI 품질 리포트', href: '/reports', icon: LineChart },
   { name: '스마트 패킹', href: '/outbound/packing', icon: Package },
 ];
