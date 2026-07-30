@@ -1,13 +1,16 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useSetAtom } from 'jotai';
+import { useSetAtom, useStore } from 'jotai';
+import { isAxiosError } from 'axios';
 import { API_BASE_URL } from '@/lib/api-client';
 import { useMockNotificationSimulator } from '@/features/notifications/mocks/useMockNotificationSimulator';
 import {
   listNotifications,
   issueNotificationStreamTicket,
 } from '@/features/notifications/api/notificationService';
+import { getOrRefreshAccessToken } from '@/features/auth/api/tokenRefresh';
+import { authTokenAtom, logoutAtom } from '@/features/auth/store/authAtoms';
 import {
   setNotificationListAtom,
   pushRealNotificationAtom,
@@ -30,11 +33,16 @@ export const RECONNECT_BASE_DELAY_MS = 1000;
 export const RECONNECT_MAX_DELAY_MS = 30000;
 export const MAX_RECONNECT_ATTEMPTS = 5;
 
+function isUnauthorized(err: unknown): boolean {
+  return isAxiosError(err) && err.response?.status === 401;
+}
+
 // 알림 목록 조회 및 SSE 연결
 export function useNotificationStream() {
   const mock = isMockMode();
   useMockNotificationSimulator(mock);
 
+  const store = useStore();
   const setNotificationList = useSetAtom(setNotificationListAtom);
   const pushRealNotification = useSetAtom(pushRealNotificationAtom);
 
@@ -72,47 +80,94 @@ export function useNotificationStream() {
       }, delay);
     }
 
+    // 발급받은 ticket으로 EventSource를 새로 연다 (기존 연결은 정리)
+    function openEventSource(ticket: string) {
+      esRef.current?.close();
+
+      const url = `${API_BASE_URL}${NOTIFICATION_STREAM_ENDPOINT}?ticket=${encodeURIComponent(ticket)}`;
+      const es = new EventSource(url);
+      esRef.current = es;
+
+      // 연결 성공 시 재시도 횟수 초기화
+      es.onopen = () => {
+        retryCount = 0;
+      };
+
+      // SSE 연결 확인
+      es.addEventListener('connected', () => {
+        // 별도 상태 처리 없음
+      });
+
+      // 실시간 알림 추가
+      es.addEventListener('notification', (event: MessageEvent) => {
+        try {
+          const data = JSON.parse(event.data) as NotificationItem;
+          pushRealNotification(data);
+        } catch (parseErr) {
+          console.error('[Notification SSE] 알림 데이터 파싱 실패', parseErr);
+        }
+      });
+
+      // 오류 발생 시 현재 연결 종료 후 재연결
+      es.onerror = (err) => {
+        console.error('[Notification SSE] 연결 오류', err);
+        esRef.current?.close();
+        esRef.current = null;
+        scheduleReconnect();
+      };
+    }
+
+    // 현재 Access Token이 만료된 경우: Refresh 후 새 토큰으로 ticket 재발급
+    // 한 사이클에서 Refresh는 최대 1회만 수행 (성공 후 재발급도 401이면 재-Refresh 없이 로그아웃)
+    async function handleTicketUnauthorized() {
+      let newToken: string;
+      try {
+        newToken = await getOrRefreshAccessToken();
+      } catch (err) {
+        if (cancelled) return;
+        if (isUnauthorized(err)) {
+          // Refresh Token도 만료/무효 - 인증 상태 제거, AuthGuard가 로그인 페이지로 이동시킴
+          store.set(logoutAtom);
+          return;
+        }
+        // 네트워크 오류 / 5xx - 인증 상태는 유지한 채 기존 백오프로 재시도
+        console.error('[Notification] Access Token 갱신 실패 - 재시도 예정', err);
+        scheduleReconnect();
+        return;
+      }
+
+      if (cancelled) return;
+      store.set(authTokenAtom, newToken);
+
+      try {
+        const { ticket } = await issueNotificationStreamTicket();
+        if (cancelled) return;
+        openEventSource(ticket);
+      } catch (err) {
+        if (cancelled) return;
+        if (isUnauthorized(err)) {
+          // 갱신된 Access Token으로도 401 - 세션이 유효하지 않음, 재-Refresh 없이 재접속 중단
+          store.set(logoutAtom);
+          return;
+        }
+        // 네트워크 오류 / 5xx - 백오프 재시도 (이 사이클에서 Refresh는 다시 호출하지 않음)
+        console.error('[Notification] 갱신된 토큰으로 티켓 재발급 실패 - 재시도 예정', err);
+        scheduleReconnect();
+      }
+    }
+
     // 티켓 발급 후 SSE 연결
     async function connectStream() {
       try {
         const { ticket } = await issueNotificationStreamTicket();
         if (cancelled) return;
-
-        // 기존 연결 종료
-        esRef.current?.close();
-
-        const url = `${API_BASE_URL}${NOTIFICATION_STREAM_ENDPOINT}?ticket=${encodeURIComponent(ticket)}`;
-        const es = new EventSource(url);
-        esRef.current = es;
-
-        // 연결 성공 시 재시도 횟수 초기화
-        es.onopen = () => {
-          retryCount = 0;
-        };
-
-        // SSE 연결 확인
-        es.addEventListener('connected', () => {
-          // 별도 상태 처리 없음
-        });
-
-        // 실시간 알림 추가
-        es.addEventListener('notification', (event: MessageEvent) => {
-          try {
-            const data = JSON.parse(event.data) as NotificationItem;
-            pushRealNotification(data);
-          } catch (parseErr) {
-            console.error('[Notification SSE] 알림 데이터 파싱 실패', parseErr);
-          }
-        });
-
-        // 오류 발생 시 현재 연결 종료 후 재연결
-        es.onerror = (err) => {
-          console.error('[Notification SSE] 연결 오류', err);
-          esRef.current?.close();
-          esRef.current = null;
-          scheduleReconnect();
-        };
+        openEventSource(ticket);
       } catch (err) {
+        if (cancelled) return;
+        if (isUnauthorized(err)) {
+          await handleTicketUnauthorized();
+          return;
+        }
         console.error('[Notification] SSE 연결 시작 실패', err);
         scheduleReconnect();
       }
@@ -135,5 +190,5 @@ export function useNotificationStream() {
       esRef.current?.close();
       esRef.current = null;
     };
-  }, [mock, setNotificationList, pushRealNotification]);
+  }, [mock, store, setNotificationList, pushRealNotification]);
 }
