@@ -7,3 +7,5 @@
 export const LOGIN_ENDPOINT = "/api/v1/auth/login";
 export const ME_ENDPOINT = "/api/v1/auth/me";
 export const CHANGE_PASSWORD_ENDPOINT = "/api/v1/auth/password";
+export const REFRESH_ENDPOINT = "/api/v1/auth/refresh";
+export const LOGOUT_ENDPOINT = "/api/v1/auth/logout";

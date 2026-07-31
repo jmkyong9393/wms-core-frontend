@@ -14,6 +14,11 @@ export interface LoginResponse {
   must_change_password: boolean;
 }
 
+// POST /api/v1/auth/refresh 응답 데이터
+export interface RefreshResponse {
+  access_token: string;
+}
+
 // GET /api/v1/auth/me 응답 데이터
 export interface AuthMeResponse {
   id: string;

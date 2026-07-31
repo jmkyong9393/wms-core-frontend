@@ -12,14 +12,31 @@ import {
   notificationsAtom,
   unreadNotificationCountAtom,
 } from '@/features/notifications/store/notificationAtoms';
+import { authTokenAtom } from '@/features/auth/store/authAtoms';
 import { MOCK_INTERVAL_MAX_MS } from '@/features/notifications/constants/notificationConfig';
 import { listNotifications, issueNotificationStreamTicket } from '@/features/notifications/api/notificationService';
+import { refreshAccessToken } from '@/features/auth/api/authService';
 import type { NotificationListResult, NotificationStreamTicket } from '@/features/notifications/types/notification';
 
 vi.mock('@/features/notifications/api/notificationService', () => ({
   listNotifications: vi.fn(),
   issueNotificationStreamTicket: vi.fn(),
 }));
+
+vi.mock('@/features/auth/api/authService', () => ({
+  refreshAccessToken: vi.fn(),
+}));
+
+function unauthorizedError() {
+  return Object.assign(new Error('Unauthorized'), {
+    isAxiosError: true,
+    response: { status: 401 },
+  });
+}
+
+function networkError() {
+  return Object.assign(new Error('Network Error'), { isAxiosError: true });
+}
 
 // 테스트용 localStorage 설정
 vi.hoisted(() => {
@@ -88,8 +105,13 @@ async function advanceAndFlush(ms: number) {
   });
 }
 
-function setupHook() {
+function setupHook(options: { seedToken?: string | null } = {}) {
+  const { seedToken = 'seeded-token' } = options;
   const store = createStore();
+  // null이면 로그아웃 상태로 연결하지 않음
+  if (seedToken !== null) {
+    store.set(authTokenAtom, seedToken);
+  }
   const wrapper = ({ children }: { children: ReactNode }) => (
     <JotaiProvider store={store}>{children}</JotaiProvider>
   );
@@ -503,6 +525,190 @@ describe('useNotificationStream', () => {
       unmount();
 
       await advanceAndFlush(RECONNECT_MAX_DELAY_MS * 2);
+      expect(MockEventSource.instances).toHaveLength(1);
+    });
+  });
+
+  describe('real mode: 401 → Access Token 갱신', () => {
+    it('refreshes the token and opens the stream with a newly issued ticket when the ticket request is 401', async () => {
+      localStorage.setItem('wms_mock_mode', 'false');
+      vi.mocked(issueNotificationStreamTicket)
+        .mockRejectedValueOnce(unauthorizedError())
+        .mockResolvedValueOnce({ ticket: 'ticket-after-refresh', expiresIn: 300 });
+      vi.mocked(refreshAccessToken).mockResolvedValueOnce({ access_token: 'new-token' });
+
+      const { store } = setupHook();
+      await act(async () => {
+        await flushMicrotasks();
+      });
+
+      expect(refreshAccessToken).toHaveBeenCalledTimes(1);
+      expect(store.get(authTokenAtom)).toBe('new-token');
+      expect(MockEventSource.instances).toHaveLength(1);
+      expect(MockEventSource.instances[0].url).toContain('ticket-after-refresh');
+    });
+
+    it('logs out (no further reconnect) when the Refresh request itself is 401', async () => {
+      localStorage.setItem('wms_mock_mode', 'false');
+      vi.mocked(issueNotificationStreamTicket).mockRejectedValueOnce(unauthorizedError());
+      vi.mocked(refreshAccessToken).mockRejectedValueOnce(unauthorizedError());
+
+      const { store } = setupHook();
+      await act(async () => {
+        await flushMicrotasks();
+      });
+
+      expect(refreshAccessToken).toHaveBeenCalledTimes(1);
+      expect(store.get(authTokenAtom)).toBeNull();
+      expect(MockEventSource.instances).toHaveLength(0);
+
+      // 로그아웃 이후에는 백오프 재연결도 예약되지 않음
+      await advanceAndFlush(RECONNECT_MAX_DELAY_MS * 2);
+      expect(MockEventSource.instances).toHaveLength(0);
+    });
+
+    it('keeps the session and retries via the normal backoff when Refresh fails with a network/5xx error', async () => {
+      localStorage.setItem('wms_mock_mode', 'false');
+      vi.mocked(issueNotificationStreamTicket)
+        .mockRejectedValueOnce(unauthorizedError())
+        .mockResolvedValueOnce({ ticket: 'ticket-after-retry', expiresIn: 300 });
+      vi.mocked(refreshAccessToken).mockRejectedValueOnce(networkError());
+
+      const { store } = setupHook();
+      // atomWithStorage(getOnInit)는 모듈 로드 시점에 한 번만 저장소를 읽으므로,
+      // 이 store 인스턴스의 기준값을 명시적으로 세팅해서 "세션 유지" 여부를 검증한다
+      act(() => {
+        store.set(authTokenAtom, 'old-token');
+      });
+      await act(async () => {
+        await flushMicrotasks();
+      });
+
+      // 인증 상태는 그대로 유지
+      expect(store.get(authTokenAtom)).toBe('old-token');
+      expect(MockEventSource.instances).toHaveLength(0);
+
+      await advanceAndFlush(RECONNECT_BASE_DELAY_MS);
+
+      expect(MockEventSource.instances).toHaveLength(1);
+      expect(refreshAccessToken).toHaveBeenCalledTimes(1);
+    });
+
+    it('logs out without retrying Refresh again when a freshly refreshed token also gets 401 on ticket reissue', async () => {
+      localStorage.setItem('wms_mock_mode', 'false');
+      vi.mocked(issueNotificationStreamTicket)
+        .mockRejectedValueOnce(unauthorizedError())
+        .mockRejectedValueOnce(unauthorizedError());
+      vi.mocked(refreshAccessToken).mockResolvedValueOnce({ access_token: 'new-token' });
+
+      const { store } = setupHook();
+      await act(async () => {
+        await flushMicrotasks();
+      });
+
+      expect(refreshAccessToken).toHaveBeenCalledTimes(1);
+      expect(store.get(authTokenAtom)).toBeNull();
+      expect(MockEventSource.instances).toHaveLength(0);
+
+      await advanceAndFlush(RECONNECT_MAX_DELAY_MS * 2);
+      expect(MockEventSource.instances).toHaveLength(0);
+      expect(refreshAccessToken).toHaveBeenCalledTimes(1);
+    });
+
+    it('retries via backoff without calling Refresh again when ticket reissue fails on network/5xx after a successful refresh', async () => {
+      localStorage.setItem('wms_mock_mode', 'false');
+      vi.mocked(issueNotificationStreamTicket)
+        .mockRejectedValueOnce(unauthorizedError())
+        .mockRejectedValueOnce(networkError())
+        .mockResolvedValueOnce({ ticket: 'ticket-after-second-retry', expiresIn: 300 });
+      vi.mocked(refreshAccessToken).mockResolvedValueOnce({ access_token: 'new-token' });
+
+      const { store } = setupHook();
+      await act(async () => {
+        await flushMicrotasks();
+      });
+
+      expect(store.get(authTokenAtom)).toBe('new-token');
+      expect(MockEventSource.instances).toHaveLength(0);
+
+      await advanceAndFlush(RECONNECT_BASE_DELAY_MS);
+
+      expect(MockEventSource.instances).toHaveLength(1);
+      expect(refreshAccessToken).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('real mode: 로그아웃', () => {
+    it('closes the open EventSource as soon as the auth token is cleared (logout)', async () => {
+      localStorage.setItem('wms_mock_mode', 'false');
+      const { store } = setupHook();
+      await act(async () => {
+        await flushMicrotasks();
+      });
+
+      const es = MockEventSource.instances[0];
+      expect(es.close).not.toHaveBeenCalled();
+
+      // 로그아웃: authTokenAtom -> null
+      act(() => {
+        store.set(authTokenAtom, null);
+      });
+
+      expect(es.close).toHaveBeenCalledTimes(1);
+    });
+
+    it('cancels a pending reconnect timer on logout so no further reconnect happens', async () => {
+      localStorage.setItem('wms_mock_mode', 'false');
+      const { store } = setupHook();
+      await act(async () => {
+        await flushMicrotasks();
+      });
+
+      const es = MockEventSource.instances[0];
+      act(() => {
+        es.triggerError();
+      });
+      expect(MockEventSource.instances).toHaveLength(1);
+
+      // 재연결 타이머가 대기 중인 상태에서 로그아웃
+      act(() => {
+        store.set(authTokenAtom, null);
+      });
+
+      // 대기 시간이 지나도 재연결하지 않음
+      await advanceAndFlush(RECONNECT_MAX_DELAY_MS * 2);
+      expect(MockEventSource.instances).toHaveLength(1);
+      expect(issueNotificationStreamTicket).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not fetch the list or open a connection when mounted without an auth token', async () => {
+      localStorage.setItem('wms_mock_mode', 'false');
+      setupHook({ seedToken: null });
+      await act(async () => {
+        await flushMicrotasks();
+      });
+
+      expect(listNotifications).not.toHaveBeenCalled();
+      expect(issueNotificationStreamTicket).not.toHaveBeenCalled();
+      expect(MockEventSource.instances).toHaveLength(0);
+    });
+
+    it('starts connecting once an auth token appears after mounting without one (e.g. login)', async () => {
+      localStorage.setItem('wms_mock_mode', 'false');
+      const { store } = setupHook({ seedToken: null });
+      await act(async () => {
+        await flushMicrotasks();
+      });
+      expect(MockEventSource.instances).toHaveLength(0);
+
+      act(() => {
+        store.set(authTokenAtom, 'fresh-login-token');
+      });
+      await act(async () => {
+        await flushMicrotasks();
+      });
+
+      expect(issueNotificationStreamTicket).toHaveBeenCalledTimes(1);
       expect(MockEventSource.instances).toHaveLength(1);
     });
   });

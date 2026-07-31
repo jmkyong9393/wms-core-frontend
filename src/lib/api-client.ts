@@ -1,7 +1,14 @@
 import axios from "axios";
 import { AUTH_TOKEN_STORAGE_KEY } from "@/features/auth/store/authAtoms";
 
-// 백엔드 API 기본 주소 
+declare module "axios" {
+  export interface AxiosRequestConfig {
+    // true면 요청 인터셉터가 Authorization 헤더를 붙이지 않음 (로그인/Refresh/로그아웃 전용)
+    skipAuth?: boolean;
+  }
+}
+
+// 백엔드 API 기본 주소
 // 환경변수 미설정 시 로컬 백엔드 주소 사용 
 // Axios 요청과 MSW Mock에서 동일한 주소 공유
 export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
@@ -19,7 +26,7 @@ export const apiClient = axios.create({
 apiClient.interceptors.request.use(
   (config) => {
     const token =
-      typeof window !== "undefined"
+      !config.skipAuth && typeof window !== "undefined"
         ? localStorage.getItem(AUTH_TOKEN_STORAGE_KEY)
         : null;
     if (token) {
