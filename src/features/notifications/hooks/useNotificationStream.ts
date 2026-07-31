@@ -19,7 +19,16 @@ import {
   NOTIFICATION_STREAM_ENDPOINT,
   NOTIFICATION_LIST_LIMIT,
 } from '@/features/notifications/constants/notificationApi';
-import type { NotificationItem } from '@/features/notifications/types/notification';
+import { normalizeRestockAlertPayload } from '@/features/notifications/utils/normalizeRestockAlertPayload';
+import type {
+  NotificationItem,
+  RestockAlertPayloadWire,
+} from '@/features/notifications/types/notification';
+
+// 백엔드에서 전달받는 SSE 알림 구조
+interface NotificationWireEvent extends Omit<NotificationItem, 'payload'> {
+  payload?: RestockAlertPayloadWire;
+}
 
 // 알림 전용 Mock 모드 확인
 const MOCK_MODE_KEY = 'wms_mock_mode';
@@ -105,8 +114,13 @@ export function useNotificationStream() {
       // 실시간 알림 추가
       es.addEventListener('notification', (event: MessageEvent) => {
         try {
-          const data = JSON.parse(event.data) as NotificationItem;
-          pushRealNotification(data);
+          const wire = JSON.parse(event.data) as NotificationWireEvent;
+          // 발주 추천 알림의 payload 필드명 변환
+          const item: NotificationItem =
+            wire.category === 'RESTOCK_ALERT' && wire.payload
+              ? { ...wire, payload: normalizeRestockAlertPayload(wire.payload) }
+              : { ...wire, payload: undefined };
+          pushRealNotification(item);
         } catch (parseErr) {
           console.error('[Notification SSE] 알림 데이터 파싱 실패', parseErr);
         }

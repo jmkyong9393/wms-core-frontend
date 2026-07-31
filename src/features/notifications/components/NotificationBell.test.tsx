@@ -19,6 +19,28 @@ vi.mock('@/features/notifications/api/notificationService', () => ({
   markAllNotificationsReadApi: vi.fn(),
 }));
 
+const mockPush = vi.fn();
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ push: mockPush }),
+}));
+
+const restockItemWithPayload: NotificationItem = {
+  id: 'n3',
+  category: 'RESTOCK_ALERT',
+  severity: 'HIGH',
+  title: '대체 발주 추천 생성',
+  message: "'테스트 도서' 반려 건에 대한 대체 발주 추천안이 생성되었습니다.",
+  timestamp: '2026-07-28T04:29:44.850691',
+  read: false,
+  payload: {
+    orderProposalId: 'proposal-1',
+    returnJobId: 'return-1',
+    bookId: 'book-1',
+    recommendedOrderQuantity: 11,
+    riskLevel: 'HIGH',
+  },
+};
+
 const items: NotificationItem[] = [
   {
     id: 'n1',
@@ -59,6 +81,48 @@ function renderBell(initialItems: NotificationItem[] = items) {
 describe('NotificationBell', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  it('clicking a RESTOCK_ALERT item with a payload marks it read once and navigates once to its proposal detail', async () => {
+    vi.mocked(markNotificationReadApi).mockResolvedValueOnce(undefined);
+    renderBell([restockItemWithPayload]);
+
+    fireEvent.click(screen.getByLabelText('알림'));
+    fireEvent.click(screen.getByText('대체 발주 추천 생성'));
+
+    await waitFor(() => {
+      expect(markNotificationReadApi).toHaveBeenCalledTimes(1);
+      expect(markNotificationReadApi).toHaveBeenCalledWith('n3');
+    });
+    expect(mockPush).toHaveBeenCalledTimes(1);
+    expect(mockPush).toHaveBeenCalledWith('/admin/restock?proposalId=proposal-1');
+  });
+
+  it('clicking a RESTOCK_ALERT item without a payload only marks it read and does not navigate', async () => {
+    vi.mocked(markNotificationReadApi).mockResolvedValueOnce(undefined);
+    // items[1] (n2)은 RESTOCK_ALERT지만 payload가 없는 케이스
+    renderBell(items);
+
+    fireEvent.click(screen.getByLabelText('알림'));
+    fireEvent.click(screen.getByText('자동발주 초안 생성 필요'));
+
+    await waitFor(() => {
+      expect(markNotificationReadApi).toHaveBeenCalledWith('n2');
+    });
+    expect(mockPush).not.toHaveBeenCalled();
+  });
+
+  it('clicking a non-RESTOCK_ALERT item never navigates', async () => {
+    vi.mocked(markNotificationReadApi).mockResolvedValueOnce(undefined);
+    renderBell(items);
+
+    fireEvent.click(screen.getByLabelText('알림'));
+    fireEvent.click(screen.getByText('FDS 이상거래 적발'));
+
+    await waitFor(() => {
+      expect(markNotificationReadApi).toHaveBeenCalledWith('n1');
+    });
+    expect(mockPush).not.toHaveBeenCalled();
   });
 
   it('shows the unread count badge and renders category labels once opened', () => {

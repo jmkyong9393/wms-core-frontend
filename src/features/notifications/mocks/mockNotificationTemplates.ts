@@ -48,7 +48,14 @@ export const mockNotificationTemplates: NotificationInput[] = [
   {
     category: 'RESTOCK_ALERT',
     severity: 'MEDIUM',
-    title: '자동발주 초안 생성 필요',
-    message: 'A등급 도서 재고가 임계치 이하로 감지되어 자동발주 검토가 필요합니다.',
+    title: '대체 발주 추천 생성',
+    message: "'클린 코드' 반려 건에 대한 대체 발주 추천안이 생성되었습니다. 추천 수량: 6권",
+    payload: {
+      orderProposalId: 'mock-proposal-1',
+      returnJobId: 'mock-return-1',
+      bookId: 'mock-book-1',
+      recommendedOrderQuantity: 6,
+      riskLevel: 'MEDIUM',
+    },
   },
 ];

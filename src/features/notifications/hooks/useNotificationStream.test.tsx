@@ -291,6 +291,69 @@ describe('useNotificationStream', () => {
       expect(store.get(unreadNotificationCountAtom)).toBe(1);
     });
 
+    it('normalizes a RESTOCK_ALERT payload from snake_case to camelCase', async () => {
+      localStorage.setItem('wms_mock_mode', 'false');
+      const { store } = setupHook();
+      await act(async () => {
+        await flushMicrotasks();
+      });
+
+      const es = MockEventSource.instances[0];
+      const restockPayload = {
+        id: 'restock-1',
+        category: 'RESTOCK_ALERT',
+        severity: 'HIGH',
+        title: '반려 도서 대체 발주 추천 생성',
+        message: "'테스트 도서' 반려 건에 대한 대체 발주 추천안이 생성되었습니다. 추천 수량: 11권",
+        timestamp: '2026-07-29T05:34:17.370201',
+        read: false,
+        payload: {
+          order_proposal_id: 'proposal-uuid',
+          return_job_id: 'return-job-uuid',
+          book_id: 'book-uuid',
+          recommended_order_quantity: 11,
+          risk_level: 'HIGH',
+        },
+      };
+
+      act(() => {
+        es.dispatch('notification', restockPayload);
+      });
+
+      const items = store.get(notificationsAtom);
+      expect(items).toHaveLength(1);
+      expect(items[0].payload).toEqual({
+        orderProposalId: 'proposal-uuid',
+        returnJobId: 'return-job-uuid',
+        bookId: 'book-uuid',
+        recommendedOrderQuantity: 11,
+        riskLevel: 'HIGH',
+      });
+    });
+
+    it('does not attach a payload to non-RESTOCK_ALERT categories even if one is present', async () => {
+      localStorage.setItem('wms_mock_mode', 'false');
+      const { store } = setupHook();
+      await act(async () => {
+        await flushMicrotasks();
+      });
+
+      const es = MockEventSource.instances[0];
+      act(() => {
+        es.dispatch('notification', {
+          id: 'fds-2',
+          category: 'FDS_ALERT',
+          severity: 'HIGH',
+          title: '이상거래',
+          message: '메시지',
+          timestamp: '2026-07-29T05:34:17.370201',
+          read: false,
+        });
+      });
+
+      expect(store.get(notificationsAtom)[0].payload).toBeUndefined();
+    });
+
     it('does not throw and leaves the list unchanged when the notification payload is malformed JSON', async () => {
       localStorage.setItem('wms_mock_mode', 'false');
       const { store } = setupHook();
