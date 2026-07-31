@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useSetAtom, useStore } from 'jotai';
+import { useAtomValue, useSetAtom, useStore } from 'jotai';
 import { isAxiosError } from 'axios';
 import { API_BASE_URL } from '@/lib/api-client';
 import { useMockNotificationSimulator } from '@/features/notifications/mocks/useMockNotificationSimulator';
@@ -43,11 +43,15 @@ export function useNotificationStream() {
   useMockNotificationSimulator(mock);
 
   const store = useStore();
+  // 토큰 존재 여부만 확인
+  // 만료된 토큰은 401 발생 시 갱신
+  const hasAuthToken = useAtomValue(authTokenAtom) !== null;
   const setNotificationList = useSetAtom(setNotificationListAtom);
   const pushRealNotification = useSetAtom(pushRealNotificationAtom);
 
   useEffect(() => {
-    if (mock) return;
+    // Mock 모드 또는 로그아웃 상태에서는 연결하지 않음
+    if (mock || !hasAuthToken) return;
 
     let cancelled = false;
     let retryCount = 0;
@@ -117,8 +121,7 @@ export function useNotificationStream() {
       };
     }
 
-    // 현재 Access Token이 만료된 경우: Refresh 후 새 토큰으로 ticket 재발급
-    // 한 사이클에서 Refresh는 최대 1회만 수행 (성공 후 재발급도 401이면 재-Refresh 없이 로그아웃)
+    // 토큰 갱신 후 티켓 재발급
     async function handleTicketUnauthorized() {
       let newToken: string;
       try {
@@ -126,11 +129,11 @@ export function useNotificationStream() {
       } catch (err) {
         if (cancelled) return;
         if (isUnauthorized(err)) {
-          // Refresh Token도 만료/무효 - 인증 상태 제거, AuthGuard가 로그인 페이지로 이동시킴
+          // Refresh Token 만료 시 로그아웃
           store.set(logoutAtom);
           return;
         }
-        // 네트워크 오류 / 5xx - 인증 상태는 유지한 채 기존 백오프로 재시도
+        // 일시적 오류는 재시도
         console.error('[Notification] Access Token 갱신 실패 - 재시도 예정', err);
         scheduleReconnect();
         return;
@@ -146,11 +149,11 @@ export function useNotificationStream() {
       } catch (err) {
         if (cancelled) return;
         if (isUnauthorized(err)) {
-          // 갱신된 Access Token으로도 401 - 세션이 유효하지 않음, 재-Refresh 없이 재접속 중단
+          // 갱신 후에도 인증 실패 시 로그아웃
           store.set(logoutAtom);
           return;
         }
-        // 네트워크 오류 / 5xx - 백오프 재시도 (이 사이클에서 Refresh는 다시 호출하지 않음)
+        // 티켓 발급 오류는 재시도
         console.error('[Notification] 갱신된 토큰으로 티켓 재발급 실패 - 재시도 예정', err);
         scheduleReconnect();
       }
@@ -190,5 +193,5 @@ export function useNotificationStream() {
       esRef.current?.close();
       esRef.current = null;
     };
-  }, [mock, store, setNotificationList, pushRealNotification]);
+  }, [mock, hasAuthToken, store, setNotificationList, pushRealNotification]);
 }

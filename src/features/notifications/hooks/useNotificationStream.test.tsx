@@ -105,8 +105,13 @@ async function advanceAndFlush(ms: number) {
   });
 }
 
-function setupHook() {
+function setupHook(options: { seedToken?: string | null } = {}) {
+  const { seedToken = 'seeded-token' } = options;
   const store = createStore();
+  // null이면 로그아웃 상태로 연결하지 않음
+  if (seedToken !== null) {
+    store.set(authTokenAtom, seedToken);
+  }
   const wrapper = ({ children }: { children: ReactNode }) => (
     <JotaiProvider store={store}>{children}</JotaiProvider>
   );
@@ -567,6 +572,81 @@ describe('useNotificationStream', () => {
 
       expect(MockEventSource.instances).toHaveLength(1);
       expect(refreshAccessToken).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('real mode: 로그아웃', () => {
+    it('closes the open EventSource as soon as the auth token is cleared (logout)', async () => {
+      localStorage.setItem('wms_mock_mode', 'false');
+      const { store } = setupHook();
+      await act(async () => {
+        await flushMicrotasks();
+      });
+
+      const es = MockEventSource.instances[0];
+      expect(es.close).not.toHaveBeenCalled();
+
+      // 로그아웃: authTokenAtom -> null
+      act(() => {
+        store.set(authTokenAtom, null);
+      });
+
+      expect(es.close).toHaveBeenCalledTimes(1);
+    });
+
+    it('cancels a pending reconnect timer on logout so no further reconnect happens', async () => {
+      localStorage.setItem('wms_mock_mode', 'false');
+      const { store } = setupHook();
+      await act(async () => {
+        await flushMicrotasks();
+      });
+
+      const es = MockEventSource.instances[0];
+      act(() => {
+        es.triggerError();
+      });
+      expect(MockEventSource.instances).toHaveLength(1);
+
+      // 재연결 타이머가 대기 중인 상태에서 로그아웃
+      act(() => {
+        store.set(authTokenAtom, null);
+      });
+
+      // 대기 시간이 지나도 재연결하지 않음
+      await advanceAndFlush(RECONNECT_MAX_DELAY_MS * 2);
+      expect(MockEventSource.instances).toHaveLength(1);
+      expect(issueNotificationStreamTicket).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not fetch the list or open a connection when mounted without an auth token', async () => {
+      localStorage.setItem('wms_mock_mode', 'false');
+      setupHook({ seedToken: null });
+      await act(async () => {
+        await flushMicrotasks();
+      });
+
+      expect(listNotifications).not.toHaveBeenCalled();
+      expect(issueNotificationStreamTicket).not.toHaveBeenCalled();
+      expect(MockEventSource.instances).toHaveLength(0);
+    });
+
+    it('starts connecting once an auth token appears after mounting without one (e.g. login)', async () => {
+      localStorage.setItem('wms_mock_mode', 'false');
+      const { store } = setupHook({ seedToken: null });
+      await act(async () => {
+        await flushMicrotasks();
+      });
+      expect(MockEventSource.instances).toHaveLength(0);
+
+      act(() => {
+        store.set(authTokenAtom, 'fresh-login-token');
+      });
+      await act(async () => {
+        await flushMicrotasks();
+      });
+
+      expect(issueNotificationStreamTicket).toHaveBeenCalledTimes(1);
+      expect(MockEventSource.instances).toHaveLength(1);
     });
   });
 });
