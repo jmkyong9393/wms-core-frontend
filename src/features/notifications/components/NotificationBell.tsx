@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAtomValue } from 'jotai';
 import { Bell } from 'lucide-react';
 import {
@@ -14,14 +15,33 @@ import {
 import { NotificationListItem } from '@/features/notifications/components/NotificationListItem';
 
 export function NotificationBell() {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
+  // 알림 목록과 읽지 않은 알림 수
   const notifications = useAtomValue(notificationsAtom);
   const unreadCount = useAtomValue(unreadNotificationCountAtom);
+
+  // 알림 읽음 처리
   const markReadMutation = useMarkNotificationReadMutation();
   const markAllReadMutation = useMarkAllNotificationsReadMutation();
 
+  // 알림 읽음 처리 및 연결 화면 이동
+  const handleItemClick = (id: string) => {
+    markReadMutation.mutate(id);
+
+    const item = notifications.find((n) => n.id === id);
+
+    // 발주 추천 알림 클릭 시 해당 추천안 상세 열기
+    if (item?.category === 'RESTOCK_ALERT' && item.payload?.orderProposalId) {
+      setOpen(false);
+      router.push(`/admin/restock?proposalId=${item.payload.orderProposalId}`);
+    }
+  };
+
+
+  // 알림창 바깥을 클릭하면 닫기
   useEffect(() => {
     if (!open) return;
     const handleClickOutside = (event: MouseEvent) => {
@@ -69,7 +89,7 @@ export function NotificationBell() {
                 <NotificationListItem
                   key={item.id}
                   item={item}
-                  onClick={(id) => markReadMutation.mutate(id)}
+                  onClick={handleItemClick}
                 />
               ))
             )}
