@@ -162,6 +162,106 @@ describe('notificationAtoms', () => {
     expect(store.get(unreadNotificationCountAtom)).toBe(1);
   });
 
+  it('pushRealNotificationAtom replaces the existing entry (no new toast) when the same orderProposalId arrives again with a different notification id', () => {
+    const first = makeItem({
+      id: 'restock-1',
+      category: 'RESTOCK_ALERT',
+      payload: {
+        orderProposalId: 'proposal-1',
+        returnJobId: 'return-1',
+        bookId: 'book-1',
+        recommendedOrderQuantity: 4,
+        riskLevel: 'MEDIUM',
+      },
+    });
+    store.set(pushRealNotificationAtom, first);
+
+    const updated = makeItem({
+      id: 'restock-2',
+      category: 'RESTOCK_ALERT',
+      title: '갱신된 추천안',
+      payload: {
+        orderProposalId: 'proposal-1',
+        returnJobId: 'return-1',
+        bookId: 'book-1',
+        recommendedOrderQuantity: 9,
+        riskLevel: 'HIGH',
+      },
+    });
+    store.set(pushRealNotificationAtom, updated);
+
+    const history = store.get(notificationsAtom);
+    expect(history).toHaveLength(1);
+    expect(history[0]).toMatchObject({ id: 'restock-2', title: '갱신된 추천안', read: false });
+    expect(history[0].payload?.recommendedOrderQuantity).toBe(9);
+    // 갱신 시에는 토스트를 새로 띄우지 않음
+    expect(store.get(activeToastsAtom)).toHaveLength(1);
+    expect(store.get(activeToastsAtom)[0].id).toBe('restock-1');
+  });
+
+  it('pushRealNotificationAtom increments unread count on an orderProposalId update only if the existing entry was already read', () => {
+    const first = makeItem({
+      id: 'restock-1',
+      category: 'RESTOCK_ALERT',
+      read: true,
+      payload: {
+        orderProposalId: 'proposal-1',
+        returnJobId: 'return-1',
+        bookId: 'book-1',
+        recommendedOrderQuantity: 4,
+        riskLevel: 'MEDIUM',
+      },
+    });
+    store.set(setNotificationListAtom, { items: [first], unreadCount: 0 });
+
+    const updated = makeItem({
+      id: 'restock-2',
+      category: 'RESTOCK_ALERT',
+      payload: {
+        orderProposalId: 'proposal-1',
+        returnJobId: 'return-1',
+        bookId: 'book-1',
+        recommendedOrderQuantity: 9,
+        riskLevel: 'HIGH',
+      },
+    });
+    store.set(pushRealNotificationAtom, updated);
+
+    expect(store.get(unreadNotificationCountAtom)).toBe(1);
+  });
+
+  it('pushRealNotificationAtom treats a different orderProposalId as a brand-new notification (list + toast)', () => {
+    const first = makeItem({
+      id: 'restock-1',
+      category: 'RESTOCK_ALERT',
+      payload: {
+        orderProposalId: 'proposal-1',
+        returnJobId: 'return-1',
+        bookId: 'book-1',
+        recommendedOrderQuantity: 4,
+        riskLevel: 'MEDIUM',
+      },
+    });
+    store.set(pushRealNotificationAtom, first);
+
+    const another = makeItem({
+      id: 'restock-2',
+      category: 'RESTOCK_ALERT',
+      payload: {
+        orderProposalId: 'proposal-2',
+        returnJobId: 'return-2',
+        bookId: 'book-2',
+        recommendedOrderQuantity: 2,
+        riskLevel: 'LOW',
+      },
+    });
+    store.set(pushRealNotificationAtom, another);
+
+    expect(store.get(notificationsAtom)).toHaveLength(2);
+    expect(store.get(activeToastsAtom)).toHaveLength(2);
+    expect(store.get(unreadNotificationCountAtom)).toBe(2);
+  });
+
   it('restoreNotificationAtom restores only the targeted item without touching others', () => {
     const item = makeItem({ id: 'a' });
     const other = makeItem({ id: 'b' });

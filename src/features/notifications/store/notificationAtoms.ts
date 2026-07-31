@@ -39,10 +39,33 @@ export const pushNotificationAtom = atom(null, (get, set, input: NotificationInp
 });
 
 // SSE 알림 추가
-// 같은 ID는 중복 추가하지 않음
+// - 같은 알림 id는 완전 중복이므로 무시
+// - RESTOCK_ALERT이고 같은 orderProposalId를 가진 알림이 이미 있으면, 백엔드가 동일 추천안을
+//   수정된 내용으로 재발행했을 가능성에 대비해 목록 항목은 최신 내용으로 교체하되 토스트는 새로 띄우지 않음
+// - 그 외에는 신규 알림으로 취급해 목록 + 토스트 모두에 추가
 export const pushRealNotificationAtom = atom(null, (get, set, item: NotificationItem) => {
-  const exists = get(notificationsAtom).some((n) => n.id === item.id);
-  if (exists) return;
+  const list = get(notificationsAtom);
+  if (list.some((n) => n.id === item.id)) return;
+
+  if (item.category === 'RESTOCK_ALERT' && item.payload?.orderProposalId) {
+    const orderProposalId = item.payload.orderProposalId;
+    const existingIndex = list.findIndex(
+      (n) => n.category === 'RESTOCK_ALERT' && n.payload?.orderProposalId === orderProposalId
+    );
+    if (existingIndex !== -1) {
+      const existing = list[existingIndex];
+      set(notificationsAtom, (prev) =>
+        [{ ...item, read: false }, ...prev.filter((_, i) => i !== existingIndex)].slice(
+          0,
+          MAX_NOTIFICATION_HISTORY
+        )
+      );
+      // 기존에 이미 읽음 처리했던 항목이 다시 안읽음으로 바뀐 경우에만 미읽음 수 증가
+      if (existing.read) set(unreadNotificationCountAtom, (c) => c + 1);
+      return;
+    }
+  }
+
   set(notificationsAtom, (prev) => [item, ...prev].slice(0, MAX_NOTIFICATION_HISTORY));
   set(activeToastsAtom, (prev) => [...prev, item]);
   set(unreadNotificationCountAtom, (c) => c + 1);

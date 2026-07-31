@@ -13,6 +13,7 @@ import {
   useMarkAllNotificationsReadMutation,
 } from '@/features/notifications/hooks/useNotificationMutations';
 import { NotificationListItem } from '@/features/notifications/components/NotificationListItem';
+import { getRestockAlertHref } from '@/features/notifications/utils/getRestockAlertHref';
 
 export function NotificationBell() {
   const router = useRouter();
@@ -36,7 +37,7 @@ export function NotificationBell() {
     // 발주 추천 알림 클릭 시 해당 추천안 상세 열기
     if (item?.category === 'RESTOCK_ALERT' && item.payload?.orderProposalId) {
       setOpen(false);
-      router.push(`/admin/restock?proposalId=${item.payload.orderProposalId}`);
+      router.push(getRestockAlertHref(item.payload.orderProposalId));
     }
   };
 
