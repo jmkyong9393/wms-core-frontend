@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { CheckCircle2, Sparkles } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useRestockProposalQuery } from '@/features/restock/hooks/useRestockProposalQuery';
 import {
@@ -67,13 +68,41 @@ export function RestockProposalDetailDialog({ proposalId, onClose }: RestockProp
                 </section>
 
                 {/* Agent 추천 사유 */}
-                <section className="space-y-2 border-t border-gray-100 pt-4">
-                  <h4 className="text-sm font-semibold text-gray-800">Agent 추천 사유</h4>
-                  <p className="text-sm text-gray-600">{data.reasonSummary}</p>
-                  <ul className="list-disc space-y-1 pl-5 text-xs text-gray-500">
-                    {data.evidence.map((line) => (
-                      <li key={line}>{line}</li>
-                    ))}
+                <section className="space-y-3 border-t border-gray-100 pt-4">
+                  <h4 className="flex items-center gap-1.5 text-sm font-semibold text-gray-800">
+                    <Sparkles className="h-4 w-4 text-indigo-500" />
+                    Agent 추천 사유
+                  </h4>
+
+                  {/* AI 판단 요약 */}
+                  <div className="rounded-lg border border-indigo-100 bg-indigo-50 px-3 py-2.5 text-sm text-indigo-900">
+                    {data.reasonSummary}
+                  </div>
+
+                  {/* 판단 근거: 계산식 줄은 별도 스타일로 강조 */}
+                  <ul className="space-y-1.5">
+                    {data.evidence.map((line) => {
+                      const isCalculation = /^계산[:：]/.test(line);
+                      return (
+                        <li
+                          key={line}
+                          className={
+                            isCalculation
+                              ? 'rounded-md bg-gray-50 px-2.5 py-1.5 font-mono text-xs text-gray-700'
+                              : 'flex items-start gap-1.5 text-xs text-gray-600'
+                          }
+                        >
+                          {isCalculation ? (
+                            line
+                          ) : (
+                            <>
+                              <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-500" />
+                              <span>{line}</span>
+                            </>
+                          )}
+                        </li>
+                      );
+                    })}
                   </ul>
                 </section>
 

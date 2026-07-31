@@ -1,3 +1,5 @@
+import type { RiskLevel } from '@/features/restock/types/restockProposal';
+
 export type NotificationCategory = 'AGENT_ALERT' | 'FDS_ALERT' | 'RESTOCK_ALERT';
 export type NotificationSeverity = 'HIGH' | 'MEDIUM' | 'LOW';
 
@@ -7,7 +9,7 @@ export interface RestockAlertPayload {
   returnJobId: string;
   bookId: string;
   recommendedOrderQuantity: number;
-  riskLevel: 'HIGH' | 'MEDIUM' | 'LOW';
+  riskLevel: RiskLevel;
 }
 
 // 백엔드 SSE에서 전달하는 발주 추천 알림 데이터
@@ -16,7 +18,7 @@ export interface RestockAlertPayloadWire {
   return_job_id: string;
   book_id: string;
   recommended_order_quantity: number;
-  risk_level: 'HIGH' | 'MEDIUM' | 'LOW';
+  risk_level: RiskLevel;
 }
 
 // 화면에서 사용하는 알림 정보
