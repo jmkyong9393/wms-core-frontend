@@ -1,8 +1,7 @@
 import type { InventoryGrade } from '@/features/inventory/constants/grades';
 import type { InventoryRow } from '@/features/inventory/types/inventoryRow';
 
-// 재고 표 기능 테스트에 사용하는 임시 데이터
-// 새로고침하면 아래 기준으로 다시 생성
+// 재고 목록 화면 테스트용 도서 데이터
 const BOOKS: Array<{ title: string; isbn: string }> = [
   { title: '사피엔스', isbn: '9788912345678' },
   { title: '총, 균, 쇠', isbn: '9788991234567' },
@@ -14,7 +13,9 @@ const BOOKS: Array<{ title: string; isbn: string }> = [
 
 const ZONES = ['A-1-3', 'A-1-4', 'B-2-1', 'B-2-2', 'C-1-1'];
 
-const GRADES: readonly InventoryGrade[] = ['MINT', 'EXCELLENT', 'NORMAL', 'REJECT'];
+// 판매 가능한 재고 등급
+// REJECT 재고는 별도 목록에서 관리
+const GRADES: readonly InventoryGrade[] = ['MINT', 'EXCELLENT', 'NORMAL'];
 
 // 테스트용 재고 데이터 생성
 function buildInventorySeed(): InventoryRow[] {
@@ -23,21 +24,45 @@ function buildInventorySeed(): InventoryRow[] {
 
   for (let i = 0; i < SEED_SIZE; i++) {
     const book = BOOKS[i % BOOKS.length];
-    const grade = GRADES[i % GRADES.length];
     const zone = ZONES[i % ZONES.length];
-    
-    // 신간 묶음 재고와 중고·반품 단품 재고를 섞어서 생성
-    const isNewStock = grade === 'MINT' && i % 3 === 0;
     const day = String((i % 28) + 1).padStart(2, '0');
+    const date = `2026-07-${day}T09:00:00.000Z`;
 
-    rows.push({
-      id: `inv-seed-${String(i + 1).padStart(3, '0')}`,
-      book,
-      grade,
-      zone,
-      quantity: isNewStock ? 10 + i : 1,
-      date: `2026-07-${day}T09:00:00.000Z`,
-    });
+    // 3건 중 1건은 신간 묶음 재고, 나머지는 중고·반품 단품 재고
+    const isNewStock = i % 3 === 0;
+
+    if (isNewStock) {
+      const quantity = 10 + i;
+      const reservedQuantity = i % 6 === 0 ? 2 : 0;
+      rows.push({
+        id: `inv-seed-${String(i + 1).padStart(3, '0')}`,
+        stock_type: 'NEW_STOCK',
+        book,
+        grade: 'MINT',
+        zone,
+        quantity,
+        reserved_quantity: reservedQuantity,
+        available_quantity: quantity - reservedQuantity,
+        lpn_status: null,
+        date,
+      });
+    } else {
+      const grade = GRADES[i % GRADES.length];
+      const quantity = 1;
+      const reservedQuantity = i % 4 === 0 ? 1 : 0;
+      rows.push({
+        id: `inv-seed-${String(i + 1).padStart(3, '0')}`,
+        stock_type: 'USED_ITEM',
+        book,
+        grade,
+        zone,
+        quantity,
+        reserved_quantity: reservedQuantity,
+        available_quantity: quantity - reservedQuantity,
+        lpn_status: reservedQuantity > 0 ? 'RESERVED' : 'AVAILABLE',
+        date,
+      });
+    }
   }
 
   return rows;

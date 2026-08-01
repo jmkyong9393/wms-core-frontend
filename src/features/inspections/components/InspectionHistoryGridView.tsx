@@ -1,9 +1,8 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   getCoreRowModel,
-  getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
   type PaginationState,
@@ -20,75 +19,71 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useInspectionHistoryQuery } from '@/features/inspections/hooks/useInspectionHistoryQuery';
+import { listInspectionHistory } from '@/features/inspections/api/inspectionHistoryService';
 import { createInspectionHistoryColumns } from '@/features/inspections/components/inspectionHistoryColumns';
 import { InspectionHistoryDetailDialog } from '@/features/inspections/components/InspectionHistoryDetailDialog';
-import { BOOK_GRADES, INSPECTION_STATUSES, type BookGrade, type InspectionStatus } from '@/features/inspections/types/inspection';
+import {
+  BOOK_GRADES,
+  INSPECTION_STATUSES,
+  type BookGrade,
+  type InspectionStatus,
+} from '@/features/inspections/types/inspection';
 import { getGradeLabel } from '@/features/inspections/utils/gradeBadge';
 import { getStatusLabel } from '@/features/inspections/utils/statusBadge';
-import type { InspectionHistoryRow } from '@/features/inspections/types/inspectionHistory';
+import type { InspectionHistoryListParams, InspectionHistoryRow } from '@/features/inspections/types/inspectionHistory';
 import { toInspectionHistoryExportRow } from '@/features/inspections/utils/toInspectionHistoryExportRow';
 import { exportRowsToCsv, exportRowsToXlsx } from '@/lib/export/tableExport';
+import { fetchAllPages } from '@/lib/api/fetchAllPages';
 
 const GRADE_FILTER_ALL = 'ALL' as const;
 const STATUS_FILTER_ALL = 'ALL' as const;
-const FAST_TRACK_ALL = 'ALL' as const;
-const FAST_TRACK_ONLY = 'FAST_TRACK' as const;
-const FAST_TRACK_NORMAL = 'NORMAL' as const;
-type FastTrackFilter = typeof FAST_TRACK_ALL | typeof FAST_TRACK_ONLY | typeof FAST_TRACK_NORMAL;
 
 const EXPORT_FILENAME = '검수_이력';
+const DEFAULT_PAGE_SIZE = 20;
 
-// mock 데이터 기반 검수 이력 필터 및 Export
-// TODO: 백엔드 검수 이력 API 연동 후 교체
 export function InspectionHistoryGridView() {
-  const { data, isLoading, isError } = useInspectionHistoryQuery();
-
   const [keyword, setKeyword] = useState('');
-  const [gradeFilter, setGradeFilter] = useState<BookGrade | typeof GRADE_FILTER_ALL>(GRADE_FILTER_ALL);
   const [statusFilter, setStatusFilter] = useState<InspectionStatus | typeof STATUS_FILTER_ALL>(STATUS_FILTER_ALL);
-  const [fastTrackFilter, setFastTrackFilter] = useState<FastTrackFilter>(FAST_TRACK_ALL);
-  const [reasonKeyword, setReasonKeyword] = useState('');
+  const [gradeFilter, setGradeFilter] = useState<BookGrade | typeof GRADE_FILTER_ALL>(GRADE_FILTER_ALL);
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
 
   const [sorting, setSorting] = useState<SortingState>([]);
-  const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: 10 });
+  const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: DEFAULT_PAGE_SIZE });
   const [selectedRow, setSelectedRow] = useState<InspectionHistoryRow | null>(null);
+  const [isExporting, setIsExporting] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
 
   const resetToFirstPage = () => setPagination((p) => ({ ...p, pageIndex: 0 }));
 
-  const filteredRows = useMemo(() => {
-    const rows = data ?? [];
-    const normalizedKeyword = keyword.trim().toLowerCase();
-    const normalizedReasonKeyword = reasonKeyword.trim().toLowerCase();
+  const activeFilters = useMemo(
+    () => ({
+      keyword: keyword.trim() || undefined,
+      status: statusFilter === STATUS_FILTER_ALL ? undefined : statusFilter,
+      grade: gradeFilter === GRADE_FILTER_ALL ? undefined : gradeFilter,
+      start_date: dateFrom || undefined,
+      // 종료일 전체를 포함하도록 하루의 마지막 시각으로 변환
+      end_date: dateTo ? `${dateTo}T23:59:59` : undefined,
+    }),
+    [keyword, statusFilter, gradeFilter, dateFrom, dateTo]
+  );
 
-    return rows.filter((row) => {
-      const matchesKeyword = !normalizedKeyword || row.bookTitle.toLowerCase().includes(normalizedKeyword);
-      const matchesGrade = gradeFilter === GRADE_FILTER_ALL || row.finalGrade === gradeFilter;
-      const matchesStatus = statusFilter === STATUS_FILTER_ALL || row.status === statusFilter;
-      const matchesFastTrack =
-        fastTrackFilter === FAST_TRACK_ALL ||
-        (fastTrackFilter === FAST_TRACK_ONLY && row.isFastTrack) ||
-        (fastTrackFilter === FAST_TRACK_NORMAL && !row.isFastTrack);
-      const matchesReasonKeyword =
-        !normalizedReasonKeyword ||
-        (row.reasonCodes ?? []).some((code) => code.toLowerCase().includes(normalizedReasonKeyword));
+  const params: InspectionHistoryListParams = {
+    ...activeFilters,
+    page: pagination.pageIndex + 1,
+    size: pagination.pageSize,
+  };
 
-      const rowDate = row.inspectedAt.slice(0, 10);
-      const matchesDateFrom = !dateFrom || rowDate >= dateFrom;
-      const matchesDateTo = !dateTo || rowDate <= dateTo;
+  const { data, isLoading, isError, isFetching } = useInspectionHistoryQuery(params);
 
-      return (
-        matchesKeyword &&
-        matchesGrade &&
-        matchesStatus &&
-        matchesFastTrack &&
-        matchesReasonKeyword &&
-        matchesDateFrom &&
-        matchesDateTo
-      );
-    });
-  }, [data, keyword, gradeFilter, statusFilter, fastTrackFilter, reasonKeyword, dateFrom, dateTo]);
+  // 현재 페이지가 전체 페이지 수를 넘으면 마지막 페이지로 이동
+  useEffect(() => {
+    if (!data) return;
+    const maxIndex = Math.max(0, data.total_pages - 1);
+    if (pagination.pageIndex > maxIndex) {
+      setPagination((p) => ({ ...p, pageIndex: maxIndex }));
+    }
+  }, [data, pagination.pageIndex]);
 
   const columns = useMemo(
     () => createInspectionHistoryColumns({ onOpenDetail: setSelectedRow }),
@@ -96,20 +91,38 @@ export function InspectionHistoryGridView() {
   );
 
   const table = useReactTable({
-    data: filteredRows,
+    data: data?.items ?? [],
     columns,
     state: { sorting, pagination },
     onSortingChange: setSorting,
     onPaginationChange: setPagination,
+    manualPagination: true,
+    pageCount: data?.total_pages ?? 0,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
   });
 
-  const exportRows = table
-    .getPrePaginationRowModel()
-    .rows.map((row) => toInspectionHistoryExportRow(row.original));
-  const canExport = exportRows.length > 0;
+  const canExport = (data?.total ?? 0) > 0 && !isExporting;
+
+  async function handleExport(kind: 'csv' | 'xlsx') {
+    setExportError(null);
+    setIsExporting(true);
+    try {
+      const allRows = await fetchAllPages((page, size) =>
+        listInspectionHistory({ ...activeFilters, page, size })
+      );
+      const exportRows = allRows.map(toInspectionHistoryExportRow);
+      if (kind === 'csv') {
+        await exportRowsToCsv(EXPORT_FILENAME, exportRows);
+      } else {
+        await exportRowsToXlsx(EXPORT_FILENAME, exportRows);
+      }
+    } catch {
+      setExportError('내보내기에 실패했습니다. 다시 시도해 주세요.');
+    } finally {
+      setIsExporting(false);
+    }
+  }
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
@@ -138,7 +151,11 @@ export function InspectionHistoryGridView() {
           }}
         >
           <SelectTrigger>
-            <SelectValue />
+            <SelectValue>
+              {(value: BookGrade | typeof GRADE_FILTER_ALL) =>
+                value === GRADE_FILTER_ALL ? '전체 등급' : getGradeLabel(value)
+              }
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value={GRADE_FILTER_ALL}>전체 등급</SelectItem>
@@ -150,22 +167,6 @@ export function InspectionHistoryGridView() {
           </SelectContent>
         </Select>
         <Select
-          value={fastTrackFilter}
-          onValueChange={(value) => {
-            setFastTrackFilter(value as FastTrackFilter);
-            resetToFirstPage();
-          }}
-        >
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value={FAST_TRACK_ALL}>전체</SelectItem>
-            <SelectItem value={FAST_TRACK_ONLY}>신속 검수</SelectItem>
-            <SelectItem value={FAST_TRACK_NORMAL}>표준 검수</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select
           value={statusFilter}
           onValueChange={(value) => {
             setStatusFilter(value as InspectionStatus | typeof STATUS_FILTER_ALL);
@@ -173,7 +174,11 @@ export function InspectionHistoryGridView() {
           }}
         >
           <SelectTrigger>
-            <SelectValue />
+            <SelectValue>
+              {(value: InspectionStatus | typeof STATUS_FILTER_ALL) =>
+                value === STATUS_FILTER_ALL ? '전체 상태' : getStatusLabel(value)
+              }
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value={STATUS_FILTER_ALL}>전체 상태</SelectItem>
@@ -184,15 +189,6 @@ export function InspectionHistoryGridView() {
             ))}
           </SelectContent>
         </Select>
-        <Input
-          value={reasonKeyword}
-          onChange={(e) => {
-            setReasonKeyword(e.target.value);
-            resetToFirstPage();
-          }}
-          placeholder="AI 판정 사유 검색"
-          className="max-w-xs"
-        />
         <Input
           type="date"
           value={dateFrom}
@@ -219,28 +215,30 @@ export function InspectionHistoryGridView() {
             variant="outline"
             size="sm"
             disabled={!canExport}
-            onClick={() => exportRowsToCsv(EXPORT_FILENAME, exportRows)}
+            onClick={() => handleExport('csv')}
           >
-            CSV 내보내기
+            {isExporting ? '내보내는 중...' : 'CSV 내보내기'}
           </Button>
           <Button
             type="button"
             variant="outline"
             size="sm"
             disabled={!canExport}
-            onClick={() => exportRowsToXlsx(EXPORT_FILENAME, exportRows)}
+            onClick={() => handleExport('xlsx')}
           >
-            Excel 내보내기
+            {isExporting ? '내보내는 중...' : 'Excel 내보내기'}
           </Button>
         </div>
       </div>
 
-      {!canExport && <p className="text-xs text-gray-400">내보낼 데이터가 없습니다.</p>}
+      {!canExport && !isExporting && <p className="text-xs text-gray-400">내보낼 데이터가 없습니다.</p>}
+      {exportError && <p className="text-xs text-red-600">{exportError}</p>}
 
       <DataGrid
         table={table}
         isLoading={isLoading}
         isError={isError}
+        isFetching={isFetching}
         onRowClick={(row) => setSelectedRow(row)}
       />
 

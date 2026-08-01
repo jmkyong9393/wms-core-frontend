@@ -1,9 +1,8 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   getCoreRowModel,
-  getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
   type PaginationState,
@@ -20,65 +19,100 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useInventoryQuery } from '@/features/inventory/hooks/useInventoryQuery';
+import { listInventory } from '@/features/inventory/api/inventoryService';
 import { inventoryColumns } from '@/features/inventory/components/inventoryColumns';
 import { INVENTORY_GRADES, type InventoryGrade } from '@/features/inventory/constants/grades';
+import { INVENTORY_ZONES, type InventoryZone } from '@/features/inventory/constants/zones';
 import { getInventoryGradeLabel } from '@/features/inventory/utils/gradeBadge';
 import { toInventoryExportRow } from '@/features/inventory/utils/toInventoryExportRow';
 import { exportRowsToCsv, exportRowsToXlsx } from '@/lib/export/tableExport';
+import { fetchAllPages } from '@/lib/api/fetchAllPages';
 
 const GRADE_FILTER_ALL = 'ALL' as const;
+const ZONE_FILTER_ALL = 'ALL' as const;
 const EXPORT_FILENAME = '재고_목록';
+const DEFAULT_PAGE_SIZE = 20;
 
 export function InventoryGridView() {
-  const { data, isLoading, isError } = useInventoryQuery();
-
+  const [isbn, setIsbn] = useState('');
   const [keyword, setKeyword] = useState('');
   const [gradeFilter, setGradeFilter] = useState<InventoryGrade | typeof GRADE_FILTER_ALL>(
     GRADE_FILTER_ALL
   );
-  const [zone, setZone] = useState('');
+  const [zoneFilter, setZoneFilter] = useState<InventoryZone | typeof ZONE_FILTER_ALL>(
+    ZONE_FILTER_ALL
+  );
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
 
   const [sorting, setSorting] = useState<SortingState>([]);
-  const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: 10 });
+  const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: DEFAULT_PAGE_SIZE });
+  const [isExporting, setIsExporting] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
 
   const resetToFirstPage = () => setPagination((p) => ({ ...p, pageIndex: 0 }));
 
-  const filteredRows = useMemo(() => {
-    const rows = data ?? [];
-    const normalizedKeyword = keyword.trim().toLowerCase();
-    const normalizedZone = zone.trim().toLowerCase();
+  const activeFilters = useMemo(
+    () => ({
+      isbn: isbn.trim() || undefined,
+      keyword: keyword.trim() || undefined,
+      grade: gradeFilter === GRADE_FILTER_ALL ? undefined : gradeFilter,
+      zone: zoneFilter === ZONE_FILTER_ALL ? undefined : zoneFilter,
+      start_date: dateFrom || undefined,
+      end_date: dateTo || undefined,
+    }),
+    [isbn, keyword, gradeFilter, zoneFilter, dateFrom, dateTo]
+  );
 
-    return rows.filter((row) => {
-      const matchesKeyword =
-        !normalizedKeyword ||
-        row.book.title.toLowerCase().includes(normalizedKeyword) ||
-        row.book.isbn.toLowerCase().includes(normalizedKeyword);
-      const matchesGrade = gradeFilter === GRADE_FILTER_ALL || row.grade === gradeFilter;
-      const matchesZone = !normalizedZone || row.zone.toLowerCase().includes(normalizedZone);
+  const params = {
+    ...activeFilters,
+    page: pagination.pageIndex + 1,
+    size: pagination.pageSize,
+  };
+  const { data, isLoading, isError, isFetching } = useInventoryQuery(params);
 
-      const rowDate = row.date.slice(0, 10);
-      const matchesDateFrom = !dateFrom || rowDate >= dateFrom;
-      const matchesDateTo = !dateTo || rowDate <= dateTo;
-
-      return matchesKeyword && matchesGrade && matchesZone && matchesDateFrom && matchesDateTo;
-    });
-  }, [data, keyword, gradeFilter, zone, dateFrom, dateTo]);
+  // 응답의 total_pages를 벗어난 페이지에 머무르지 않도록 보정 (빈 결과 등)
+  useEffect(() => {
+    if (!data) return;
+    const maxIndex = Math.max(0, data.total_pages - 1);
+    if (pagination.pageIndex > maxIndex) {
+      setPagination((p) => ({ ...p, pageIndex: maxIndex }));
+    }
+  }, [data, pagination.pageIndex]);
 
   const table = useReactTable({
-    data: filteredRows,
+    data: data?.items ?? [],
     columns: inventoryColumns,
     state: { sorting, pagination },
     onSortingChange: setSorting,
     onPaginationChange: setPagination,
+    manualPagination: true,
+    pageCount: data?.total_pages ?? 0,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
   });
 
-  const exportRows = table.getPrePaginationRowModel().rows.map((row) => toInventoryExportRow(row.original));
-  const canExport = exportRows.length > 0;
+  const canExport = (data?.total ?? 0) > 0 && !isExporting;
+
+  async function handleExport(kind: 'csv' | 'xlsx') {
+    setExportError(null);
+    setIsExporting(true);
+    try {
+      const allRows = await fetchAllPages((page, size) =>
+        listInventory({ ...activeFilters, page, size })
+      );
+      const exportRows = allRows.map(toInventoryExportRow);
+      if (kind === 'csv') {
+        await exportRowsToCsv(EXPORT_FILENAME, exportRows);
+      } else {
+        await exportRowsToXlsx(EXPORT_FILENAME, exportRows);
+      }
+    } catch {
+      setExportError('내보내기에 실패했습니다. 다시 시도해 주세요.');
+    } finally {
+      setIsExporting(false);
+    }
+  }
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
@@ -99,6 +133,15 @@ export function InventoryGridView() {
           placeholder="도서명 또는 ISBN 검색"
           className="max-w-xs"
         />
+        <Input
+          value={isbn}
+          onChange={(e) => {
+            setIsbn(e.target.value);
+            resetToFirstPage();
+          }}
+          placeholder="ISBN 정확 검색"
+          className="max-w-[160px]"
+        />
         <Select
           value={gradeFilter}
           onValueChange={(value) => {
@@ -107,7 +150,11 @@ export function InventoryGridView() {
           }}
         >
           <SelectTrigger>
-            <SelectValue />
+            <SelectValue>
+              {(value: InventoryGrade | typeof GRADE_FILTER_ALL) =>
+                value === GRADE_FILTER_ALL ? '전체 등급' : getInventoryGradeLabel(value)
+              }
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value={GRADE_FILTER_ALL}>전체 등급</SelectItem>
@@ -118,15 +165,29 @@ export function InventoryGridView() {
             ))}
           </SelectContent>
         </Select>
-        <Input
-          value={zone}
-          onChange={(e) => {
-            setZone(e.target.value);
+        <Select
+          value={zoneFilter}
+          onValueChange={(value) => {
+            setZoneFilter(value as InventoryZone | typeof ZONE_FILTER_ALL);
             resetToFirstPage();
           }}
-          placeholder="구역 검색"
-          className="max-w-[140px]"
-        />
+        >
+          <SelectTrigger>
+            <SelectValue>
+              {(value: InventoryZone | typeof ZONE_FILTER_ALL) =>
+                value === ZONE_FILTER_ALL ? '전체 구역' : `${value}구역`
+              }
+            </SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={ZONE_FILTER_ALL}>전체 구역</SelectItem>
+            {INVENTORY_ZONES.map((zone) => (
+              <SelectItem key={zone} value={zone}>
+                {zone}구역
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
         <Input
           type="date"
           value={dateFrom}
@@ -153,27 +214,28 @@ export function InventoryGridView() {
             variant="outline"
             size="sm"
             disabled={!canExport}
-            onClick={() => exportRowsToCsv(EXPORT_FILENAME, exportRows)}
+            onClick={() => handleExport('csv')}
           >
-            CSV 내보내기
+            {isExporting ? '내보내는 중...' : 'CSV 내보내기'}
           </Button>
           <Button
             type="button"
             variant="outline"
             size="sm"
             disabled={!canExport}
-            onClick={() => exportRowsToXlsx(EXPORT_FILENAME, exportRows)}
+            onClick={() => handleExport('xlsx')}
           >
-            Excel 내보내기
+            {isExporting ? '내보내는 중...' : 'Excel 내보내기'}
           </Button>
         </div>
       </div>
 
-      {!canExport && (
+      {!canExport && !isExporting && (
         <p className="text-xs text-gray-400">내보낼 데이터가 없습니다.</p>
       )}
+      {exportError && <p className="text-xs text-red-600">{exportError}</p>}
 
-      <DataGrid table={table} isLoading={isLoading} isError={isError} />
+      <DataGrid table={table} isLoading={isLoading} isError={isError} isFetching={isFetching} />
     </div>
   );
 }
