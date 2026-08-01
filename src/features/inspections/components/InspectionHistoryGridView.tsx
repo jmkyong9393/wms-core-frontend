@@ -22,7 +22,12 @@ import { useInspectionHistoryQuery } from '@/features/inspections/hooks/useInspe
 import { listInspectionHistory } from '@/features/inspections/api/inspectionHistoryService';
 import { createInspectionHistoryColumns } from '@/features/inspections/components/inspectionHistoryColumns';
 import { InspectionHistoryDetailDialog } from '@/features/inspections/components/InspectionHistoryDetailDialog';
-import { BOOK_GRADES, INSPECTION_STATUSES, type BookGrade, type InspectionStatus } from '@/features/inspections/types/inspection';
+import {
+  BOOK_GRADES,
+  INSPECTION_STATUSES,
+  type BookGrade,
+  type InspectionStatus,
+} from '@/features/inspections/types/inspection';
 import { getGradeLabel } from '@/features/inspections/utils/gradeBadge';
 import { getStatusLabel } from '@/features/inspections/utils/statusBadge';
 import type { InspectionHistoryListParams, InspectionHistoryRow } from '@/features/inspections/types/inspectionHistory';
@@ -35,16 +40,13 @@ const STATUS_FILTER_ALL = 'ALL' as const;
 
 const EXPORT_FILENAME = '검수_이력';
 const DEFAULT_PAGE_SIZE = 20;
-const UNSUPPORTED_FILTER_MESSAGE = '현재 조회 API에서 지원하지 않는 필터입니다';
 
 export function InspectionHistoryGridView() {
   const [keyword, setKeyword] = useState('');
   const [statusFilter, setStatusFilter] = useState<InspectionStatus | typeof STATUS_FILTER_ALL>(STATUS_FILTER_ALL);
+  const [gradeFilter, setGradeFilter] = useState<BookGrade | typeof GRADE_FILTER_ALL>(GRADE_FILTER_ALL);
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
-
-  // 서버 API가 지원하지 않는 필터 - 값은 보존하되 어떤 데이터도 필터링하지 않음
-  const [gradeFilter, setGradeFilter] = useState<BookGrade | typeof GRADE_FILTER_ALL>(GRADE_FILTER_ALL);
 
   const [sorting, setSorting] = useState<SortingState>([]);
   const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: DEFAULT_PAGE_SIZE });
@@ -58,10 +60,12 @@ export function InspectionHistoryGridView() {
     () => ({
       keyword: keyword.trim() || undefined,
       status: statusFilter === STATUS_FILTER_ALL ? undefined : statusFilter,
+      grade: gradeFilter === GRADE_FILTER_ALL ? undefined : gradeFilter,
       start_date: dateFrom || undefined,
-      end_date: dateTo || undefined,
+      // 종료일 전체를 포함하도록 하루의 마지막 시각으로 변환
+      end_date: dateTo ? `${dateTo}T23:59:59` : undefined,
     }),
-    [keyword, statusFilter, dateFrom, dateTo]
+    [keyword, statusFilter, gradeFilter, dateFrom, dateTo]
   );
 
   const params: InspectionHistoryListParams = {
@@ -72,7 +76,7 @@ export function InspectionHistoryGridView() {
 
   const { data, isLoading, isError, isFetching } = useInspectionHistoryQuery(params);
 
-  // 응답의 total_pages를 벗어난 페이지에 머무르지 않도록 보정 (빈 결과·필터 변경 등)
+  // 현재 페이지가 전체 페이지 수를 넘으면 마지막 페이지로 이동
   useEffect(() => {
     if (!data) return;
     const maxIndex = Math.max(0, data.total_pages - 1);
@@ -139,26 +143,29 @@ export function InspectionHistoryGridView() {
           placeholder="도서명 검색"
           className="max-w-xs"
         />
-        <div className="flex flex-col gap-1">
-          <Select
-            value={gradeFilter}
-            onValueChange={(value) => setGradeFilter(value as BookGrade | typeof GRADE_FILTER_ALL)}
-            disabled
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={GRADE_FILTER_ALL}>전체 등급</SelectItem>
-              {BOOK_GRADES.map((grade) => (
-                <SelectItem key={grade} value={grade}>
-                  {getGradeLabel(grade)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <span className="text-xs text-gray-400">{UNSUPPORTED_FILTER_MESSAGE}</span>
-        </div>
+        <Select
+          value={gradeFilter}
+          onValueChange={(value) => {
+            setGradeFilter(value as BookGrade | typeof GRADE_FILTER_ALL);
+            resetToFirstPage();
+          }}
+        >
+          <SelectTrigger>
+            <SelectValue>
+              {(value: BookGrade | typeof GRADE_FILTER_ALL) =>
+                value === GRADE_FILTER_ALL ? '전체 등급' : getGradeLabel(value)
+              }
+            </SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={GRADE_FILTER_ALL}>전체 등급</SelectItem>
+            {BOOK_GRADES.map((grade) => (
+              <SelectItem key={grade} value={grade}>
+                {getGradeLabel(grade)}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
         <Select
           value={statusFilter}
           onValueChange={(value) => {
@@ -167,7 +174,11 @@ export function InspectionHistoryGridView() {
           }}
         >
           <SelectTrigger>
-            <SelectValue />
+            <SelectValue>
+              {(value: InspectionStatus | typeof STATUS_FILTER_ALL) =>
+                value === STATUS_FILTER_ALL ? '전체 상태' : getStatusLabel(value)
+              }
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value={STATUS_FILTER_ALL}>전체 상태</SelectItem>

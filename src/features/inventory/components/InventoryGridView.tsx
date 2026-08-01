@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   getCoreRowModel,
   getSortedRowModel,
@@ -22,30 +22,53 @@ import { useInventoryQuery } from '@/features/inventory/hooks/useInventoryQuery'
 import { listInventory } from '@/features/inventory/api/inventoryService';
 import { inventoryColumns } from '@/features/inventory/components/inventoryColumns';
 import { INVENTORY_GRADES, type InventoryGrade } from '@/features/inventory/constants/grades';
+import { INVENTORY_ZONES, type InventoryZone } from '@/features/inventory/constants/zones';
 import { getInventoryGradeLabel } from '@/features/inventory/utils/gradeBadge';
 import { toInventoryExportRow } from '@/features/inventory/utils/toInventoryExportRow';
 import { exportRowsToCsv, exportRowsToXlsx } from '@/lib/export/tableExport';
 import { fetchAllPages } from '@/lib/api/fetchAllPages';
 
 const GRADE_FILTER_ALL = 'ALL' as const;
+const ZONE_FILTER_ALL = 'ALL' as const;
 const EXPORT_FILENAME = '재고_목록';
 const DEFAULT_PAGE_SIZE = 20;
-const UNSUPPORTED_FILTER_MESSAGE = '현재 조회 API에서 지원하지 않는 필터입니다';
 
 export function InventoryGridView() {
-  // 서버 API가 지원하지 않는 필터 - 값은 보존하되 어떤 데이터도 필터링하지 않음
+  const [isbn, setIsbn] = useState('');
   const [keyword, setKeyword] = useState('');
   const [gradeFilter, setGradeFilter] = useState<InventoryGrade | typeof GRADE_FILTER_ALL>(
     GRADE_FILTER_ALL
   );
-  const [zone, setZone] = useState('');
+  const [zoneFilter, setZoneFilter] = useState<InventoryZone | typeof ZONE_FILTER_ALL>(
+    ZONE_FILTER_ALL
+  );
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
 
   const [sorting, setSorting] = useState<SortingState>([]);
   const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: DEFAULT_PAGE_SIZE });
   const [isExporting, setIsExporting] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
 
-  const params = { page: pagination.pageIndex + 1, size: pagination.pageSize };
+  const resetToFirstPage = () => setPagination((p) => ({ ...p, pageIndex: 0 }));
+
+  const activeFilters = useMemo(
+    () => ({
+      isbn: isbn.trim() || undefined,
+      keyword: keyword.trim() || undefined,
+      grade: gradeFilter === GRADE_FILTER_ALL ? undefined : gradeFilter,
+      zone: zoneFilter === ZONE_FILTER_ALL ? undefined : zoneFilter,
+      start_date: dateFrom || undefined,
+      end_date: dateTo || undefined,
+    }),
+    [isbn, keyword, gradeFilter, zoneFilter, dateFrom, dateTo]
+  );
+
+  const params = {
+    ...activeFilters,
+    page: pagination.pageIndex + 1,
+    size: pagination.pageSize,
+  };
   const { data, isLoading, isError, isFetching } = useInventoryQuery(params);
 
   // 응답의 total_pages를 벗어난 페이지에 머무르지 않도록 보정 (빈 결과 등)
@@ -75,7 +98,9 @@ export function InventoryGridView() {
     setExportError(null);
     setIsExporting(true);
     try {
-      const allRows = await fetchAllPages((page, size) => listInventory({ page, size }));
+      const allRows = await fetchAllPages((page, size) =>
+        listInventory({ ...activeFilters, page, size })
+      );
       const exportRows = allRows.map(toInventoryExportRow);
       if (kind === 'csv') {
         await exportRowsToCsv(EXPORT_FILENAME, exportRows);
@@ -99,46 +124,90 @@ export function InventoryGridView() {
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
-        <div className="flex flex-col gap-1">
-          <Input
-            value={keyword}
-            onChange={(e) => setKeyword(e.target.value)}
-            placeholder="도서명 또는 ISBN 검색"
-            className="max-w-xs"
-            disabled
-          />
-          <span className="text-xs text-gray-400">{UNSUPPORTED_FILTER_MESSAGE}</span>
-        </div>
-        <div className="flex flex-col gap-1">
-          <Select
-            value={gradeFilter}
-            onValueChange={(value) => setGradeFilter(value as InventoryGrade | typeof GRADE_FILTER_ALL)}
-            disabled
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={GRADE_FILTER_ALL}>전체 등급</SelectItem>
-              {INVENTORY_GRADES.map((grade) => (
-                <SelectItem key={grade} value={grade}>
-                  {getInventoryGradeLabel(grade)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <span className="text-xs text-gray-400">{UNSUPPORTED_FILTER_MESSAGE}</span>
-        </div>
-        <div className="flex flex-col gap-1">
-          <Input
-            value={zone}
-            onChange={(e) => setZone(e.target.value)}
-            placeholder="구역 검색"
-            className="max-w-[140px]"
-            disabled
-          />
-          <span className="text-xs text-gray-400">{UNSUPPORTED_FILTER_MESSAGE}</span>
-        </div>
+        <Input
+          value={keyword}
+          onChange={(e) => {
+            setKeyword(e.target.value);
+            resetToFirstPage();
+          }}
+          placeholder="도서명 또는 ISBN 검색"
+          className="max-w-xs"
+        />
+        <Input
+          value={isbn}
+          onChange={(e) => {
+            setIsbn(e.target.value);
+            resetToFirstPage();
+          }}
+          placeholder="ISBN 정확 검색"
+          className="max-w-[160px]"
+        />
+        <Select
+          value={gradeFilter}
+          onValueChange={(value) => {
+            setGradeFilter(value as InventoryGrade | typeof GRADE_FILTER_ALL);
+            resetToFirstPage();
+          }}
+        >
+          <SelectTrigger>
+            <SelectValue>
+              {(value: InventoryGrade | typeof GRADE_FILTER_ALL) =>
+                value === GRADE_FILTER_ALL ? '전체 등급' : getInventoryGradeLabel(value)
+              }
+            </SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={GRADE_FILTER_ALL}>전체 등급</SelectItem>
+            {INVENTORY_GRADES.map((grade) => (
+              <SelectItem key={grade} value={grade}>
+                {getInventoryGradeLabel(grade)}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select
+          value={zoneFilter}
+          onValueChange={(value) => {
+            setZoneFilter(value as InventoryZone | typeof ZONE_FILTER_ALL);
+            resetToFirstPage();
+          }}
+        >
+          <SelectTrigger>
+            <SelectValue>
+              {(value: InventoryZone | typeof ZONE_FILTER_ALL) =>
+                value === ZONE_FILTER_ALL ? '전체 구역' : `${value}구역`
+              }
+            </SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={ZONE_FILTER_ALL}>전체 구역</SelectItem>
+            {INVENTORY_ZONES.map((zone) => (
+              <SelectItem key={zone} value={zone}>
+                {zone}구역
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Input
+          type="date"
+          value={dateFrom}
+          onChange={(e) => {
+            setDateFrom(e.target.value);
+            resetToFirstPage();
+          }}
+          className="max-w-[160px]"
+        />
+        <span className="text-sm text-gray-400">~</span>
+        <Input
+          type="date"
+          value={dateTo}
+          onChange={(e) => {
+            setDateTo(e.target.value);
+            resetToFirstPage();
+          }}
+          className="max-w-[160px]"
+        />
+
         <div className="ml-auto flex items-center gap-2">
           <Button
             type="button"

@@ -7,6 +7,7 @@ export interface InspectionHistoryListParams {
   start_date?: string;
   end_date?: string;
   keyword?: string;
+  grade?: BookGrade;
   page: number;
   size: number;
 }

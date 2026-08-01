@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { InspectionHistoryRow } from "@/features/inspections/types/inspectionHistory";
@@ -174,18 +174,52 @@ describe("InspectionHistoryGridView", () => {
     expect(screen.getByRole("button", { name: "다음" })).toBeDisabled();
   });
 
-  it("미지원 필터(등급) 컨트롤은 비활성화되어 렌더된다", async () => {
-    vi.mocked(listInspectionHistory).mockResolvedValue(gridPage([], 1, 0, 0));
+  it("등급 필터를 변경하면 grade 파라미터로 조회하고 1페이지로 초기화한다", async () => {
+    const user = userEvent.setup();
+    vi.mocked(listInspectionHistory).mockImplementation(async (params) =>
+      gridPage([makeRow("1", `등급-${params.grade ?? "전체"}`)], params.page, 3, 50)
+    );
 
     renderGrid();
-    await waitFor(() => expect(listInspectionHistory).toHaveBeenCalled());
+    await waitFor(() => expect(screen.getByText("등급-전체")).toBeInTheDocument());
 
-    // 페이지 크기 Select(DataGrid 내부, size="sm")를 제외한 나머지 비활성 필터 Select(등급)
+    await user.click(screen.getByRole("button", { name: "다음" }));
+    await waitFor(() =>
+      expect(vi.mocked(listInspectionHistory).mock.calls.at(-1)?.[0]).toMatchObject({ page: 2 })
+    );
+
     const gradeTrigger = screen
       .getAllByRole("combobox")
-      .find((el) => el.getAttribute("data-size") !== "sm" && el.hasAttribute("disabled"));
-    expect(gradeTrigger).toBeDefined();
-    expect(screen.getAllByText("현재 조회 API에서 지원하지 않는 필터입니다").length).toBeGreaterThan(0);
+      .find((el) => el.getAttribute("data-size") !== "sm");
+    if (!gradeTrigger) throw new Error("등급 Select를 찾지 못했습니다");
+    await user.click(gradeTrigger);
+    await user.click(await screen.findByRole("option", { name: "S등급" }));
+
+    await waitFor(() =>
+      expect(vi.mocked(listInspectionHistory).mock.calls.at(-1)?.[0]).toMatchObject({
+        page: 1,
+        grade: "MINT",
+      })
+    );
+  });
+
+  it("종료일을 선택하면 end_date에 하루 끝 시각을 붙여 전달한다", async () => {
+    vi.mocked(listInspectionHistory).mockImplementation(async (params) =>
+      gridPage([makeRow("1", `종료일-${params.end_date ?? "없음"}`)], params.page, 1, 1)
+    );
+
+    renderGrid();
+    await waitFor(() => expect(screen.getByText("종료일-없음")).toBeInTheDocument());
+
+    const dateInputs = document.querySelectorAll('input[type="date"]');
+    const endDateInput = dateInputs[1] as HTMLInputElement;
+    fireEvent.change(endDateInput, { target: { value: "2026-07-31" } });
+
+    await waitFor(() =>
+      expect(vi.mocked(listInspectionHistory).mock.calls.at(-1)?.[0]).toMatchObject({
+        end_date: "2026-07-31T23:59:59",
+      })
+    );
   });
 
   it("전체 내보내기 중 일부 페이지 조회가 실패하면 파일을 만들지 않고 오류를 표시한다", async () => {

@@ -42,10 +42,7 @@ export const inventoryColumns: ColumnDef<InventoryRow>[] = [
     header: '등급',
     accessorKey: 'grade',
     cell: ({ getValue }) => {
-      const grade = getValue<string | null>();
-      if (!grade) {
-        return <span className="text-xs text-gray-400">-</span>;
-      }
+      const grade = getValue<string>();
       return (
         <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${getInventoryGradeBadgeStyle(grade)}`}>
           {getInventoryGradeLabel(grade)}

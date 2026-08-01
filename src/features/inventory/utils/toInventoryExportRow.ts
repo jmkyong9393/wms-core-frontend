@@ -12,7 +12,7 @@ export function toInventoryExportRow(row: InventoryRow): Record<string, string |
     재고유형: STOCK_TYPE_LABEL[row.stock_type],
     도서명: row.book.title,
     ISBN: row.book.isbn ?? '-',
-    등급: row.grade ? getInventoryGradeLabel(row.grade) : '-',
+    등급: getInventoryGradeLabel(row.grade),
     구역: row.zone,
     재고수량: row.quantity,
     출고가능수량: row.available_quantity,

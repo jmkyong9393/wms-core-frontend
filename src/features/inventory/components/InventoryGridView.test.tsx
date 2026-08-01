@@ -95,7 +95,7 @@ describe("InventoryGridView", () => {
       expect(vi.mocked(listInventory).mock.calls.at(-1)?.[0]).toMatchObject({ page: 2 })
     );
 
-    // 페이지 크기 Select(DataGrid 내부, size="sm")만 활성화되어 있고 나머지 필터 Select는 비활성화되어 있음
+    // 페이지 크기 선택창 찾기
     const pageSizeTrigger = screen
       .getAllByRole("combobox")
       .find((el) => el.getAttribute("data-size") === "sm");
@@ -123,7 +123,7 @@ describe("InventoryGridView", () => {
     let callCount = 0;
     vi.mocked(listInventory).mockImplementation(async () => {
       callCount += 1;
-      // 2페이지 이동 후에는 데이터가 줄어들어 total_pages가 1로 축소된 상황을 재현
+      // 페이지 이동 후 전체 페이지 수가 1로 줄어든 상황
       if (callCount === 1) return gridPage([makeRow("1", "도서-1")], 1, 3, 50);
       return gridPage([makeRow("1", "도서-1")], 1, 1, 1);
     });
@@ -133,19 +133,106 @@ describe("InventoryGridView", () => {
 
     await user.click(screen.getByRole("button", { name: "다음" }));
 
-    // 화면이 깨지지 않고 1페이지 데이터로 안정적으로 수렴한다
+    // 줄어든 전체 페이지 수에 맞춰 1페이지로 이동하는지 확인
     await waitFor(() => expect(screen.getByText("1 / 1")).toBeInTheDocument());
   });
 
-  it("미지원 필터(키워드/등급/구역) 컨트롤은 비활성화되어 렌더된다", async () => {
-    vi.mocked(listInventory).mockResolvedValue(gridPage([], 1, 0, 0));
+  it("ISBN 정확검색을 입력하면 isbn 파라미터로 조회하고 1페이지로 초기화한다", async () => {
+    const user = userEvent.setup();
+    vi.mocked(listInventory).mockImplementation(async (params) =>
+      gridPage([makeRow("1", `isbn-${params.isbn ?? "전체"}`)], params.page, 3, 50)
+    );
 
     renderGrid();
-    await waitFor(() => expect(listInventory).toHaveBeenCalled());
+    await waitFor(() => expect(screen.getByText("isbn-전체")).toBeInTheDocument());
 
-    expect(screen.getByPlaceholderText("도서명 또는 ISBN 검색")).toBeDisabled();
-    expect(screen.getByPlaceholderText("구역 검색")).toBeDisabled();
-    expect(screen.getAllByText("현재 조회 API에서 지원하지 않는 필터입니다").length).toBeGreaterThan(0);
+    await user.click(screen.getByRole("button", { name: "다음" }));
+    await waitFor(() =>
+      expect(vi.mocked(listInventory).mock.calls.at(-1)?.[0]).toMatchObject({ page: 2 })
+    );
+
+    const isbnInput = screen.getByPlaceholderText("ISBN 정확 검색");
+    await user.type(isbnInput, "9788912345678");
+
+    await waitFor(() =>
+      expect(vi.mocked(listInventory).mock.calls.at(-1)?.[0]).toMatchObject({
+        page: 1,
+        isbn: "9788912345678",
+      })
+    );
+  });
+
+  it("키워드/등급/구역/날짜 필터를 조합하면 각 파라미터가 조회에 반영되고 1페이지로 초기화된다", async () => {
+    const user = userEvent.setup();
+    vi.mocked(listInventory).mockImplementation(async (params) =>
+      gridPage([makeRow("1", `결과-${params.grade ?? "전체"}`)], params.page, 3, 50)
+    );
+
+    renderGrid();
+    await waitFor(() => expect(screen.getByText("결과-전체")).toBeInTheDocument());
+
+    await user.click(screen.getByRole("button", { name: "다음" }));
+    await waitFor(() =>
+      expect(vi.mocked(listInventory).mock.calls.at(-1)?.[0]).toMatchObject({ page: 2 })
+    );
+
+    const keywordInput = screen.getByPlaceholderText("도서명 또는 ISBN 검색");
+    await user.type(keywordInput, "사피엔스");
+    await waitFor(() =>
+      expect(vi.mocked(listInventory).mock.calls.at(-1)?.[0]).toMatchObject({
+        page: 1,
+        keyword: "사피엔스",
+      })
+    );
+
+    // 필터 Select 순서: 등급 → 구역
+    const gradeTrigger = screen
+      .getAllByRole("combobox")
+      .filter((el) => el.getAttribute("data-size") !== "sm")[0];
+    await user.click(gradeTrigger);
+    await user.click(await screen.findByRole("option", { name: "S등급" }));
+    await waitFor(() =>
+      expect(vi.mocked(listInventory).mock.calls.at(-1)?.[0]).toMatchObject({
+        page: 1,
+        grade: "MINT",
+      })
+    );
+
+    const zoneTrigger = screen
+      .getAllByRole("combobox")
+      .filter((el) => el.getAttribute("data-size") !== "sm")[1];
+    await user.click(zoneTrigger);
+    await user.click(await screen.findByRole("option", { name: "A구역" }));
+    await waitFor(() =>
+      expect(vi.mocked(listInventory).mock.calls.at(-1)?.[0]).toMatchObject({
+        page: 1,
+        zone: "A",
+      })
+    );
+  });
+
+  it("전체 내보내기는 현재 활성 필터를 포함해 조회한다", async () => {
+    const user = userEvent.setup();
+    vi.mocked(listInventory).mockResolvedValue(gridPage([makeRow("1", "사피엔스")], 1, 1, 1));
+
+    renderGrid();
+    await waitFor(() => expect(screen.getByText("사피엔스")).toBeInTheDocument());
+
+    const keywordInput = screen.getByPlaceholderText("도서명 또는 ISBN 검색");
+    await user.type(keywordInput, "사피엔스");
+    await waitFor(() =>
+      expect(vi.mocked(listInventory).mock.calls.at(-1)?.[0]).toMatchObject({ keyword: "사피엔스" })
+    );
+
+    vi.mocked(listInventory).mockClear();
+    await user.click(screen.getByRole("button", { name: "CSV 내보내기" }));
+
+    await waitFor(() => expect(listInventory).toHaveBeenCalled());
+    expect(vi.mocked(listInventory).mock.calls[0][0]).toMatchObject({
+      keyword: "사피엔스",
+      page: 1,
+      size: 100,
+    });
   });
 
   it("재고 유형과 출고가능수량(available_quantity)을 기준으로 표시한다", async () => {
@@ -154,7 +241,7 @@ describe("InventoryGridView", () => {
         [
           makeRow("1", "사피엔스", {
             stock_type: "NEW_STOCK",
-            grade: null,
+            grade: "MINT",
             quantity: 20,
             reserved_quantity: 5,
             available_quantity: 15,

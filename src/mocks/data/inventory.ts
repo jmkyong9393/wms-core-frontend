@@ -1,8 +1,7 @@
 import type { InventoryGrade } from '@/features/inventory/constants/grades';
 import type { InventoryRow } from '@/features/inventory/types/inventoryRow';
 
-// 재고 표 기능 테스트에 사용하는 임시 데이터
-// 새로고침하면 아래 기준으로 다시 생성
+// 재고 목록 화면 테스트용 도서 데이터
 const BOOKS: Array<{ title: string; isbn: string }> = [
   { title: '사피엔스', isbn: '9788912345678' },
   { title: '총, 균, 쇠', isbn: '9788991234567' },
@@ -14,7 +13,9 @@ const BOOKS: Array<{ title: string; isbn: string }> = [
 
 const ZONES = ['A-1-3', 'A-1-4', 'B-2-1', 'B-2-2', 'C-1-1'];
 
-const GRADES: readonly InventoryGrade[] = ['MINT', 'EXCELLENT', 'NORMAL', 'REJECT'];
+// 판매 가능한 재고 등급
+// REJECT 재고는 별도 목록에서 관리
+const GRADES: readonly InventoryGrade[] = ['MINT', 'EXCELLENT', 'NORMAL'];
 
 // 테스트용 재고 데이터 생성
 function buildInventorySeed(): InventoryRow[] {
@@ -37,7 +38,7 @@ function buildInventorySeed(): InventoryRow[] {
         id: `inv-seed-${String(i + 1).padStart(3, '0')}`,
         stock_type: 'NEW_STOCK',
         book,
-        grade: null,
+        grade: 'MINT',
         zone,
         quantity,
         reserved_quantity: reservedQuantity,

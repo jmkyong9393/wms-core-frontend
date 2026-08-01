@@ -17,7 +17,7 @@ export const BOOK_GRADES = ['MINT', 'EXCELLENT', 'NORMAL', 'REJECT'] as const;
 
 export type BookGrade = (typeof BOOK_GRADES)[number];
 
-// 백엔드 ReturnJob의 검수 처리 상태 (inspection_backend_status_summary.md 기준)
+// 백엔드 검수 처리 상태
 export const INSPECTION_STATUSES = [
   'PENDING',
   'PROCESSING',
@@ -29,21 +29,22 @@ export const INSPECTION_STATUSES = [
 
 export type InspectionStatus = (typeof INSPECTION_STATUSES)[number];
 
+// 검수 이력 Mock 데이터
 export interface MockInspectionRecord {
   id: string;
   bookId: string;
   bookTitle: string;
-  finalGrade: BookGrade | null; // 미판정 시 null
-  // Policy/Critic 단계 생략 여부
-  // TODO: 백엔드 검수 방식 기준 확정 후 수정
+  // 아직 등급이 정해지지 않은 경우 null
+  finalGrade: BookGrade | null; 
+  // 신속 검수 적용 여부
+  // TODO: 백엔드 검수 방식 확정 후 수정
   isFastTrack: boolean;
   status: InspectionStatus;
   ubciScore: number | null; 
   finalReport: string | null;
   
-  // AI 판정 사유 코드
-  // 관리자 HITL 사유 코드와 별도 관리
-  // TODO: 백엔드 응답 형식 확정 후 수정
+  // 화면에 표시하는 관리자 검토 사유 코드
+  // AI 판정 사유 코드와는 별도 사용
   reasonCodes?: string[];
   inspectedAt: string; // 검수 요청 시각
   updatedAt: string; // 마지막 상태 변경 시각
