@@ -26,6 +26,8 @@ interface DataGridProps<TData> {
   isError?: boolean;
   emptyMessage?: string;
   onRowClick?: (row: TData) => void;
+  // 서버 페이지네이션 재조회 중 이전/다음 버튼 중복 클릭 방지
+  isFetching?: boolean;
 }
 
 // 전달받은 테이블 설정과 데이터를 화면에 표시하는 공통 표
@@ -35,6 +37,7 @@ export function DataGrid<TData>({
   isError = false,
   emptyMessage = '표시할 데이터가 없습니다.',
   onRowClick,
+  isFetching = false,
 }: DataGridProps<TData>) {
   if (isLoading) {
     return <p className="text-sm text-gray-400">불러오는 중...</p>;
@@ -130,7 +133,7 @@ export function DataGrid<TData>({
             type="button"
             variant="outline"
             size="sm"
-            disabled={!table.getCanPreviousPage()}
+            disabled={!table.getCanPreviousPage() || isFetching}
             onClick={() => table.previousPage()}
           >
             이전
@@ -142,7 +145,7 @@ export function DataGrid<TData>({
             type="button"
             variant="outline"
             size="sm"
-            disabled={!table.getCanNextPage()}
+            disabled={!table.getCanNextPage() || isFetching}
             onClick={() => table.nextPage()}
           >
             다음

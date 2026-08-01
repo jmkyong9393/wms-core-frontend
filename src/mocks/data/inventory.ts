@@ -23,21 +23,45 @@ function buildInventorySeed(): InventoryRow[] {
 
   for (let i = 0; i < SEED_SIZE; i++) {
     const book = BOOKS[i % BOOKS.length];
-    const grade = GRADES[i % GRADES.length];
     const zone = ZONES[i % ZONES.length];
-    
-    // 신간 묶음 재고와 중고·반품 단품 재고를 섞어서 생성
-    const isNewStock = grade === 'MINT' && i % 3 === 0;
     const day = String((i % 28) + 1).padStart(2, '0');
+    const date = `2026-07-${day}T09:00:00.000Z`;
 
-    rows.push({
-      id: `inv-seed-${String(i + 1).padStart(3, '0')}`,
-      book,
-      grade,
-      zone,
-      quantity: isNewStock ? 10 + i : 1,
-      date: `2026-07-${day}T09:00:00.000Z`,
-    });
+    // 3건 중 1건은 신간 묶음 재고, 나머지는 중고·반품 단품 재고
+    const isNewStock = i % 3 === 0;
+
+    if (isNewStock) {
+      const quantity = 10 + i;
+      const reservedQuantity = i % 6 === 0 ? 2 : 0;
+      rows.push({
+        id: `inv-seed-${String(i + 1).padStart(3, '0')}`,
+        stock_type: 'NEW_STOCK',
+        book,
+        grade: null,
+        zone,
+        quantity,
+        reserved_quantity: reservedQuantity,
+        available_quantity: quantity - reservedQuantity,
+        lpn_status: null,
+        date,
+      });
+    } else {
+      const grade = GRADES[i % GRADES.length];
+      const quantity = 1;
+      const reservedQuantity = i % 4 === 0 ? 1 : 0;
+      rows.push({
+        id: `inv-seed-${String(i + 1).padStart(3, '0')}`,
+        stock_type: 'USED_ITEM',
+        book,
+        grade,
+        zone,
+        quantity,
+        reserved_quantity: reservedQuantity,
+        available_quantity: quantity - reservedQuantity,
+        lpn_status: reservedQuantity > 0 ? 'RESERVED' : 'AVAILABLE',
+        date,
+      });
+    }
   }
 
   return rows;
