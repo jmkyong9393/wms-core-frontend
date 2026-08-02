@@ -22,8 +22,8 @@ import { CreateEmployeeModal } from "@/features/employees/components/CreateEmplo
 import type { EmployeeListParams } from "@/features/employees/types/employee";
 
 const PAGE_SIZE = 20;
-const ROLE_FILTER_ALL = "ALL" as const;
-const STATUS_FILTER_ALL = "ALL" as const;
+const ROLE_FILTER_ALL = "전체 역할" as const;
+const STATUS_FILTER_ALL = "전체 상태" as const;
 
 export function EmployeeManagementView() {
   const currentUser = useAtomValue(currentUserAtom);
