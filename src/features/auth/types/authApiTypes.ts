@@ -17,6 +17,9 @@ export interface LoginResponse {
 // POST /api/v1/auth/refresh 응답 데이터
 export interface RefreshResponse {
   access_token: string;
+  token_type: string;
+  expires_in: number;
+  must_change_password: boolean;
 }
 
 // GET /api/v1/auth/me 응답 데이터

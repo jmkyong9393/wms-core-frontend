@@ -2,13 +2,13 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
-  bulkCreateEmployees,
+  createEmployee,
   updateEmployeeStatus,
   updateEmployeeRole,
 } from "@/features/employees/api/employeeService";
 import { employeeKeys } from "@/features/employees/constants/queryKeys";
 import type {
-  BulkCreateEmployeeRequest,
+  CreateEmployeeRequest,
   UpdateEmployeeStatusRequest,
   UpdateEmployeeRoleRequest,
 } from "@/features/employees/types/employee";
@@ -16,14 +16,14 @@ import type {
 /**
  * 직원 관리 변경 요청 훅
  *
- * 직원 일괄 생성, 계정 상태 변경, 역할 변경 요청 처리
+ * 직원 생성, 계정 상태 변경, 역할 변경 요청 처리
  * 요청 성공 후 직원 목록을 다시 불러와 최신 상태 반영
  */
 
-export function useBulkCreateEmployeesMutation() {
+export function useCreateEmployeeMutation() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (payload: BulkCreateEmployeeRequest) => bulkCreateEmployees(payload),
+    mutationFn: (payload: CreateEmployeeRequest) => createEmployee(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: employeeKeys.all });
     },
@@ -34,12 +34,12 @@ export function useUpdateEmployeeStatusMutation() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({
-      employeeId,
+      userId,
       payload,
     }: {
-      employeeId: string;
+      userId: string;
       payload: UpdateEmployeeStatusRequest;
-    }) => updateEmployeeStatus(employeeId, payload),
+    }) => updateEmployeeStatus(userId, payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: employeeKeys.all });
     },
@@ -50,12 +50,12 @@ export function useUpdateEmployeeRoleMutation() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({
-      employeeId,
+      userId,
       payload,
     }: {
-      employeeId: string;
+      userId: string;
       payload: UpdateEmployeeRoleRequest;
-    }) => updateEmployeeRole(employeeId, payload),
+    }) => updateEmployeeRole(userId, payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: employeeKeys.all });
     },

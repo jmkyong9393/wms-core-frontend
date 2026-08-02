@@ -63,7 +63,12 @@ export const authHandlers = [
       return HttpResponse.json({ detail: "Refresh Token이 유효하지 않습니다." }, { status: 401 });
     }
 
-    const response: RefreshResponse = { access_token: buildMockJwt(account) };
+    const response: RefreshResponse = {
+      access_token: buildMockJwt(account),
+      token_type: "bearer",
+      expires_in: MOCK_EXPIRES_IN_SECONDS,
+      must_change_password: account.must_change_password,
+    };
     return HttpResponse.json(response);
   }),
 

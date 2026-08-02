@@ -39,9 +39,10 @@ const seedItem: HitlQueueItem = {
   reviewer: '관리자A',
 };
 
-// AuthGuard를 거치지 않는 훅 단위 테스트이므로, 실제 화면에서는 항상 보장되는
+// AuthGuard를 거치지 않는 훅 단위 테스트이므로 실제 화면에서는 항상 보장되는
 // "로그인 완료 상태"를 setupHook 기본값으로 직접 채워준다
 const DEFAULT_CURRENT_USER: CurrentUser = {
+  id: 'test-user-id',
   employeeId: 'W0001',
   name: '관리자테스트',
   role: 'ADMIN',
@@ -181,6 +182,7 @@ describe('useHitlQueueAction', () => {
   it('startReview sets reviewer to the masked name of the logged-in user', async () => {
     vi.mocked(startReviewHitlItem).mockResolvedValueOnce(undefined);
     const { result, store } = setupHook([{ id: 'hitl_2', status: 'AWAITING_REVIEW' }], {
+      id: 'test-user-id-2',
       employeeId: 'W0001',
       name: '장문경',
       role: 'ADMIN',

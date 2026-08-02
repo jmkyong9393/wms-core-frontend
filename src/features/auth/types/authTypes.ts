@@ -29,6 +29,7 @@ export interface AuthSession {
 
 // 현재 로그인한 사용자 정보
 export interface CurrentUser {
+  id: string;
   employeeId: string;
   name: string;
   role: Role;
