@@ -3,11 +3,19 @@
 import React, { useState, useEffect } from "react";
 import { useJobStatus } from "@/hooks/useJobStatus";
 import {
+  registerBook,
+  createUsedItemInbound,
   startInspection,
+  submitRecheck,
   isMockMode,
   setMockMode,
 } from "@/services/returnService";
-import type { InspectionMode, InspectionResult } from "@/types/returnTypes";
+import {
+  DETAIL_REQUIRED_STATUSES,
+  type InspectionMode,
+  type BookRegistrationResult,
+  type UsedItemInboundResult,
+} from "@/types/returnTypes";
 import { getGradeLabel } from "@/features/inspections/utils/gradeBadge";
 import ReturnsHitlPanel from "./ReturnsHitlPanel";
 import {
@@ -25,38 +33,49 @@ import {
   ExternalLink,
   Camera,
   Loader2,
+  ScanBarcode,
+  Tag,
 } from "lucide-react";
 import { useS3Upload } from "@/features/inbound/hooks/useS3Upload";
 import { useCamera } from "@/features/inbound/hooks/useCamera";
 import { processImage } from "@/features/inbound/utils/image-processor";
 
+type WizardStep = "select_mode" | "register" | "capture" | "analyzing" | "result";
+
 /**
- * ReturnsInspector — 전체 AI 검수 위저드 오케스트레이터 (WebRTC 탑재)
+ * 반품·중고 도서 AI 검수 화면
  *
- * 실시간 가이드라인 오버레이, 볼륨/페달 단축키 촬영 및 흔들림(Blur) 판독 연산이 통합된 마스터 검수 흐름입니다.
+ * 도서 등록, 입고 접수, 촬영, AI 검수, 결과 확인 순서로 진행함.
  */
 export default function ReturnsInspector() {
-  const [step, setStep] = useState<
-    "select_mode" | "capture" | "analyzing" | "result"
-  >("select_mode");
+  const [step, setStep] = useState<WizardStep>("select_mode");
   const [mode, setMode] = useState<InspectionMode>("NEW_RETURN");
   const [jobId, setJobId] = useState<string | null>(null);
+  const [isRecheck, setIsRecheck] = useState(false);
   const [mockActive, setMockActive] = useState(isMockMode());
   const [localError, setLocalError] = useState<string | null>(null);
   const [isProcessingLocal, setIsProcessingLocal] = useState(false);
+
+  // 도서 등록 및 입고 정보
+  const [isbn, setIsbn] = useState("");
+  const [supplierName, setSupplierName] = useState("");
+  const [bookInfo, setBookInfo] = useState<BookRegistrationResult | null>(null);
+  const [inboundInfo, setInboundInfo] = useState<UsedItemInboundResult | null>(null);
+  const [idempotencyKey, setIdempotencyKey] = useState<string>("");
+  const [isRegistering, setIsRegistering] = useState(false);
+  const [registerError, setRegisterError] = useState<string | null>(null);
 
   const {
     jobStatus,
     result,
     error: jobError,
     resetJobState,
-    setResultDirectly,
   } = useJobStatus(jobId);
 
   const { uploadImage, isCompressing, isUploading, uploadProgress, error: uploadError } = useS3Upload();
   const { videoRef, startCamera, stopCamera, error: cameraError } = useCamera();
 
-  // 1. 촬영 단계("capture") 진입 시에만 카메라 가동 시작
+  // 촬영 화면에서만 카메라 실행
   useEffect(() => {
     if (step === "capture") {
       startCamera();
@@ -68,7 +87,7 @@ export default function ReturnsInspector() {
     };
   }, [step, startCamera, stopCamera]);
 
-  // 2. 물리 풋페달 단축키 바인딩
+  // 키보드 또는 풋페달로 촬영
   useEffect(() => {
     if (step !== "capture") return;
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -90,22 +109,53 @@ export default function ReturnsInspector() {
     };
   }, [step]);
 
-  // Mock 모드 토글
+  // Mock 모드 변경
   const handleToggleMock = () => {
     const nextState = !mockActive;
     setMockActive(nextState);
     setMockMode(nextState);
   };
 
-  // 모드 선택
+  // 검수 유형 선택 후 등록 화면으로 이동
   const handleSelectMode = (selectedMode: InspectionMode) => {
     setMode(selectedMode);
-    setStep("capture");
+    setIsbn("");
+    setSupplierName("");
+    setBookInfo(null);
+    setInboundInfo(null);
+    setRegisterError(null);
+    setIdempotencyKey(crypto.randomUUID());
+    setStep("register");
+  };
+
+  // 도서 마스터 등록 + 입고 접수(LPN 발급)를 순차 수행
+  const handleRegister = async () => {
+    if (!isbn.trim() || isRegistering) return;
+    setIsRegistering(true);
+    setRegisterError(null);
+    try {
+      const book = bookInfo ?? (await registerBook(isbn.trim()));
+      setBookInfo(book);
+
+      const inbound = await createUsedItemInbound({
+        mode,
+        bookId: book.bookId,
+        supplierName: mode === "USED_PURCHASE" ? supplierName.trim() || undefined : undefined,
+        idempotencyKey,
+      });
+      setInboundInfo(inbound);
+    } catch (err: unknown) {
+      const errMsg = err instanceof Error ? err.message : "도서 등록/입고 접수에 실패했습니다.";
+      setRegisterError(errMsg);
+    } finally {
+      setIsRegistering(false);
+    }
   };
 
   // 비디오 프레임 캡처 및 전처리 파이프라인
   const handleCapture = async () => {
     if (!videoRef.current || isProcessingLocal || isCompressing || isUploading) return;
+    if (!isRecheck && !inboundInfo) return;
 
     setLocalError(null);
     setIsProcessingLocal(true);
@@ -128,41 +178,52 @@ export default function ReturnsInspector() {
         throw new Error("이미지 서버 전송에 실패했습니다.");
       }
 
-      // 3) AI 검수 큐 진입 요청
-      const inspectResponse = await startInspection({
-        mode,
-        coverImageUrl: uploadResult.url,
-        defectImageUrls: [],
-        bookTitle: mode === "NEW_RETURN" ? "반품 신간 도서" : "매입 중고 도서",
-      });
-
-      setJobId(inspectResponse.jobId);
+      // 3) AI 검수 큐 진입 요청 (재촬영이면 동일 jobId로 recheck, 아니면 신규 생성)
+      if (isRecheck && jobId) {
+        await submitRecheck(jobId, [uploadResult.url]);
+      } else if (inboundInfo && bookInfo) {
+        const inspectResponse = await startInspection({
+          inboundItemId: inboundInfo.inboundItemId,
+          bookId: bookInfo.bookId,
+          mode,
+          imagePaths: [uploadResult.url],
+        });
+        setJobId(inspectResponse.jobId);
+      }
+      setIsRecheck(false);
     } catch (err: unknown) {
       const errMsg = err instanceof Error ? err.message : "AI 검수 요청 시작에 실패했습니다.";
       setLocalError(errMsg);
-      setStep("capture");
+      setStep(isRecheck ? "result" : "capture");
     } finally {
       setIsProcessingLocal(false);
     }
   };
 
-  // HITL 보정 완료
-  const handleHitlOverrideComplete = (updatedResult: InspectionResult) => {
-    setResultDirectly(updatedResult);
+  // RECHECK_REQUIRED 상태에서 재촬영 진입
+  const handleStartRecheck = () => {
+    setIsRecheck(true);
+    setLocalError(null);
+    setStep("capture");
   };
 
   // 초기화
   const handleReset = () => {
     resetJobState();
     setJobId(null);
+    setIsRecheck(false);
     setStep("select_mode");
     setLocalError(null);
+    setBookInfo(null);
+    setInboundInfo(null);
+    setRegisterError(null);
   };
 
-  // 완료 전이 조건
+  // 상세 결과가 필요한 상태가 되면 결과 화면으로 이동
   if (
     step === "analyzing" &&
-    (jobStatus === "COMPLETED" || jobStatus === "HITL_WAITING") &&
+    jobStatus &&
+    DETAIL_REQUIRED_STATUSES.includes(jobStatus) &&
     result
   ) {
     setStep("result");
@@ -172,7 +233,7 @@ export default function ReturnsInspector() {
 
   return (
     <div className="w-full max-w-md mx-auto space-y-4">
-      {/* Mock 모드 토글 바 */}
+      {/* Mock 모드 설정 */}
       <div className="flex items-center justify-between bg-zinc-100 dark:bg-zinc-800/50 rounded-2xl px-4 py-2.5">
         <span className="text-xs font-semibold text-zinc-600 dark:text-zinc-400">
           Local Mock API 모사
@@ -198,7 +259,6 @@ export default function ReturnsInspector() {
         </button>
       </div>
 
-      {/* ─── Step 1: 모드 선택 ─── */}
       {step === "select_mode" && (
         <div className="space-y-3">
           <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-50 flex items-center gap-2">
@@ -236,12 +296,107 @@ export default function ReturnsInspector() {
         </div>
       )}
 
-      {/* ─── Step 2: 실시간 WebRTC 촬영 ─── */}
+      {step === "register" && (
+        <div className="space-y-4">
+          <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-50 flex items-center gap-2">
+            <ScanBarcode className="w-5 h-5 text-indigo-500" />
+            도서 등록 및 입고 접수
+          </h2>
+
+          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-5 space-y-4">
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-zinc-700 dark:text-zinc-300 block">
+                ISBN
+              </label>
+              <input
+                type="text"
+                inputMode="numeric"
+                value={isbn}
+                onChange={(e) => setIsbn(e.target.value)}
+                disabled={!!bookInfo}
+                placeholder="ISBN-10 또는 ISBN-13 입력"
+                className="w-full text-sm rounded-xl border border-zinc-200 dark:border-zinc-800 px-3 py-2.5 bg-white dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 disabled:opacity-60"
+              />
+            </div>
+
+            {mode === "USED_PURCHASE" && (
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-zinc-700 dark:text-zinc-300 block">
+                  매입처(선택)
+                </label>
+                <input
+                  type="text"
+                  value={supplierName}
+                  onChange={(e) => setSupplierName(e.target.value)}
+                  disabled={!!inboundInfo}
+                  placeholder="매입처명을 입력하세요"
+                  className="w-full text-sm rounded-xl border border-zinc-200 dark:border-zinc-800 px-3 py-2.5 bg-white dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 disabled:opacity-60"
+                />
+              </div>
+            )}
+
+            {bookInfo && (
+              <div className="p-3 bg-indigo-50 dark:bg-indigo-950/20 border border-indigo-100 dark:border-indigo-900/30 rounded-2xl text-xs text-indigo-700 dark:text-indigo-400">
+                {bookInfo.title} · {bookInfo.publisher ?? "출판사 미상"}
+              </div>
+            )}
+
+            {inboundInfo && (
+              <div className="p-3 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/30 rounded-2xl text-xs text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5">
+                <Tag className="w-3.5 h-3.5" />
+                LPN 발급 완료: {inboundInfo.lpnBarcode}
+              </div>
+            )}
+
+            {registerError && (
+              <div className="p-2.5 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/30 rounded-xl text-center text-xs text-red-600 dark:text-red-400">
+                <AlertCircle className="w-4 h-4 inline mr-1" />
+                {registerError}
+              </div>
+            )}
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              type="button"
+              onClick={handleReset}
+              className="py-3 rounded-2xl border border-zinc-200 dark:border-zinc-800 text-xs font-semibold text-zinc-600 hover:bg-zinc-50 transition-colors"
+            >
+              뒤로 가기
+            </button>
+            {!inboundInfo ? (
+              <button
+                type="button"
+                onClick={handleRegister}
+                disabled={!isbn.trim() || isRegistering}
+                className="py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-lg shadow-indigo-600/10 flex items-center justify-center gap-2 disabled:opacity-50"
+              >
+                {isRegistering ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <ScanBarcode className="w-4 h-4" />
+                )}
+                등록 및 입고 접수
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setStep("capture")}
+                className="py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-lg shadow-indigo-600/10 flex items-center justify-center gap-2"
+              >
+                <Camera className="w-4 h-4" />
+                촬영 시작하기
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
       {step === "capture" && (
         <div className="space-y-4">
           <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-50 flex items-center gap-2">
             <Camera className="w-5 h-5 text-indigo-500" />
-            {mode === "NEW_RETURN" ? "신간 반품 촬영" : "중고 매입 촬영"}
+            {isRecheck ? "재촬영하기" : mode === "NEW_RETURN" ? "신간 반품 촬영" : "중고 매입 촬영"}
           </h2>
 
           <div className="relative w-full aspect-[4/3] bg-black rounded-3xl overflow-hidden shadow-md">
@@ -250,7 +405,7 @@ export default function ReturnsInspector() {
                 {cameraError}
               </div>
             )}
-            
+
             <video
               ref={videoRef}
               autoPlay
@@ -259,7 +414,6 @@ export default function ReturnsInspector() {
               className="w-full h-full object-cover"
             />
 
-            {/* 도서 정렬 가이드라인 박스 */}
             <div className="absolute inset-0 pointer-events-none flex items-center justify-center p-6 z-10">
               <div className="w-full h-[80%] border-2 border-dashed border-white/60 rounded-xl relative flex items-center justify-center">
                 <span className="absolute top-2 text-white/80 text-[10px] bg-black/40 px-2 py-0.5 rounded-full">
@@ -270,7 +424,6 @@ export default function ReturnsInspector() {
               </div>
             </div>
 
-            {/* 흔들림 연산 및 로컬 전처리 처리 중 오버레이 */}
             {isProcessingLocal && (
               <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center text-white text-xs z-20">
                 <Loader2 className="w-8 h-8 text-indigo-400 animate-spin mb-2" />
@@ -289,7 +442,7 @@ export default function ReturnsInspector() {
           <div className="grid grid-cols-2 gap-3">
             <button
               type="button"
-              onClick={handleReset}
+              onClick={isRecheck ? () => setStep("result") : handleReset}
               className="py-3 rounded-2xl border border-zinc-200 dark:border-zinc-800 text-xs font-semibold text-zinc-600 hover:bg-zinc-50 transition-colors"
             >
               뒤로 가기
@@ -308,7 +461,6 @@ export default function ReturnsInspector() {
         </div>
       )}
 
-      {/* ─── Step 3: AI 분석 대기 ─── */}
       {step === "analyzing" && (
         <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-8 text-center">
           <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-indigo-50 dark:bg-indigo-950/30 flex items-center justify-center">
@@ -319,7 +471,7 @@ export default function ReturnsInspector() {
             )}
           </div>
           <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-50 mb-1">
-            {isWorking ? "도서 이미지 처리 중..." : "AI 비전 판독 진행 중..."}
+            {isWorking ? "도서 이미지 처리 중..." : `AI 비전 판독 진행 중... (${result?.progress ?? 0}%)`}
           </h3>
           <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-4">
             {isWorking
@@ -345,92 +497,94 @@ export default function ReturnsInspector() {
         </div>
       )}
 
-      {/* ─── Step 4: 결과 리포트 ─── */}
       {step === "result" && result && (
         <div className="space-y-4">
-          {/* HITL 수동 결정 차단 장벽 */}
-          {jobStatus === "HITL_WAITING" && (
+          {/* 관리자 판정 대기 안내 (읽기 전용) */}
+          {jobStatus === "HITL_REQUIRED" && (
             <ReturnsHitlPanel
               jobId={result.jobId}
-              initialGrade={result.grade}
-              initialReasons={result.reasons}
-              onOverrideComplete={handleHitlOverrideComplete}
-              onCancel={handleReset}
+              conditionGrade={result.conditionGrade}
+              ubciScore={result.ubciScore}
+              finalReport={result.finalReport}
+              onBack={handleReset}
             />
           )}
 
-          {/* AI 리포트 문서 */}
-          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-50 flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-indigo-500" />
-                AI 품질 판독 명세서
+          {/* 재촬영 필요 안내 */}
+          {jobStatus === "RECHECK_REQUIRED" && (
+            <div className="bg-white dark:bg-zinc-900 border-2 border-amber-500/80 rounded-3xl p-6 text-center space-y-4">
+              <AlertCircle className="w-10 h-10 text-amber-500 mx-auto" />
+              <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-50">
+                재촬영이 필요합니다
               </h3>
-              <span
-                className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                  jobStatus === "COMPLETED"
-                    ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400"
-                    : "bg-amber-100 text-amber-700 dark:bg-amber-950/30 dark:text-amber-400"
-                }`}
+              {result.finalReport && (
+                <p className="text-xs text-zinc-500 dark:text-zinc-400">{result.finalReport}</p>
+              )}
+              <button
+                type="button"
+                onClick={handleStartRecheck}
+                className="w-full rounded-2xl py-4 bg-amber-500 hover:bg-amber-600 text-white font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-amber-500/10"
               >
-                {jobStatus === "COMPLETED" ? "자동 판정 완료" : "수동 승인 필요"}
-              </span>
+                <Camera className="w-4 h-4" />
+                재촬영하기
+              </button>
             </div>
+          )}
 
-            {/* 품질 지표 명세 */}
-            <div className="grid grid-cols-3 gap-2.5 mb-4">
-              <div className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-100 dark:border-zinc-900 rounded-2xl p-3 text-center">
-                <p className="text-[10px] text-zinc-400 mb-0.5">판독 등급</p>
-                <p className="text-base font-black text-zinc-900 dark:text-zinc-50">
-                  {result.grade ? getGradeLabel(result.grade) : "—"}
-                </p>
+          {(jobStatus === "APPROVED" || jobStatus === "REJECTED" || jobStatus === "FAILED") && (
+            <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-50 flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-indigo-500" />
+                  AI 품질 판독 명세서
+                </h3>
+                <span
+                  className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                    jobStatus === "APPROVED"
+                      ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400"
+                      : "bg-red-100 text-red-700 dark:bg-red-950/30 dark:text-red-400"
+                  }`}
+                >
+                  {jobStatus === "APPROVED" ? "승인 완료" : jobStatus === "REJECTED" ? "반려 확정" : "처리 실패"}
+                </span>
               </div>
-              <div className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-100 dark:border-zinc-900 rounded-2xl p-3 text-center">
-                <p className="text-[10px] text-zinc-400 mb-0.5">AI 신뢰도</p>
-                <p className="text-base font-black text-zinc-900 dark:text-zinc-50">
-                  {result.confidenceScore != null
-                    ? `${(result.confidenceScore * 100).toFixed(0)}%`
-                    : "—"}
-                </p>
-              </div>
-              <div className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-100 dark:border-zinc-900 rounded-2xl p-3 text-center">
-                <p className="text-[10px] text-zinc-400 mb-0.5">WMS 적재</p>
-                <p className="text-xs font-bold pt-0.5">
-                  {result.wmsDecision === "RESTOCKED" ? (
-                    <span className="text-emerald-600 flex items-center justify-center gap-0.5">
-                      <FileCheck2 className="w-3.5 h-3.5" /> 가용입고
-                    </span>
-                  ) : result.wmsDecision === "REJECTED" ? (
-                    <span className="text-red-600 flex items-center justify-center gap-0.5">
-                      <FileX2 className="w-3.5 h-3.5" /> 불합반려
-                    </span>
-                  ) : (
-                    "—"
-                  )}
-                </p>
-              </div>
-            </div>
 
-            {/* OpenCV 검수 캔버스 피드백 */}
-            {result.processedCoverImageUrl && (
-              <div className="space-y-2 mb-4">
-                <h4 className="text-xs font-bold text-zinc-700 dark:text-zinc-300 flex items-center gap-1">
-                  <ExternalLink className="w-3 h-3 text-indigo-500" />
-                  AI 판독 검출본 (BBox 맵핑)
-                </h4>
-                <div className="rounded-2xl overflow-hidden border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 aspect-video flex items-center justify-center">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={result.processedCoverImageUrl}
-                    alt="AI 분석 결과물"
-                    className="w-full h-full object-contain"
-                  />
+              <div className="grid grid-cols-2 gap-2.5 mb-4">
+                <div className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-100 dark:border-zinc-900 rounded-2xl p-3 text-center">
+                  <p className="text-[10px] text-zinc-400 mb-0.5">판독 등급</p>
+                  <p className="text-base font-black text-zinc-900 dark:text-zinc-50">
+                    {result.conditionGrade ? getGradeLabel(result.conditionGrade) : "—"}
+                  </p>
+                </div>
+                <div className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-100 dark:border-zinc-900 rounded-2xl p-3 text-center">
+                  <p className="text-[10px] text-zinc-400 mb-0.5">UBCI 점수</p>
+                  <p className="text-base font-black text-zinc-900 dark:text-zinc-50">
+                    {result.ubciScore != null ? result.ubciScore.toFixed(0) : "—"}
+                  </p>
                 </div>
               </div>
-            )}
 
-            {/* 검수 마감 및 리셋 */}
-            {jobStatus === "COMPLETED" && (
+              {result.finalReport && (
+                <div className="space-y-2 mb-4">
+                  <h4 className="text-xs font-bold text-zinc-700 dark:text-zinc-300 flex items-center gap-1">
+                    <ExternalLink className="w-3 h-3 text-indigo-500" />
+                    AI 최종 리포트
+                  </h4>
+                  <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 p-3 text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                    {result.finalReport}
+                  </div>
+                </div>
+              )}
+
+              <div className="flex items-center gap-2 text-xs text-zinc-400 mb-4">
+                {jobStatus === "APPROVED" ? (
+                  <FileCheck2 className="w-3.5 h-3.5 text-emerald-500" />
+                ) : (
+                  <FileX2 className="w-3.5 h-3.5 text-red-500" />
+                )}
+                검수 건 #{result.jobId.slice(0, 8)}
+              </div>
+
               <button
                 type="button"
                 onClick={handleReset}
@@ -439,8 +593,8 @@ export default function ReturnsInspector() {
                 <RotateCcw className="w-4 h-4" />
                 검수 마감 및 신규 검수 시작
               </button>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       )}
     </div>
