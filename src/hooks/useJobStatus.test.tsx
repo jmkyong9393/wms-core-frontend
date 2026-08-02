@@ -18,8 +18,8 @@ vi.mock("@/features/auth/api/tokenRefresh", () => ({
   getOrRefreshAccessToken: vi.fn(),
 }));
 
-// 테스트용 localStorage 설정 (authAtoms.ts의 atomWithStorage가 모듈 평가 시점에 접근하므로
-// import보다 먼저 전역에 스텁을 올려야 한다 — useNotificationStream.test.tsx와 동일 패턴)
+// 인증 상태 테스트에 사용할 localStorage
+// 관련 모듈이 불러와지기 전에 먼저 등록
 vi.hoisted(() => {
   const store: Record<string, string> = {};
   vi.stubGlobal("localStorage", {
@@ -80,7 +80,7 @@ async function flushMicrotasks(times = 6) {
   }
 }
 
-// 타이머 진행 후 비동기 처리까지 완료 (useNotificationStream.test.tsx와 동일 패턴)
+// 타이머 진행 후 비동기 작업까지 처리
 async function advanceAndFlush(ms: number) {
   await act(async () => {
     vi.advanceTimersByTime(ms);
@@ -295,7 +295,7 @@ describe("useJobStatus Hook", () => {
     setupHook("job-1");
     await advanceAndFlush(0);
 
-    // 연속으로 SSE 연결을 실패시켜 재연결 백오프를 소진하고 폴링 안전망을 유도한다
+    // SSE 연결을 반복해서 실패시켜 폴링 시작
     for (let i = 0; i < 3; i += 1) {
       const latest = MockEventSource.instances[MockEventSource.instances.length - 1];
       act(() => {

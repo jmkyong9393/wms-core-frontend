@@ -1,12 +1,12 @@
 /**
- * 반품/중고 서적 AI 검수 도메인 타입 시스템
+ * 반품/중고 도서 AI 검수 타입
  *
- * 백엔드 `/api/v1/inspections`, `/api/v1/inbound/used-item`, `/api/v1/books` 실제 계약을 그대로 반영한다.
- * 상태 전이: PENDING → PROCESSING → (HITL_REQUIRED | RECHECK_REQUIRED 대기 가능) → APPROVED/REJECTED/FAILED
+ * 백엔드 `/api/v1/inspections`, `/api/v1/inbound/used-item`, `/api/v1/books` 구조 반영
+ * 흐름: PENDING → PROCESSING → (HITL_REQUIRED | RECHECK_REQUIRED 대기 가능) → APPROVED/REJECTED/FAILED
  */
 import type { BookGrade } from "@/features/inspections/types/inspection";
 
-/** 검수 작업 상태 (백엔드 ReturnJobStatus) */
+/** 검수 진행 상태 */
 export type InspectionJobStatus =
   | "PENDING" // 큐 대기 중
   | "PROCESSING" // AI Vision 분석 진행 중
@@ -16,7 +16,7 @@ export type InspectionJobStatus =
   | "REJECTED" // 반려 확정 (종료)
   | "FAILED"; // 파이프라인 처리 실패 (종료)
 
-/** 종료 상태 목록 — 이 상태에 도달하면 SSE/폴링 연결을 정리한다 */
+/** 검수가 끝난 상태 */
 export const TERMINAL_JOB_STATUSES: readonly InspectionJobStatus[] = [
   "APPROVED",
   "REJECTED",
@@ -28,8 +28,10 @@ export function isTerminalJobStatus(status: InspectionJobStatus): boolean {
 }
 
 /**
- * SSE progress 이벤트에는 없는 condition_grade/final_report 등 상세 필드가 필요한 상태.
- * 이 상태에 도달하면 GET /api/v1/inspections/{jobId}로 전체 상세를 다시 조회해야 한다.
+ * 상세 결과 재조회가 필요한 상태
+ *
+ * SSE에 없는 등급과 최종 결과를 조회하기 위해
+ * 검수 상세 API를 다시 호출
  */
 export const DETAIL_REQUIRED_STATUSES: readonly InspectionJobStatus[] = [
   "HITL_REQUIRED",
@@ -69,7 +71,7 @@ export interface CreateInspectionResult {
 /** SSE 구독 티켓 발급 응답 (POST /api/v1/inspections/{job_id}/stream-ticket) */
 export interface InspectionStreamTicket {
   ticket: string;
-  /** 백엔드가 이미 ticket 쿼리까지 포함해 완성한 상대 경로 (`/api/v1/inspections/{job_id}/stream?ticket=...`) */
+  /** 티켓이 포함된 SSE 연결 주소 */
   streamUrl: string;
   expiresIn: number;
 }
@@ -102,7 +104,7 @@ export interface UsedItemInboundResult {
   labelPrintError: string | null;
 }
 
-/** 검수 생성 요청 페이로드 (클라이언트 → 서버) */
+/** 검수 생성 요청 데이터 */
 export interface StartInspectionPayload {
   inboundItemId: string;
   bookId: string;

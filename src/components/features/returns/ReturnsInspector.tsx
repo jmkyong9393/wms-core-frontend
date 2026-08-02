@@ -43,11 +43,9 @@ import { processImage } from "@/features/inbound/utils/image-processor";
 type WizardStep = "select_mode" | "register" | "capture" | "analyzing" | "result";
 
 /**
- * ReturnsInspector — 전체 AI 검수 위저드 오케스트레이터 (WebRTC 탑재)
+ * 반품·중고 도서 AI 검수 화면
  *
- * 실시간 가이드라인 오버레이, 볼륨/페달 단축키 촬영 및 흔들림(Blur) 판독 연산이 통합된 마스터 검수 흐름입니다.
- * 실제 검수 생성은 `inbound_item_id`/`book_id`가 필요하므로, 촬영 전에 도서 등록(ISBN) →
- * 입고 접수(LPN 발급) 단계를 먼저 거칩니다.
+ * 도서 등록, 입고 접수, 촬영, AI 검수, 결과 확인 순서로 진행함.
  */
 export default function ReturnsInspector() {
   const [step, setStep] = useState<WizardStep>("select_mode");
@@ -58,7 +56,7 @@ export default function ReturnsInspector() {
   const [localError, setLocalError] = useState<string | null>(null);
   const [isProcessingLocal, setIsProcessingLocal] = useState(false);
 
-  // ─── 도서 등록 / 입고 접수 단계 상태 ───
+  // 도서 등록 및 입고 정보
   const [isbn, setIsbn] = useState("");
   const [supplierName, setSupplierName] = useState("");
   const [bookInfo, setBookInfo] = useState<BookRegistrationResult | null>(null);
@@ -77,7 +75,7 @@ export default function ReturnsInspector() {
   const { uploadImage, isCompressing, isUploading, uploadProgress, error: uploadError } = useS3Upload();
   const { videoRef, startCamera, stopCamera, error: cameraError } = useCamera();
 
-  // 1. 촬영 단계("capture") 진입 시에만 카메라 가동 시작
+  // 촬영 화면에서만 카메라 실행
   useEffect(() => {
     if (step === "capture") {
       startCamera();
@@ -89,7 +87,7 @@ export default function ReturnsInspector() {
     };
   }, [step, startCamera, stopCamera]);
 
-  // 2. 물리 풋페달 단축키 바인딩
+  // 키보드 또는 풋페달로 촬영
   useEffect(() => {
     if (step !== "capture") return;
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -111,14 +109,14 @@ export default function ReturnsInspector() {
     };
   }, [step]);
 
-  // Mock 모드 토글
+  // Mock 모드 변경
   const handleToggleMock = () => {
     const nextState = !mockActive;
     setMockActive(nextState);
     setMockMode(nextState);
   };
 
-  // 모드 선택 → 도서 등록 단계로 진입, 이번 등록 시도용 Idempotency-Key 신규 발급
+  // 검수 유형 선택 후 등록 화면으로 이동
   const handleSelectMode = (selectedMode: InspectionMode) => {
     setMode(selectedMode);
     setIsbn("");
@@ -202,7 +200,7 @@ export default function ReturnsInspector() {
     }
   };
 
-  // RECHECK_REQUIRED 상태에서 재촬영 진입 (동일 jobId 유지, SSE 구독은 끊기지 않음)
+  // RECHECK_REQUIRED 상태에서 재촬영 진입
   const handleStartRecheck = () => {
     setIsRecheck(true);
     setLocalError(null);
@@ -221,7 +219,7 @@ export default function ReturnsInspector() {
     setRegisterError(null);
   };
 
-  // 결과/대기 화면 전이 조건: SSE 경량 payload로 채워지지 않는 상세가 필요한 상태에 도달하면 결과 단계로 전환
+  // 상세 결과가 필요한 상태가 되면 결과 화면으로 이동
   if (
     step === "analyzing" &&
     jobStatus &&
@@ -235,7 +233,7 @@ export default function ReturnsInspector() {
 
   return (
     <div className="w-full max-w-md mx-auto space-y-4">
-      {/* Mock 모드 토글 바 */}
+      {/* Mock 모드 설정 */}
       <div className="flex items-center justify-between bg-zinc-100 dark:bg-zinc-800/50 rounded-2xl px-4 py-2.5">
         <span className="text-xs font-semibold text-zinc-600 dark:text-zinc-400">
           Local Mock API 모사
@@ -261,7 +259,6 @@ export default function ReturnsInspector() {
         </button>
       </div>
 
-      {/* ─── Step 1: 모드 선택 ─── */}
       {step === "select_mode" && (
         <div className="space-y-3">
           <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-50 flex items-center gap-2">
@@ -299,7 +296,6 @@ export default function ReturnsInspector() {
         </div>
       )}
 
-      {/* ─── Step 2: 도서 등록 및 입고 접수(LPN 발급) ─── */}
       {step === "register" && (
         <div className="space-y-4">
           <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-50 flex items-center gap-2">
@@ -396,7 +392,6 @@ export default function ReturnsInspector() {
         </div>
       )}
 
-      {/* ─── Step 3: 실시간 WebRTC 촬영 ─── */}
       {step === "capture" && (
         <div className="space-y-4">
           <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-50 flex items-center gap-2">
@@ -419,7 +414,6 @@ export default function ReturnsInspector() {
               className="w-full h-full object-cover"
             />
 
-            {/* 도서 정렬 가이드라인 박스 */}
             <div className="absolute inset-0 pointer-events-none flex items-center justify-center p-6 z-10">
               <div className="w-full h-[80%] border-2 border-dashed border-white/60 rounded-xl relative flex items-center justify-center">
                 <span className="absolute top-2 text-white/80 text-[10px] bg-black/40 px-2 py-0.5 rounded-full">
@@ -430,7 +424,6 @@ export default function ReturnsInspector() {
               </div>
             </div>
 
-            {/* 흔들림 연산 및 로컬 전처리 처리 중 오버레이 */}
             {isProcessingLocal && (
               <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center text-white text-xs z-20">
                 <Loader2 className="w-8 h-8 text-indigo-400 animate-spin mb-2" />
@@ -468,7 +461,6 @@ export default function ReturnsInspector() {
         </div>
       )}
 
-      {/* ─── Step 4: AI 분석 대기 ─── */}
       {step === "analyzing" && (
         <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-8 text-center">
           <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-indigo-50 dark:bg-indigo-950/30 flex items-center justify-center">
@@ -505,7 +497,6 @@ export default function ReturnsInspector() {
         </div>
       )}
 
-      {/* ─── Step 5: 결과 리포트 / 대기·재촬영 안내 ─── */}
       {step === "result" && result && (
         <div className="space-y-4">
           {/* 관리자 판정 대기 안내 (읽기 전용) */}
@@ -540,7 +531,6 @@ export default function ReturnsInspector() {
             </div>
           )}
 
-          {/* AI 리포트 문서 (종료 상태) */}
           {(jobStatus === "APPROVED" || jobStatus === "REJECTED" || jobStatus === "FAILED") && (
             <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6">
               <div className="flex items-center justify-between mb-4">
@@ -559,7 +549,6 @@ export default function ReturnsInspector() {
                 </span>
               </div>
 
-              {/* 품질 지표 명세 */}
               <div className="grid grid-cols-2 gap-2.5 mb-4">
                 <div className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-100 dark:border-zinc-900 rounded-2xl p-3 text-center">
                   <p className="text-[10px] text-zinc-400 mb-0.5">판독 등급</p>

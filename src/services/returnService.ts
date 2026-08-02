@@ -1,10 +1,9 @@
 /**
- * 반품/중고 서적 AI 검수 API 서비스
+ * 반품/중고 도서 AI 검수 API
  *
  * 실제 백엔드(`/api/v1/books`, `/api/v1/inbound/used-item`, `/api/v1/inspections`) 호출과
- * 로컬 Mock 모드 시뮬레이션을 동일 인터페이스로 제공한다.
- * Mock 모드 활성화 시 localStorage 기반으로 상태 전이를 시뮬레이션하여
- * 백엔드 없이도 프론트엔드 단독 개발/데모가 가능하다.
+ * 로컬 Mock 모드 시뮬레이션을 동일 인터페이스로 제공
+ * Mock 모드에서는 localStorage로 검수 진행 상태를 재현
  */
 import { apiClient } from "@/lib/api-client";
 import type {
@@ -20,8 +19,8 @@ import type {
   BookGrade,
 } from "@/types/returnTypes";
 
-// ─── Mock 모드 제어 ───
-// dashboardService.ts 등 다른 기능도 이 토글을 공유한다.
+// Mock 모드 설정
+// 다른 서비스와 같은 localStorage 값을 사용
 
 const MOCK_MODE_KEY = "wms_mock_mode";
 
@@ -36,9 +35,9 @@ export const setMockMode = (active: boolean): void => {
   }
 };
 
-// ─── 프론트 모드 ↔ 백엔드 enum 매핑 ───
-// NEW_RETURN → 입고 CUSTOMER_RETURN / 검수 RETURN
-// USED_PURCHASE → 입고 USED_PURCHASE / 검수 USED_PURCHASE
+// 프론트 검수 유형을 백엔드 값으로 변환
+// 신간 반품: CUSTOMER_RETURN / RETURN
+// 중고 매입: USED_PURCHASE / USED_PURCHASE
 
 function toUsedInboundType(mode: InspectionMode): UsedInboundType {
   return mode === "NEW_RETURN" ? "CUSTOMER_RETURN" : "USED_PURCHASE";
@@ -48,7 +47,7 @@ function toBackendInspectionMode(mode: InspectionMode): "RETURN" | "USED_PURCHAS
   return mode === "NEW_RETURN" ? "RETURN" : "USED_PURCHASE";
 }
 
-// ─── ISBN 도서 마스터 등록/조회 ───
+// ISBN 도서 등록
 
 interface BookRegistrationApiResponse {
   book_id: string;
@@ -86,7 +85,7 @@ export async function registerBook(isbn: string): Promise<BookRegistrationResult
   };
 }
 
-// ─── 중고/반품 입고 접수 (LPN 발급) ───
+// 입고 접수 및 LPN 발급
 
 interface UsedItemInboundApiResponse {
   inbound_id: string;
@@ -101,11 +100,12 @@ interface UsedItemInboundApiResponse {
   label_print_error: string | null;
 }
 
+/** 중고 매입 또는 고객 반품 입고 접수 */
 export async function createUsedItemInbound(params: {
   mode: InspectionMode;
   bookId: string;
   supplierName?: string;
-  /** 중복 클릭·재시도 시 동일 값을 재사용해 백엔드 멱등 응답을 받는다 */
+  /** 재요청 시 중복 입고 생성을 막는 요청 식별값 */
   idempotencyKey: string;
 }): Promise<UsedItemInboundResult> {
   const { mode, bookId, supplierName, idempotencyKey } = params;
@@ -149,7 +149,7 @@ export async function createUsedItemInbound(params: {
   };
 }
 
-// ─── 검수 상태/응답 API 어댑터 (snake_case → camelCase) ───
+// 검수 응답을 프론트 형식으로 변환
 
 interface InspectionStatusApiResponse {
   job_id: string;
@@ -193,7 +193,7 @@ function adaptCreateInspection(data: CreateInspectionApiResponse): CreateInspect
   };
 }
 
-// ─── 검수 생성 요청 ───
+// AI 검수 시작
 
 export async function startInspection(
   payload: StartInspectionPayload
@@ -224,7 +224,7 @@ export async function startInspection(
   return adaptCreateInspection(res.data);
 }
 
-// ─── 재촬영 이미지 등록 및 재검수 요청 ───
+// 재촬영 후 재검수
 
 export async function submitRecheck(
   jobId: string,
@@ -258,7 +258,7 @@ export async function submitRecheck(
   return adaptCreateInspection(res.data);
 }
 
-// ─── 검수 상태 조회 (Polling 용) ───
+// 검수 상태 조회
 
 export async function getJobStatus(jobId: string): Promise<InspectionResult> {
   if (isMockMode()) {
@@ -268,7 +268,7 @@ export async function getJobStatus(jobId: string): Promise<InspectionResult> {
   return adaptInspectionStatus(res.data);
 }
 
-// ─── SSE 구독 티켓 발급 ───
+// SSE 연결 티켓 발급
 
 interface StreamTicketApiResponse {
   ticket: string;
@@ -276,6 +276,7 @@ interface StreamTicketApiResponse {
   expires_in: number;
 }
 
+// 검수 진행 상태를 받을 SSE 티켓 발급 
 export async function issueStreamTicket(jobId: string): Promise<InspectionStreamTicket> {
   const res = await apiClient.post<StreamTicketApiResponse>(
     `/api/v1/inspections/${jobId}/stream-ticket`
@@ -287,11 +288,14 @@ export async function issueStreamTicket(jobId: string): Promise<InspectionStream
   };
 }
 
-// ─── Mock 상태 전이 시뮬레이션 ───
+// Mock 검수 진행 상태 생성
 
 /**
- * Mock 모드에서 시간 경과에 따라 상태를 PENDING → PROCESSING → APPROVED/HITL_REQUIRED 로 전이.
- * 생성 후 2초 미만: PENDING, 2~5초: PROCESSING, 5초 이후: 랜덤으로 APPROVED(70%) 또는 HITL_REQUIRED(30%)
+ * 경과 시간에 따라 Mock 검수 상태 변경
+ *
+ * 2초 미만: 검수 대기
+ * 2~5초: AI 분석 중
+ * 5초 이후: 승인 또는 관리자 검토 대기
  */
 function simulateMockJobTransition(jobId: string): InspectionResult {
   const stored = localStorage.getItem(`wms_job_${jobId}`);

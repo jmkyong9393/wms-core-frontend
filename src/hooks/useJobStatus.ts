@@ -1,15 +1,11 @@
 /**
- * AI 검수 작업 상태 추적 커스텀 훅
+ * AI 검수 진행 상태 관리
  *
- * jobId를 입력받아 SSE 구독 티켓을 발급하고 실시간 스트림(named event: progress/error)에 연결한다.
- * SSE는 progress/status/ubci_score 등 경량 필드만 실어 보내므로, 관리자 판정 대기·재촬영 필요·
- * 종료 상태에 진입하면 `GET /api/v1/inspections/{jobId}`로 condition_grade/final_report 등
- * 전체 상세를 한 번 더 조회해 채운다.
+ * SSE로 검수 진행 상황을 실시간으로 받음
+ * 상세 결과가 필요한 상태에서는 검수 상세 API를 추가로 호출
  *
- * 연결 복원력: SSE 재연결은 지수 백오프로 시도하고, 연속 실패가 일정 횟수를 넘으면
- * 저빈도 폴링을 안전망으로 병행 가동한다(SSE가 onopen으로 복구되면 폴링은 즉시 정리).
- * 티켓 발급 401은 axios 계층에서만 판별 가능하므로(EventSource는 상태 코드를 노출하지 않음)
- * 알림센터 SSE(useNotificationStream.ts)와 동일하게 토큰 갱신 → 티켓 재발급 순으로 복구한다.
+ * SSE 연결 실패 시 자동 재연결하고
+ * 반복 실패하면 폴링으로 상태를 확인
  */
 "use client";
 
@@ -35,16 +31,16 @@ interface UseJobStatusReturn {
   setResultDirectly: (newResult: InspectionResult) => void;
 }
 
-// SSE 재연결 설정 (useNotificationStream.ts와 동일한 백오프 정책)
+// SSE 재연결 설정 
 const RECONNECT_BASE_DELAY_MS = 1000;
 const RECONNECT_MAX_DELAY_MS = 15000;
 const MAX_RECONNECT_ATTEMPTS = 5;
 
-// 연속 재연결 실패가 이 횟수를 넘으면 폴링 안전망을 병행 가동
+// SSE가 반복해서 실패하면 폴링 시작
 const POLLING_FALLBACK_AFTER_ATTEMPTS = 2;
 const POLLING_INTERVAL_MS = 3000;
 
-// SSE progress 이벤트의 경량 payload
+// SSE 진행 상태 데이터
 interface ProgressEventData {
   job_id: string;
   task_id: string | null;
@@ -64,10 +60,7 @@ export function useJobStatus(jobId: string | null): UseJobStatusReturn {
 
   const [prevJobId, setPrevJobId] = useState<string | null>(null);
 
-  /**
-   * jobId 변경 시 렌더링 페이즈에서 직접 상태를 동기화.
-   * useEffect 내 동기 setState 호출을 피해 react-hooks/set-state-in-effect 위반 방지.
-   */
+  // 새 검수 작업으로 바뀌면 기존 상태 초기화
   if (jobId !== prevJobId) {
     setPrevJobId(jobId);
     setJobStatus(jobId ? "PENDING" : null);
@@ -115,7 +108,7 @@ export function useJobStatus(jobId: string | null): UseJobStatusReturn {
     let retryCount = 0;
     const esRef: { current: EventSource | null } = { current: null };
 
-    // 조회한 상세 결과를 상태에 반영하고, 종료 상태면 모든 연결을 정리
+    // 상세 결과 적용 후 검수가 끝났으면 연결 정리
     const applyDetailResult = (detail: InspectionResult) => {
       if (cancelled) return;
       setResult(detail);
@@ -170,7 +163,7 @@ export function useJobStatus(jobId: string | null): UseJobStatusReturn {
       }, delay);
     };
 
-    // progress 이벤트: 경량 필드는 즉시 반영, 상세 조회가 필요한 상태면 GET으로 보강
+    // SSE로 받은 진행 상태 적용
     const handleProgress = (event: MessageEvent) => {
       try {
         const data = JSON.parse(event.data) as ProgressEventData;
@@ -198,7 +191,7 @@ export function useJobStatus(jobId: string | null): UseJobStatusReturn {
       }
     };
 
-    // error 이벤트: 검수 작업을 찾을 수 없는 등 서버가 명시적으로 보낸 오류
+    // 서버가 보낸 검수 오류 처리
     const handleServerError = (event: MessageEvent) => {
       try {
         const data = JSON.parse(event.data) as { message: string };
@@ -233,7 +226,7 @@ export function useJobStatus(jobId: string | null): UseJobStatusReturn {
       };
     };
 
-    // 티켓 재발급 전 액세스 토큰을 갱신 (알림센터 SSE와 동일 패턴)
+    // 토큰 갱신 후 SSE 티켓 다시 발급
     const handleTicketUnauthorized = async () => {
       try {
         await getOrRefreshAccessToken();
@@ -250,8 +243,7 @@ export function useJobStatus(jobId: string | null): UseJobStatusReturn {
       connectStream();
     };
 
-    // 티켓 발급 후 SSE 연결. 발급 자체의 401만 명시적으로 판별 가능하다
-    // (EventSource는 HTTP 상태 코드를 노출하지 않으므로 스트림 연결 실패는 항상 scheduleReconnect로만 처리)
+    // SSE 티켓 발급 후 스트림 연결
     const connectStream = async () => {
       try {
         const ticket = await issueStreamTicket(jobId!);
@@ -269,7 +261,7 @@ export function useJobStatus(jobId: string | null): UseJobStatusReturn {
     };
 
     if (isMockMode()) {
-      // Mock 모드에서는 SSE 없이 곧바로 폴링
+      // Mock 모드는 SSE 대신 폴링 사용
       startPolling();
     } else {
       connectStream();

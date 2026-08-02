@@ -14,12 +14,10 @@ interface ReturnsHitlPanelProps {
 }
 
 /**
- * HITL_REQUIRED 상태 안내 카드 (읽기 전용)
- *
- * `POST /api/v1/inspections/{jobId}/hitl`은 ADMIN 역할만 호출할 수 있는 관리자 전용 API다.
- * 이 화면은 창고 작업자가 쓰는 모바일 촬영 위저드이므로 여기서 직접 판정을 제출하지 않는다.
- * 실제 승인/반려/재촬영 판정은 관리자 큐 화면(src/features/queue)에서 처리하며,
- * 이 작업이 완료되면 useJobStatus의 SSE/폴링이 최종 상태를 자동으로 반영한다.
+ * 관리자 검토 대기 안내 
+ * 작업자 화면에서는 검수 결과를 직접 판정하지 않음
+ * 승인·반려·재촬영 판정은 관리자 검수 큐에서 처리 
+ * 관리자 판정이 끝나면 현재 화면의 상태가 자동으로 갱신
  */
 export default function ReturnsHitlPanel({
   jobId,
