@@ -4,7 +4,7 @@ import type { CurrentUser } from "@/features/auth/types/authTypes";
 import type { Role } from "@/features/auth/types/authTypes";
 
 function makeUser(role: Role): CurrentUser {
-  return { employeeId: "T0001", name: "테스트", role, mustChangePassword: false };
+  return { id: "uuid-test", employeeId: "T0001", name: "테스트", role, mustChangePassword: false };
 }
 
 describe("canManageEmployees", () => {
@@ -24,8 +24,8 @@ describe("canManageEmployees", () => {
 });
 
 describe("getAssignableRoles", () => {
-  it("returns ADMIN/WORKER/GUEST (MASTER 제외) only for MASTER", () => {
-    expect(getAssignableRoles(makeUser("MASTER"))).toEqual(["ADMIN", "WORKER", "GUEST"]);
+  it("returns ADMIN/WORKER (GUEST 제외) only for MASTER", () => {
+    expect(getAssignableRoles(makeUser("MASTER"))).toEqual(["ADMIN", "WORKER"]);
   });
 
   it("returns an empty array for ADMIN/WORKER/GUEST", () => {

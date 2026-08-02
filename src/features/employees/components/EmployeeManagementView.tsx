@@ -18,7 +18,7 @@ import { canManageEmployees } from "@/features/employees/utils/permissions";
 import { ROLE_LABEL, STATUS_LABEL } from "@/features/employees/utils/badges";
 import { useEmployeesQuery } from "@/features/employees/hooks/useEmployeesQuery";
 import { EmployeeTable } from "@/features/employees/components/EmployeeTable";
-import { BulkCreateEmployeeModal } from "@/features/employees/components/BulkCreateEmployeeModal";
+import { CreateEmployeeModal } from "@/features/employees/components/CreateEmployeeModal";
 import type { EmployeeListParams } from "@/features/employees/types/employee";
 
 const PAGE_SIZE = 20;
@@ -46,7 +46,7 @@ export function EmployeeManagementView() {
   };
 
   const { data, isLoading, isError } = useEmployeesQuery(params);
-  const totalPages = data ? Math.max(1, Math.ceil(data.total / PAGE_SIZE)) : 1;
+  const totalPages = data ? Math.max(1, data.total_pages) : 1;
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
@@ -58,7 +58,7 @@ export function EmployeeManagementView() {
         {canManage && (
           <Button onClick={() => setCreateModalOpen(true)}>
             <Plus className="w-4 h-4" />
-            직원 일괄 생성
+            직원 추가
           </Button>
         )}
       </div>
@@ -145,7 +145,7 @@ export function EmployeeManagementView() {
         </>
       )}
 
-      <BulkCreateEmployeeModal
+      <CreateEmployeeModal
         open={isCreateModalOpen}
         onClose={() => setCreateModalOpen(false)}
         currentUser={currentUser}

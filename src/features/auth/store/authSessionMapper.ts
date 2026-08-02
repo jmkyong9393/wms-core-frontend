@@ -31,6 +31,7 @@ export function mapMeResponseToCurrentUser(
   session: AuthSession
 ): CurrentUser {
   return {
+    id: me.id,
     employeeId: me.employee_id,
     name: me.name,
     role: me.role,

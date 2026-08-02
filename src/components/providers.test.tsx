@@ -29,6 +29,7 @@ describe("AuthSessionExpiredWatcher", () => {
     const store = createStore();
     store.set(authTokenAtom, "some-jwt-token");
     store.set(currentUserAtom, {
+      id: "test-user-id",
       employeeId: "W0001",
       name: "홍길동",
       role: "WORKER",

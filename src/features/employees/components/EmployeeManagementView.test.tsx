@@ -27,18 +27,22 @@ vi.mock("@/features/employees/api/employeeService", () => ({
   listEmployees: vi.fn().mockResolvedValue({
     items: [
       {
+        id: "employee-uuid-1",
         employee_id: "W0001",
+        email: null,
         name: "박민우",
         role: "WORKER",
         status: "ACTIVE",
+        must_change_password: false,
         created_at: "2025-01-01T00:00:00.000Z",
       },
     ],
     total: 1,
     page: 1,
     size: 20,
+    total_pages: 1,
   }),
-  bulkCreateEmployees: vi.fn(),
+  createEmployee: vi.fn(),
   updateEmployeeStatus: vi.fn(),
   updateEmployeeRole: vi.fn(),
 }));
@@ -51,9 +55,10 @@ async function renderAs(role: Role) {
 
   const employeeId = role === "MASTER" ? "M0001" : "A0001";
   const name = role === "MASTER" ? "장문경" : "소한민";
+  const id = role === "MASTER" ? "test-master-id" : "test-admin-id";
 
   const account: MockAccount = {
-    id: role === "MASTER" ? "test-master-id" : "test-admin-id",
+    id,
     employee_id: employeeId,
     password: "irrelevant",
     role,
@@ -64,6 +69,7 @@ async function renderAs(role: Role) {
   };
 
   const currentUser: CurrentUser = {
+    id,
     employeeId,
     name,
     role,
@@ -93,17 +99,17 @@ describe("EmployeeManagementView", () => {
     vi.clearAllMocks();
   });
 
-  it("MASTER 로그인 시 '직원 일괄 생성' 버튼이 노출된다", async () => {
+  it("MASTER 로그인 시 '직원 추가' 버튼이 노출된다", async () => {
     await renderAs("MASTER");
 
-    expect(screen.getByRole("button", { name: /직원 일괄 생성/ })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /직원 추가/ })).toBeInTheDocument();
     await waitFor(() => expect(screen.getByText("박민우")).toBeInTheDocument());
   });
 
-  it("ADMIN 로그인 시 '직원 일괄 생성' 버튼이 노출되지 않는다 (조회 전용)", async () => {
+  it("ADMIN 로그인 시 '직원 추가' 버튼이 노출되지 않는다 (조회 전용)", async () => {
     await renderAs("ADMIN");
 
     await waitFor(() => expect(screen.getByText("박민우")).toBeInTheDocument());
-    expect(screen.queryByRole("button", { name: /직원 일괄 생성/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /직원 추가/ })).not.toBeInTheDocument();
   });
 });
