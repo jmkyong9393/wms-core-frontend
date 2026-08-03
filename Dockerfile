@@ -19,6 +19,12 @@ COPY . .
 # Disable telemetry during the build.
 ENV NEXT_TELEMETRY_DISABLED=1
 
+# Add build args for Next.js public variables
+ARG NEXT_PUBLIC_API_URL
+ARG NEXT_PUBLIC_DISABLE_MSW
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_DISABLE_MSW=$NEXT_PUBLIC_DISABLE_MSW
+
 RUN npm run build
 
 # Production image, copy all the files and run next

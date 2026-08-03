@@ -17,7 +17,7 @@ export default function OutboundPickingLayout({
   const currentUser = useAtomValue(currentUserAtom);
 
   return (
-    <AuthGuard allow={["WORKER"]}>
+    <AuthGuard allow={["WORKER", "MASTER", "ADMIN"]}>
       <div className="min-h-screen bg-gray-50 dark:bg-zinc-950 font-sans">
         {/* 상단 작업자 헤더 */}
         <header className="sticky top-0 z-30 h-14 flex items-center justify-between px-4 bg-white dark:bg-zinc-900 border-b border-gray-200 dark:border-zinc-800">
