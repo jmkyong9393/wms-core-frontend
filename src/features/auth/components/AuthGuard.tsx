@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { useAuthSession } from "@/features/auth/hooks/useAuthSession";
@@ -23,6 +23,11 @@ export function AuthGuard({ allow, children }: AuthGuardProps) {
   const router = useRouter();
   const authSession = useAuthSession();
 
+  const [isClient, setIsClient] = useState(false);
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
   const status = authSession.status;
 
   // 로그인 사용자 역할
@@ -35,6 +40,8 @@ export function AuthGuard({ allow, children }: AuthGuardProps) {
   const roleNotAllowed = status === "ready" && !!allow && !!role && !allow.includes(role);
 
   useEffect(() => {
+    if (!isClient) return;
+
     // 미로그인 시 로그인 페이지로 이동
     if (status === "unauthenticated") {
       router.replace(`/login?redirect=${encodeURIComponent(pathname)}`);
@@ -49,7 +56,12 @@ export function AuthGuard({ allow, children }: AuthGuardProps) {
     if (roleNotAllowed && role) {
       router.replace(ROLE_HOME_ROUTE[role] ?? "/login");
     }
-  }, [status, needsPasswordChange, roleNotAllowed, role, pathname, router]);
+  }, [status, needsPasswordChange, roleNotAllowed, role, pathname, router, isClient]);
+
+  // SSR 및 초기 Hydration 중에는 무조건 로딩 상태 렌더링
+  if (!isClient) {
+    return <p className="p-8 text-center text-sm text-gray-400">세션 확인 중...</p>;
+  }
 
   if (status === "unauthenticated" || needsPasswordChange) return REDIRECTING_MESSAGE;
 
