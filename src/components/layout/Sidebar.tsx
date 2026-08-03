@@ -14,19 +14,27 @@ import {
   ListChecks,
   Warehouse,
   Users,
-  Package
+  Package,
+  Truck
 } from 'lucide-react';
 import { useState } from 'react';
 
 // PM님이 요청하신 사이드바 추천 메뉴 구성
-const MENU_ITEMS = [
-  { name: '대시보드', href: '/admin', icon: LayoutDashboard },
-  { name: '현장 반품 검수', href: '/inbound', icon: Camera },
+const COMMON_MENU_ITEMS = [
+  { name: '통합 대시보드', href: '/admin', icon: LayoutDashboard },
+  { name: 'AI 품질 리포트', href: '/reports', icon: LineChart },
+];
+
+const INBOUND_MENU_ITEMS = [
+  { name: '현장 반품 검수', href: '/worker/inbound', icon: Camera },
   { name: '검토 대기', href: '/admin/queue', icon: ListChecks },
   { name: '검수 처리 내역', href: '/admin/inspections', icon: ClipboardList },
-  { name: '재고·출고 관리', href: '/admin/inventory', icon: Warehouse },
   { name: '발주 추천안', href: '/admin/restock', icon: ShoppingCart },
-  { name: 'AI 품질 리포트', href: '/reports', icon: LineChart },
+];
+
+const OUTBOUND_MENU_ITEMS = [
+  { name: '재고 관리', href: '/admin/inventory', icon: Warehouse },
+  { name: '출고 관리', href: '/worker/outbound', icon: Truck },
   { name: '스마트 패킹', href: '/outbound/packing', icon: Package },
 ];
 
@@ -43,20 +51,20 @@ export default function Sidebar() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
 
-  const renderMenuItem = (item: (typeof MENU_ITEMS)[number]) => {
+  const renderMenuItem = (item: (typeof COMMON_MENU_ITEMS)[number]) => {
     const isActive = pathname === item.href;
     return (
       <Link
         key={item.name}
         href={item.href}
         onClick={() => setIsOpen(false)}
-        className={`flex items-center px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+        className={`flex items-center px-3 py-2 rounded-lg text-xs font-semibold transition-colors ${
           isActive
             ? 'bg-blue-50 text-blue-700'
             : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
         }`}
       >
-        <item.icon className={`w-5 h-5 mr-3 ${isActive ? 'text-blue-700' : 'text-gray-400'}`} />
+        <item.icon className={`w-4 h-4 mr-2.5 ${isActive ? 'text-blue-700' : 'text-gray-400'}`} />
         {item.name}
       </Link>
     );
@@ -94,13 +102,32 @@ export default function Sidebar() {
         </div>
 
         {/* Main Menu */}
-        <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
-          <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 px-3">
-            Core Menus
+        <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-4">
+          <div className="space-y-1">
+            <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5 px-3">
+              공통 현황
+            </div>
+            {COMMON_MENU_ITEMS.map(renderMenuItem)}
           </div>
-          {MENU_ITEMS.map(renderMenuItem)}
+
+          <div className="space-y-1">
+            <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5 px-3">
+              입고 업무 (Inbound)
+            </div>
+            {INBOUND_MENU_ITEMS.map(renderMenuItem)}
+          </div>
+
+          <div className="space-y-1">
+            <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5 px-3">
+              출고 업무 (Outbound)
+            </div>
+            {OUTBOUND_MENU_ITEMS.map(renderMenuItem)}
+          </div>
+
           <div className="my-2 border-t border-gray-100" />
-          {ADMIN_MENU_ITEMS.map(renderMenuItem)}
+          <div className="space-y-1">
+            {ADMIN_MENU_ITEMS.map(renderMenuItem)}
+          </div>
         </nav>
 
         {/* Bottom Menu */}
