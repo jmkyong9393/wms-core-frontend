@@ -19,7 +19,7 @@ export default function WorkerLayout({
       <div className="min-h-screen bg-gray-50 dark:bg-zinc-950 font-sans flex flex-col">
         <header className="sticky top-0 z-30 h-14 shrink-0 flex items-center justify-between px-4 bg-white dark:bg-zinc-900 border-b border-gray-200 dark:border-zinc-800">
           <h1 className="text-base font-bold text-gray-800 dark:text-zinc-100">
-            WMS 현장 작업 포털
+            NEWZED 현장 작업 포털
           </h1>
           <div className="flex items-center pl-2 border-l border-gray-200 dark:border-zinc-800">
             <div className="w-8 h-8 bg-indigo-100 dark:bg-indigo-900/40 rounded-full flex items-center justify-center text-indigo-700 dark:text-indigo-300">
