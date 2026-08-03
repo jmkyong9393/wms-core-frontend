@@ -5,6 +5,8 @@ import {
   createEmployee,
   updateEmployeeStatus,
   updateEmployeeRole,
+  downloadEmployeeBulkTemplate,
+  bulkCreateEmployees,
 } from "./employeeService";
 
 vi.mock("@/lib/api-client", () => {
@@ -43,7 +45,7 @@ describe("employeeService", () => {
     vi.mocked(apiClient.post).mockResolvedValueOnce({
       data: {
         id: "uuid-1",
-        employee_id: "AV26080201",
+        employee_id: "NZ26080201",
         email: null,
         name: "홍길동",
         role: "WORKER",
@@ -56,7 +58,7 @@ describe("employeeService", () => {
     const res = await createEmployee(payload);
 
     expect(apiClient.post).toHaveBeenCalledWith("/api/v1/users/admin/create-accounts", payload);
-    expect(res.employee_id).toBe("AV26080201");
+    expect(res.employee_id).toBe("NZ26080201");
     expect(res.temporary_password).toBe("Temp1234!");
   });
 
@@ -100,5 +102,55 @@ describe("employeeService", () => {
       role: "ADMIN",
     });
     expect(res.role).toBe("ADMIN");
+  });
+
+  it("downloadEmployeeBulkTemplate calls GET /bulk-template as a blob and reads the filename", async () => {
+    const blob = new Blob(["dummy"]);
+    vi.mocked(apiClient.get).mockResolvedValueOnce({
+      data: blob,
+      headers: { "content-disposition": 'attachment; filename="employee_bulk_template.xlsx"' },
+    });
+
+    const res = await downloadEmployeeBulkTemplate();
+
+    expect(apiClient.get).toHaveBeenCalledWith("/api/v1/users/admin/bulk-template", {
+      responseType: "blob",
+    });
+    expect(res.blob).toBe(blob);
+    expect(res.filename).toBe("employee_bulk_template.xlsx");
+  });
+
+  it("downloadEmployeeBulkTemplate falls back to a default filename when the header is missing", async () => {
+    const blob = new Blob(["dummy"]);
+    vi.mocked(apiClient.get).mockResolvedValueOnce({ data: blob, headers: {} });
+
+    const res = await downloadEmployeeBulkTemplate();
+
+    expect(res.filename).toBe("신규직원_등록양식.xlsx");
+  });
+
+  it("bulkCreateEmployees calls POST /bulk-create with the file as multipart form-data", async () => {
+    const file = new File(["dummy"], "employees.xlsx", {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+    const blob = new Blob(["result"]);
+    vi.mocked(apiClient.post).mockResolvedValueOnce({
+      data: blob,
+      headers: { "content-disposition": 'attachment; filename="employee_accounts_20260803_120000.xlsx"' },
+    });
+
+    const res = await bulkCreateEmployees(file);
+
+    expect(apiClient.post).toHaveBeenCalledTimes(1);
+    const [url, body, config] = vi.mocked(apiClient.post).mock.calls[0];
+    expect(url).toBe("/api/v1/users/admin/bulk-create");
+    expect(body).toBeInstanceOf(FormData);
+    expect((body as FormData).get("file")).toBe(file);
+    expect(config).toEqual({
+      responseType: "blob",
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    expect(res.blob).toBe(blob);
+    expect(res.filename).toBe("employee_accounts_20260803_120000.xlsx");
   });
 });

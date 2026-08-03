@@ -74,3 +74,11 @@ export interface ApiErrorBody {
   detail: string;
   error_code?: string;
 }
+
+// 직원 일괄 생성 오류 응답
+export interface BulkEmployeeErrorBody {
+  detail: {
+    message: string;
+    errors: string[];
+  };
+}
