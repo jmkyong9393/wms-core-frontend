@@ -191,8 +191,8 @@ export function useJobStatus(jobId: string | null): UseJobStatusReturn {
       }
     };
 
-    // 서버가 보낸 검수 오류 처리
     const handleServerError = (event: MessageEvent) => {
+      if (!event.data) return; // Ignore browser native connection close events
       try {
         const data = JSON.parse(event.data) as { message: string };
         if (cancelled) return;

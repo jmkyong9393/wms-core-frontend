@@ -363,3 +363,73 @@ function simulateMockJobTransition(jobId: string): InspectionResult {
     originalImageUrls: jobData.payload?.imagePaths ?? [],
   };
 }
+
+export interface NewStockInboundParams {
+  isbn: string;
+  title: string;
+  publisher?: string;
+  category: string;
+  basePrice: string;
+  standardSize?: string;
+  thicknessMm?: number;
+  quantity: number;
+  supplierName?: string;
+}
+
+export interface NewStockInboundResult {
+  inboundId: string;
+  inboundItemId: string;
+  inboundType: string;
+  status: string;
+  bookId: string;
+  receivedQuantity: number;
+  locationId: string;
+  locationBarcode: string;
+  inventoryId: string;
+  inventoryQuantity: number;
+}
+
+export async function createNewStockInbound(
+  params: NewStockInboundParams
+): Promise<NewStockInboundResult> {
+  if (isMockMode()) {
+    return {
+      inboundId: `mock_inbound_new_${Date.now()}`,
+      inboundItemId: `mock_item_new_${Date.now()}`,
+      inboundType: "NEW_STOCK",
+      status: "COMPLETED",
+      bookId: `mock_book_${params.isbn}`,
+      receivedQuantity: params.quantity,
+      locationId: `mock_loc_id`,
+      locationBarcode: `LOC-A-${params.category}-01`,
+      inventoryId: `mock_inv_id`,
+      inventoryQuantity: params.quantity,
+    };
+  }
+
+  const res = await apiClient.post<any>("/api/v1/inbound/new-stock", {
+    isbn: params.isbn,
+    title: params.title,
+    publisher: params.publisher,
+    category: params.category,
+    base_price: params.basePrice,
+    standard_size: params.standardSize || null,
+    thickness_mm: params.thicknessMm || null,
+    quantity: params.quantity,
+    supplier_name: params.supplierName || null,
+  });
+
+  return {
+    inboundId: res.data.inbound_id,
+    inboundItemId: res.data.inbound_item_id,
+    inboundType: res.data.inbound_type,
+    status: res.data.status,
+    bookId: res.data.book_id,
+    receivedQuantity: res.data.received_quantity,
+    locationId: res.data.location_id,
+    locationBarcode: res.data.location_barcode,
+    inventoryId: res.data.inventory_id,
+    inventoryQuantity: res.data.inventory_quantity,
+  };
+}
+

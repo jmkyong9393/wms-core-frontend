@@ -5,5 +5,5 @@ import type { Role } from "@/features/auth/types/authTypes";
 export const ROLE_HOME_ROUTE: Partial<Record<Role, string>> = {
   MASTER: "/admin",
   ADMIN: "/admin",
-  WORKER: "/inbound",
+  WORKER: "/worker",
 };
