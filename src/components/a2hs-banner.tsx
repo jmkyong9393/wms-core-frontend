@@ -23,7 +23,7 @@ export function A2HSBanner() {
     <div className="fixed bottom-4 left-4 right-4 z-50 flex items-center justify-between gap-4 rounded-lg bg-blue-50 p-4 shadow-lg ring-1 ring-blue-900/10 md:bottom-8 md:left-auto md:right-8 md:w-[400px]">
       <div className="flex flex-1 flex-col gap-1">
         <p className="text-sm font-semibold text-blue-900">앱으로 더욱 편리하게!</p>
-        <p className="text-xs text-blue-700">WMS를 홈 화면에 추가하고 전체 화면으로 사용해보세요.</p>
+        <p className="text-xs text-blue-700">NEWZED를 홈 화면에 추가하고 전체 화면으로 사용해보세요.</p>
       </div>
       
       <div className="flex items-center gap-2">

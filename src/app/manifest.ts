@@ -2,8 +2,8 @@ import type { MetadataRoute } from 'next'
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'WMS AI Platform',
-    short_name: 'WMS',
+    name: 'NEWZED',
+    short_name: 'NEWZED',
     description: 'AI-powered B2B Warehouse Management System',
     start_url: '/',
     display: 'standalone',

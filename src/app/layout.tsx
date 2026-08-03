@@ -25,12 +25,12 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "WMS AI Platform",
+  title: "NEWZED",
   description: "AI-powered B2B Warehouse Management System",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "WMS",
+    title: "NEWZED",
   },
 };
 
