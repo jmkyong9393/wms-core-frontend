@@ -2,11 +2,13 @@
 
 import React, { useState, useEffect } from "react";
 import { useJobStatus } from "@/hooks/useJobStatus";
+import { isAxiosError } from "axios";
 import {
   registerBook,
   createUsedItemInbound,
   startInspection,
   submitRecheck,
+  reprintLabel,
   isMockMode,
   setMockMode,
 } from "@/services/returnService";
@@ -35,6 +37,7 @@ import {
   Loader2,
   ScanBarcode,
   Tag,
+  Printer,
 } from "lucide-react";
 import { useS3Upload } from "@/features/inbound/hooks/useS3Upload";
 import { useCamera } from "@/features/inbound/hooks/useCamera";
@@ -64,6 +67,8 @@ export default function ReturnsInspector() {
   const [idempotencyKey, setIdempotencyKey] = useState<string>("");
   const [isRegistering, setIsRegistering] = useState(false);
   const [registerError, setRegisterError] = useState<string | null>(null);
+  const [isReprinting, setIsReprinting] = useState(false);
+  const [reprintError, setReprintError] = useState<string | null>(null);
 
   const {
     jobStatus,
@@ -124,6 +129,7 @@ export default function ReturnsInspector() {
     setBookInfo(null);
     setInboundInfo(null);
     setRegisterError(null);
+    setReprintError(null);
     setIdempotencyKey(crypto.randomUUID());
     setStep("register");
   };
@@ -149,6 +155,28 @@ export default function ReturnsInspector() {
       setRegisterError(errMsg);
     } finally {
       setIsRegistering(false);
+    }
+  };
+
+  // 라벨 출력 실패 또는 생략 시 재출력
+  const handleReprintLabel = async () => {
+    if (!inboundInfo || isReprinting) return;
+    setIsReprinting(true);
+    setReprintError(null);
+    try {
+      const result = await reprintLabel(inboundInfo.lpnBarcode, "LPN");
+      // 재출력 결과로 라벨 상태와 오류 메시지 갱신
+      setInboundInfo({
+        ...inboundInfo,
+        labelPrintStatus: result.labelPrintStatus,
+        labelPrintError: result.labelPrintError,
+      });
+    } catch (err: unknown) {
+      // API 요청 실패 시 백엔드 오류 메시지 표시
+      const detail = isAxiosError<{ detail?: string }>(err) ? err.response?.data?.detail : undefined;
+      setReprintError(detail ?? "라벨 재출력 요청에 실패했습니다.");
+    } finally {
+      setIsReprinting(false);
     }
   };
 
@@ -345,6 +373,48 @@ export default function ReturnsInspector() {
               <div className="p-3 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/30 rounded-2xl text-xs text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5">
                 <Tag className="w-3.5 h-3.5" />
                 LPN 발급 완료: {inboundInfo.lpnBarcode}
+              </div>
+            )}
+
+            {inboundInfo?.labelPrintStatus === "SKIPPED" && (
+              <div className="p-3 bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl text-xs text-gray-600 dark:text-zinc-400 flex items-center justify-between gap-2">
+                <span className="flex items-center gap-1.5">
+                  <Printer className="w-3.5 h-3.5 shrink-0" />
+                  프린터 미설정 등으로 라벨 출력이 생략되었습니다.
+                </span>
+                <button
+                  type="button"
+                  onClick={handleReprintLabel}
+                  disabled={isReprinting}
+                  className="shrink-0 rounded-full border border-gray-300 dark:border-zinc-700 px-2.5 py-1 text-xs font-semibold text-gray-700 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-800 disabled:opacity-60"
+                >
+                  {isReprinting ? "재출력 중..." : "라벨 재출력"}
+                </button>
+              </div>
+            )}
+
+            {inboundInfo?.labelPrintStatus === "FAILED" && (
+              <div className="p-3 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/30 rounded-2xl text-xs text-red-600 dark:text-red-400 space-y-2">
+                <p className="flex items-center gap-1.5">
+                  <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                  {inboundInfo.labelPrintError ?? "라벨 출력에 실패했습니다."}
+                </p>
+                <button
+                  type="button"
+                  onClick={handleReprintLabel}
+                  disabled={isReprinting}
+                  className="flex items-center gap-1.5 rounded-full border border-red-300 dark:border-red-900/50 px-2.5 py-1 text-xs font-semibold text-red-700 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-950/30 disabled:opacity-60"
+                >
+                  <Printer className="w-3.5 h-3.5" />
+                  {isReprinting ? "재출력 중..." : "라벨 재출력"}
+                </button>
+              </div>
+            )}
+
+            {reprintError && (
+              <div className="p-2.5 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/30 rounded-xl text-center text-xs text-red-600 dark:text-red-400">
+                <AlertCircle className="w-4 h-4 inline mr-1" />
+                {reprintError}
               </div>
             )}
 

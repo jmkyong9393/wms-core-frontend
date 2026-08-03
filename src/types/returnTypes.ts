@@ -111,3 +111,14 @@ export interface StartInspectionPayload {
   mode: InspectionMode;
   imagePaths: string[];
 }
+
+/** 재출력할 라벨 유형 (POST /api/v1/lpn/{lpn_barcode}/labels/{label_type}/reprint의 label_type) */
+export type LabelType = "LPN" | "UBCI";
+
+/** 라벨 재출력 응답 */
+export interface LabelReprintResult {
+  lpnBarcode: string;
+  labelType: LabelType;
+  labelPrintStatus: "SENT" | "SKIPPED" | "FAILED";
+  labelPrintError: string | null;
+}
