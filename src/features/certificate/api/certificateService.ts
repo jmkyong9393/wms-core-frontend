@@ -1,27 +1,42 @@
-import { mockInspectionRecords } from '@/features/inspections/mocks/mockAgentLogs';
-import type { InspectionHistoryRow } from '@/features/inspections/types/inspectionHistory';
+import { isAxiosError } from 'axios';
+import { apiClient } from '@/lib/api-client';
 import type { CertificateRenderModel } from '@/features/certificate/types/certificate';
+import type { BookGrade } from '@/features/inspections/types/inspection';
 
-// /certificate/[token]은 인증 가드가 없는 공개 라우트이므로
-// ADMIN/MASTER 권한이 필요한 관리자 검수 이력 API(listInspectionHistory)에 의존하면 안 됨
-// TODO: 보증서 전용 공개 조회 API가 확정되면 이 mock 조회를 교체
-function toCertificateRenderModel(row: InspectionHistoryRow): CertificateRenderModel {
+interface CertificateApiResponse {
+  book: {
+    isbn: string | null;
+    title: string;
+    publisher: string | null;
+  };
+  condition_grade: BookGrade;
+  ubci_score: number | string;
+  report_summary: string;
+  inspected_at: string;
+}
+
+function toCertificateRenderModel(res: CertificateApiResponse): CertificateRenderModel {
   return {
-    token: row.id,
-    bookTitle: row.bookTitle,
-    grade: row.finalGrade,
-    ubciScore: row.ubciScore,
-    inspectedAt: row.inspectedAt,
-    completedAt: row.updatedAt,
+    bookTitle: res.book.title,
+    isbn: res.book.isbn,
+    publisher: res.book.publisher,
+    grade: res.condition_grade,
+    ubciScore: Number(res.ubci_score),
+    reportSummary: res.report_summary,
+    inspectedAt: res.inspected_at,
   };
 }
 
+// 인증 없이 조회하는 공개 품질보증서
 export async function getCertificate(token: string): Promise<CertificateRenderModel | null> {
-  const row = mockInspectionRecords.find((r) => r.id === token);
-  if (!row) return null;
-
-  // REJECT 도서는 판매 대상이 아니므로 소비자용 보증서 미발급
-  if (row.finalGrade === 'REJECT') return null;
-
-  return toCertificateRenderModel(row);
+  try {
+    const res = await apiClient.get<CertificateApiResponse>(`/api/v1/certificate/${token}`, {
+      skipAuth: true,
+    });
+    return toCertificateRenderModel(res.data);
+  } catch (err) {
+    // 잘못된 토큰 또는 검수 미완료
+    if (isAxiosError(err) && err.response?.status === 404) return null;
+    throw err;
+  }
 }

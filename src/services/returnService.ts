@@ -17,6 +17,8 @@ import type {
   UsedInboundType,
   StartInspectionPayload,
   BookGrade,
+  LabelType,
+  LabelReprintResult,
 } from "@/types/returnTypes";
 
 // Mock 모드 설정
@@ -144,6 +146,38 @@ export async function createUsedItemInbound(params: {
     lpnBarcode: res.data.lpn_barcode,
     certificateUrl: res.data.certificate_url,
     labelScanUrl: res.data.label_scan_url,
+    labelPrintStatus: res.data.label_print_status,
+    labelPrintError: res.data.label_print_error,
+  };
+}
+
+// 라벨 재출력
+
+interface LabelReprintApiResponse {
+  lpn_barcode: string;
+  label_type: LabelType;
+  label_print_status: "SENT" | "SKIPPED" | "FAILED";
+  label_print_error: string | null;
+}
+
+// 프린터 오류, 용지 걸림 등으로 라벨을 다시 출력한다.
+export async function reprintLabel(lpnBarcode: string, labelType: LabelType): Promise<LabelReprintResult> {
+  if (isMockMode()) {
+    return {
+      lpnBarcode,
+      labelType,
+      labelPrintStatus: "SKIPPED",
+      labelPrintError: null,
+    };
+  }
+
+  const res = await apiClient.post<LabelReprintApiResponse>(
+    `/api/v1/lpn/${lpnBarcode}/labels/${labelType}/reprint`
+  );
+
+  return {
+    lpnBarcode: res.data.lpn_barcode,
+    labelType: res.data.label_type,
     labelPrintStatus: res.data.label_print_status,
     labelPrintError: res.data.label_print_error,
   };

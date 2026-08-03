@@ -8,6 +8,7 @@ import {
   submitRecheck,
   getJobStatus,
   issueStreamTicket,
+  reprintLabel,
 } from "./returnService";
 import { apiClient } from "@/lib/api-client";
 
@@ -340,6 +341,84 @@ describe("returnService", () => {
         streamUrl: "/api/v1/inspections/job-1/stream?ticket=ticket-abc",
         expiresIn: 60,
       });
+    });
+  });
+
+  describe("reprintLabel", () => {
+    it("should call the reprint endpoint and adapt SENT response in real mode", async () => {
+      setMockMode(false);
+      vi.mocked(apiClient.post).mockResolvedValueOnce({
+        data: {
+          lpn_barcode: "LPN123",
+          label_type: "LPN",
+          label_print_status: "SENT",
+          label_print_error: null,
+        },
+      });
+
+      const res = await reprintLabel("LPN123", "LPN");
+      expect(apiClient.post).toHaveBeenCalledWith("/api/v1/lpn/LPN123/labels/LPN/reprint");
+      expect(res).toEqual({
+        lpnBarcode: "LPN123",
+        labelType: "LPN",
+        labelPrintStatus: "SENT",
+        labelPrintError: null,
+      });
+    });
+
+    it("should adapt SKIPPED response (printer disabled)", async () => {
+      setMockMode(false);
+      vi.mocked(apiClient.post).mockResolvedValueOnce({
+        data: {
+          lpn_barcode: "LPN123",
+          label_type: "LPN",
+          label_print_status: "SKIPPED",
+          label_print_error: null,
+        },
+      });
+
+      const res = await reprintLabel("LPN123", "LPN");
+      expect(res.labelPrintStatus).toBe("SKIPPED");
+      expect(res.labelPrintError).toBeNull();
+    });
+
+    it("should adapt FAILED response with an error message (HTTP 200, print itself failed)", async () => {
+      setMockMode(false);
+      vi.mocked(apiClient.post).mockResolvedValueOnce({
+        data: {
+          lpn_barcode: "LPN123",
+          label_type: "UBCI",
+          label_print_status: "FAILED",
+          label_print_error: "라벨 재출력에 실패했습니다. 프린터 상태를 확인한 뒤 다시 시도해주세요.",
+        },
+      });
+
+      const res = await reprintLabel("LPN123", "UBCI");
+      expect(res.labelPrintStatus).toBe("FAILED");
+      expect(res.labelPrintError).toBe("라벨 재출력에 실패했습니다. 프린터 상태를 확인한 뒤 다시 시도해주세요.");
+    });
+
+    it("should reject when the request itself fails (409 precondition not met)", async () => {
+      setMockMode(false);
+      const conflictError = Object.assign(new Error("Request failed with status code 409"), {
+        isAxiosError: true,
+        response: { status: 409, data: { detail: "UBCI score is not confirmed" } },
+      });
+      vi.mocked(apiClient.post).mockRejectedValueOnce(conflictError);
+
+      await expect(reprintLabel("LPN123", "UBCI")).rejects.toBe(conflictError);
+    });
+
+    it("should return a SKIPPED mock result in mock mode without calling apiClient", async () => {
+      setMockMode(true);
+      const res = await reprintLabel("LPN123", "LPN");
+      expect(res).toEqual({
+        lpnBarcode: "LPN123",
+        labelType: "LPN",
+        labelPrintStatus: "SKIPPED",
+        labelPrintError: null,
+      });
+      expect(apiClient.post).not.toHaveBeenCalled();
     });
   });
 });
