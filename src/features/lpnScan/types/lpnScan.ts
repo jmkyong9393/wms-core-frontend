@@ -38,4 +38,5 @@ export interface LpnScanDetail {
   rejectedItemStatus: RejectedItemStatus | null;
   location: LpnScanLocation | null;
   requiresRetake: boolean;
+  returnJobId: string | null; // 추가: 재촬영 연동용 기존 검수 작업 ID
 }

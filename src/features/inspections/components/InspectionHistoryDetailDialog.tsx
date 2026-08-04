@@ -143,7 +143,7 @@ export function InspectionHistoryDetailDialog({ row, onClose }: InspectionHistor
                       {/* 스캔을 고려한 고대비 화이트 박스 QR (정사각형 고정) */}
                       <div className="p-1.5 bg-white rounded-xl shadow-sm border border-gray-100 flex items-center justify-center w-[75px] h-[75px] flex-shrink-0">
                         <QRCodeSVG
-                          value={detail.lpnBarcode}
+                          value={detail.labelScanUrl || (typeof window !== "undefined" ? `${window.location.origin}/scan/${detail.lpnBarcode}` : "")}
                           size={62}
                           level="M"
                           includeMargin={false}
@@ -154,6 +154,17 @@ export function InspectionHistoryDetailDialog({ row, onClose }: InspectionHistor
                       <span className="text-[11px] font-mono font-black text-indigo-600 dark:text-indigo-400 bg-white dark:bg-zinc-800 px-3 py-1 rounded-full border border-indigo-100/60 dark:border-zinc-800 shadow-sm tracking-wider break-all max-w-full block">
                         {detail.lpnBarcode}
                       </span>
+                      {/* QR 스캔 URL 이동 링크 */}
+                      {(detail.labelScanUrl || detail.lpnBarcode) && (
+                        <a
+                          href={detail.labelScanUrl || (typeof window !== "undefined" ? `${window.location.origin}/scan/${detail.lpnBarcode}` : "#")}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[9px] text-indigo-500/80 hover:text-indigo-650 hover:underline transition-all tracking-tight break-all max-w-full block select-all mt-1.5"
+                        >
+                          🔗 QR 스캔 URL 접속하기
+                        </a>
+                      )}
                     </div>
                   ) : (
                     <span className="text-[10px] text-gray-450 dark:text-zinc-500">LPN 바코드가 발급되지 않았습니다.</span>

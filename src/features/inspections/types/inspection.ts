@@ -86,6 +86,7 @@ export interface InspectionDetailResponse {
   ubciScore: number | null;
   finalReport: string | null;
   lpnBarcode: string | null;
+  labelScanUrl: string | null; // 추가: LPN QR 스캔 대상 공개 URL
   originalImageUrls: string[];
   aiResult: InspectionAIResult;
   hitl: Record<string, any>;
