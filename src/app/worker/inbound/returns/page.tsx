@@ -347,6 +347,7 @@ export default function UsedItemReturnsPage() {
     const list = stored ? JSON.parse(stored) : [];
     list.unshift({
       id: `inbound_${Date.now()}`,
+      jobId: jobId,
       title: bookInfo.title,
       publisher: bookInfo.publisher,
       isbn: bookInfo.isbn,

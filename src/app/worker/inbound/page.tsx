@@ -5,9 +5,11 @@ import Link from "next/link";
 import { useAtomValue } from "jotai";
 import { BookOpen, RefreshCw, Trash2, ClipboardList, BookMarked, History } from "lucide-react";
 import { currentUserAtom } from "@/features/auth/store/authAtoms";
+import { WorkerInboundDetailDialog } from "@/features/inbound/components/WorkerInboundDetailDialog";
 
 interface ProcessedBook {
   id: string;
+  jobId?: string;
   title: string;
   publisher: string;
   isbn: string;
@@ -20,6 +22,7 @@ interface ProcessedBook {
 export default function WorkerInboundPage() {
   const currentUser = useAtomValue(currentUserAtom);
   const [processedBooks, setProcessedBooks] = useState<ProcessedBook[]>([]);
+  const [selectedBook, setSelectedBook] = useState<ProcessedBook | null>(null);
   const [mounted, setMounted] = useState(false);
 
   const storageKey = currentUser
@@ -159,7 +162,11 @@ export default function WorkerInboundPage() {
                   </thead>
                   <tbody className="divide-y divide-gray-50 dark:divide-zinc-800/50 text-xs">
                     {processedBooks.map((book) => (
-                      <tr key={book.id} className="hover:bg-gray-50/50 dark:hover:bg-zinc-800/20 transition-colors">
+                      <tr
+                        key={book.id}
+                        onClick={() => setSelectedBook(book)}
+                        className="hover:bg-gray-100/50 dark:hover:bg-zinc-800/30 transition-colors cursor-pointer"
+                      >
                         <td className="py-3 px-2 font-semibold text-gray-700 dark:text-zinc-200">
                           {book.title}
                           <span className="text-[10px] text-gray-400 block font-normal mt-0.5">
@@ -203,7 +210,8 @@ export default function WorkerInboundPage() {
                 {processedBooks.map((book) => (
                   <div
                     key={book.id}
-                    className="p-3 bg-gray-50/50 dark:bg-zinc-800/10 border border-gray-100 dark:border-zinc-800/40 rounded-2xl space-y-2 text-xs"
+                    onClick={() => setSelectedBook(book)}
+                    className="p-3 bg-gray-50/50 dark:bg-zinc-800/10 border border-gray-100 dark:border-zinc-800/40 rounded-2xl space-y-2 text-xs cursor-pointer active:scale-[0.99] hover:bg-gray-100/20 dark:hover:bg-zinc-800/30 transition-all"
                   >
                     <div className="flex justify-between items-start">
                       <div className="font-semibold text-gray-700 dark:text-zinc-200">
@@ -247,6 +255,12 @@ export default function WorkerInboundPage() {
           )}
         </div>
       </div>
+      
+      {/* Detail Dialog */}
+      <WorkerInboundDetailDialog
+        row={selectedBook}
+        onClose={() => setSelectedBook(null)}
+      />
     </div>
   );
 }

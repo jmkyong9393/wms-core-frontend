@@ -50,3 +50,47 @@ export interface MockInspectionRecord {
   updatedAt: string; // 마지막 상태 변경 시각
   steps: AgentLogStep[];
 }
+
+export interface InspectionBookDetail {
+  id: string;
+  title: string;
+  isbn: string | null;
+}
+
+export interface InspectionAIResult {
+  decision: string | null;
+  reasonCode: string | null;
+  defects: any[];
+  revisionCount: number;
+  repairDirective: string | null;
+}
+
+export interface HITLHistoryItem {
+  action: string | null;
+  reviewerReasonCode: string | null;
+  targetGrade: string | null;
+  comment: string | null;
+  reviewerId: string | null;
+  reviewerEmployeeId: string | null;
+  reviewedAt: string | null;
+  taskId: string | null;
+}
+
+export interface InspectionDetailResponse {
+  id: string;
+  book: InspectionBookDetail;
+  status: InspectionStatus;
+  mode: string;
+  finalGrade: BookGrade | null;
+  isFastTrack: boolean;
+  ubciScore: number | null;
+  finalReport: string | null;
+  lpnBarcode: string | null;
+  originalImageUrls: string[];
+  aiResult: InspectionAIResult;
+  hitl: Record<string, any>;
+  hitlHistory: HITLHistoryItem[];
+  steps: AgentLogStep[];
+  inspectedAt: string;
+  updatedAt: string;
+}
