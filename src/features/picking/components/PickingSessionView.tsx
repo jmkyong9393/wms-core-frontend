@@ -2,54 +2,48 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { Loader2 } from 'lucide-react';
-import { usePickingSessionQuery } from '@/features/picking/hooks/usePickingSessionQuery';
+import { usePickingInstructionQuery } from '@/features/picking/hooks/usePickingInstructionQuery';
+import { useConfirmShipmentMutation } from '@/features/picking/hooks/usePickingMutations';
 import { PickingProgressHeader } from '@/features/picking/components/PickingProgressHeader';
 import { PickingTargetCard } from '@/features/picking/components/PickingTargetCard';
 import { PickingScanAction } from '@/features/picking/components/PickingScanAction';
 import { PickingCompleteScreen } from '@/features/picking/components/PickingCompleteScreen';
+import { WaybillPreview } from '@/features/picking/components/WaybillPreview';
+import { flattenPickingGroups } from '@/features/picking/utils/flattenPickingGroups';
+import type { ShipmentConfirmResponse } from '@/features/picking/types/picking';
 
 interface PickingSessionViewProps {
   orderId: string;
 }
 
-// 피킹 진행 상태 관리의 책임
+// 서버의 피킹 진행 상태에 따라 스캔, 출고 확정, 송장 화면을 구분
 export function PickingSessionView({ orderId }: PickingSessionViewProps) {
-  const { data: session, isLoading, isError } = usePickingSessionQuery(orderId);
+  const { data, isLoading, isError } = usePickingInstructionQuery(orderId);
+  const fetchWaybillMutation = useConfirmShipmentMutation(orderId);
 
-  // 현재 피킹 순서와 처리 수량
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [pickedQtyMap, setPickedQtyMap] = useState<Record<string, number>>({});
+  // 출고 확정 실패 시 다시 확인할 품목
+  const [focusedAllocationId, setFocusedAllocationId] = useState<string | null>(null);
+  // 출고 확정 후 받은 송장 정보
+  const [shipmentResult, setShipmentResult] = useState<ShipmentConfirmResponse | null>(null);
 
-  const items = useMemo(() => session?.items ?? [], [session]);
-  const currentItem = items[currentIndex];
-  const currentPickedQty = currentItem ? pickedQtyMap[currentItem.id] ?? 0 : 0;
-
-  // 전체 피킹 수량
+  const items = useMemo(() => (data ? flattenPickingGroups(data.picking_groups) : []), [data]);
   const totalUnits = useMemo(() => items.reduce((acc, item) => acc + item.quantity, 0), [items]);
-  // 현재까지 처리한 수량
+  const pickedUnits = useMemo(() => items.reduce((acc, item) => acc + item.picked_quantity, 0), [items]);
 
-  const pickedUnits = useMemo(
-    () => items.reduce((acc, item) => acc + Math.min(pickedQtyMap[item.id] ?? 0, item.quantity), 0),
-    [items, pickedQtyMap]
-  );
+  const firstIncompleteIndex = items.findIndex((item) => !item.is_completed);
+  const focusedIndex = focusedAllocationId
+    ? items.findIndex((item) => item.allocation_id === focusedAllocationId && !item.is_completed)
+    : -1;
+  const currentIndex = focusedIndex >= 0 ? focusedIndex : firstIncompleteIndex;
+  const currentItem = currentIndex >= 0 ? items[currentIndex] : undefined;
 
-  // 현재 항목 완료 후 다음 항목으로 이동
+  // 출고 완료 주문에 다시 들어오면 기존 송장 정보를 다시 조회
   useEffect(() => {
-    if (currentItem && currentPickedQty >= currentItem.quantity) {
-      const timer = setTimeout(() => setCurrentIndex((prev) => prev + 1), 400);
-      return () => clearTimeout(timer);
+    if (data?.status === 'SHIPPED' && !shipmentResult && !fetchWaybillMutation.isPending) {
+      fetchWaybillMutation.mutate(undefined, { onSuccess: setShipmentResult });
     }
-  }, [currentItem, currentPickedQty]);
-
-  // 피킹 수량 1개 증가
-  const handlePick = (itemId: string) => {
-    setPickedQtyMap((prev) => {
-      const item = items.find((it) => it.id === itemId);
-      if (!item) return prev;
-      const nextQty = Math.min((prev[itemId] ?? 0) + 1, item.quantity);
-      return { ...prev, [itemId]: nextQty };
-    });
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data?.status, shipmentResult]);
 
   if (isLoading) {
     return (
@@ -60,7 +54,7 @@ export function PickingSessionView({ orderId }: PickingSessionViewProps) {
     );
   }
 
-  if (isError || !session) {
+  if (isError || !data) {
     return (
       <div className="flex flex-col items-center justify-center h-64 text-red-500 text-sm text-center px-4">
         피킹 지시서를 불러오지 못했습니다.
@@ -76,10 +70,27 @@ export function PickingSessionView({ orderId }: PickingSessionViewProps) {
     );
   }
 
-  const isSessionComplete = currentIndex >= items.length;
+  if (data.status === 'SHIPPED') {
+    if (!shipmentResult) {
+      return (
+        <div className="flex flex-col items-center justify-center h-64 text-gray-400">
+          <Loader2 className="h-8 w-8 animate-spin mb-2" />
+          <p className="text-sm">송장 정보를 불러오는 중...</p>
+        </div>
+      );
+    }
+    return <WaybillPreview result={shipmentResult} />;
+  }
 
-  if (isSessionComplete) {
-    return <PickingCompleteScreen items={items} pickedQtyMap={pickedQtyMap} />;
+  if (data.is_picking_completed) {
+    return (
+      <PickingCompleteScreen
+        orderId={orderId}
+        items={items}
+        onConfirmed={setShipmentResult}
+        onNavigateToAllocation={setFocusedAllocationId}
+      />
+    );
   }
 
   if (!currentItem) return null;
@@ -92,8 +103,8 @@ export function PickingSessionView({ orderId }: PickingSessionViewProps) {
         pickedUnits={pickedUnits}
         totalUnits={totalUnits}
       />
-      <PickingTargetCard item={currentItem} pickedQty={currentPickedQty} />
-      <PickingScanAction item={currentItem} pickedQty={currentPickedQty} onPick={() => handlePick(currentItem.id)} />
+      <PickingTargetCard item={currentItem} />
+      <PickingScanAction orderId={orderId} item={currentItem} />
     </div>
   );
 }

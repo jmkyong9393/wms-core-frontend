@@ -1,7 +1,6 @@
-import { PickingSessionView } from '@/features/picking/components/PickingSessionView';
-import { MOCK_ACTIVE_ORDER_ID } from '@/mocks/data/picking';
+import { PendingOrderListView } from '@/features/orders/components/PendingOrderListView';
 
-// Mock 주문으로 피킹 화면 실행
-export default function PickingPage() {
-  return <PickingSessionView orderId={MOCK_ACTIVE_ORDER_ID} />;
+// 출고 피킹 대상 PENDING 주문 목록
+export default function PickingOrderListPage() {
+  return <PendingOrderListView />;
 }
