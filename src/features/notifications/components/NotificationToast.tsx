@@ -13,7 +13,12 @@ import {
 import { dismissToastAtom } from '@/features/notifications/store/notificationAtoms';
 import { useMarkNotificationReadMutation } from '@/features/notifications/hooks/useNotificationMutations';
 import { getRestockAlertHref } from '@/features/notifications/utils/getRestockAlertHref';
-import { getRiskBadgeStyle, getRiskLabel } from '@/features/restock/utils/statusBadge';
+import {
+  getProposalSourceBadgeStyle,
+  getProposalSourceLabel,
+  getRiskBadgeStyle,
+  getRiskLabel,
+} from '@/features/restock/utils/statusBadge';
 
 interface NotificationToastProps {
   item: NotificationItem;
@@ -67,6 +72,13 @@ export function NotificationToast({ item }: NotificationToastProps) {
           >
             위험도 {getRiskLabel(item.payload.riskLevel)}
           </span>
+          {item.payload.proposalSource && (
+            <span
+              className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${getProposalSourceBadgeStyle(item.payload.proposalSource)}`}
+            >
+              {getProposalSourceLabel(item.payload.proposalSource)}
+            </span>
+          )}
         </div>
 
         <button

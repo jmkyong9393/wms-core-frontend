@@ -21,11 +21,17 @@ vi.mock('@/features/restock/api/restockProposalService', () => ({
   getRestockProposal: vi.fn(),
 }));
 
+// RestockProposalDetailDialog가 렌더링하는 AgentLogSection이 실제 apiClient를 타지 않도록 mock
+vi.mock('@/features/inspections/api/agentLogService', () => ({
+  getAgentLog: vi.fn(),
+}));
+
 function buildItem(overrides: Partial<RestockProposalListItem> = {}): RestockProposalListItem {
   return {
     id: 'p1',
     book: { id: 'b1', title: '테스트 도서', isbn: '9790000000999', publisher: null },
     status: 'PENDING',
+    proposalSource: 'RETURN_REJECTION',
     recommendedOrderQuantity: 4,
     riskLevel: 'MEDIUM',
     recentSalesQuantity: 10,

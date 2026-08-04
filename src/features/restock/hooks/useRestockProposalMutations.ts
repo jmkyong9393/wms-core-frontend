@@ -7,6 +7,7 @@ import {
   rejectRestockProposal,
 } from '@/features/restock/api/restockProposalService';
 import { restockProposalKeys } from '@/features/restock/constants/queryKeys';
+import { inventoryKeys } from '@/features/inventory/constants/queryKeys';
 import type {
   ApproveRestockProposalRequest,
   RejectRestockProposalRequest,
@@ -30,6 +31,8 @@ export function useApproveRestockProposalMutation() {
     }) => approveRestockProposal(proposalId, payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: restockProposalKeys.all });
+      // 승인 시 실제 재고가 증가하므로 통합 재고 조회도 최신 상태로 갱신
+      queryClient.invalidateQueries({ queryKey: inventoryKeys.all });
     },
     onError: (error) => {
       if (shouldRefetchOnError(error)) {

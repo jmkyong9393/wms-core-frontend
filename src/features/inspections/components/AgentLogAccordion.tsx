@@ -15,8 +15,7 @@ export default function AgentLogAccordion({ steps }: AgentLogAccordionProps) {
     return (
       <div className="text-center py-4 bg-gray-50/50 dark:bg-zinc-800/10 border border-dashed border-gray-150 dark:border-zinc-800/80 rounded-2xl">
         <p className="text-[11px] leading-relaxed text-gray-400 dark:text-zinc-500">
-          이 검수 건은 실시간 에이전트 실행 로그(Chain-of-Thought)가 존재하지 않거나,<br />
-          정적 목업 데이터 대상 ID(insp_001 ~ insp_003 등)가 아닙니다.
+          저장된 Agent 단계 로그가 없습니다.
         </p>
       </div>
     );
