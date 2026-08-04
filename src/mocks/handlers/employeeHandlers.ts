@@ -43,7 +43,7 @@ function generateMockEmployeeId(): string {
   const yy = String(today.getFullYear()).slice(2);
   const mm = String(today.getMonth() + 1).padStart(2, "0");
   const dd = String(today.getDate()).padStart(2, "0");
-  const prefix = `AV${yy}${mm}${dd}`;
+  const prefix = `NZ${yy}${mm}${dd}`;
   const todayCount = mockEmployees.filter((e) => e.employee_id.startsWith(prefix)).length;
   return `${prefix}${String(todayCount + 1).padStart(2, "0")}`;
 }

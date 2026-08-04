@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useAtomValue } from "jotai";
-import { Plus } from "lucide-react";
+import { Plus, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -19,6 +19,7 @@ import { ROLE_LABEL, STATUS_LABEL } from "@/features/employees/utils/badges";
 import { useEmployeesQuery } from "@/features/employees/hooks/useEmployeesQuery";
 import { EmployeeTable } from "@/features/employees/components/EmployeeTable";
 import { CreateEmployeeModal } from "@/features/employees/components/CreateEmployeeModal";
+import { BulkCreateEmployeeModal } from "@/features/employees/components/BulkCreateEmployeeModal";
 import type { EmployeeListParams } from "@/features/employees/types/employee";
 
 const PAGE_SIZE = 20;
@@ -36,6 +37,7 @@ export function EmployeeManagementView() {
   );
   const [page, setPage] = useState(1);
   const [isCreateModalOpen, setCreateModalOpen] = useState(false);
+  const [isBulkModalOpen, setBulkModalOpen] = useState(false);
 
   const params: EmployeeListParams = {
     keyword: keyword.trim() || undefined,
@@ -56,10 +58,16 @@ export function EmployeeManagementView() {
           <p className="text-sm text-gray-500 mt-1">직원 계정을 조회하고 상태·역할을 관리합니다.</p>
         </div>
         {canManage && (
-          <Button onClick={() => setCreateModalOpen(true)}>
-            <Plus className="w-4 h-4" />
-            직원 추가
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" onClick={() => setBulkModalOpen(true)}>
+              <Upload className="w-4 h-4" />
+              직원 일괄 생성
+            </Button>
+            <Button onClick={() => setCreateModalOpen(true)}>
+              <Plus className="w-4 h-4" />
+              직원 추가
+            </Button>
+          </div>
         )}
       </div>
 
@@ -150,6 +158,7 @@ export function EmployeeManagementView() {
         onClose={() => setCreateModalOpen(false)}
         currentUser={currentUser}
       />
+      <BulkCreateEmployeeModal open={isBulkModalOpen} onClose={() => setBulkModalOpen(false)} />
     </div>
   );
 }

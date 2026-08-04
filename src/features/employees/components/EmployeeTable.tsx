@@ -207,7 +207,7 @@ function EmployeeRow({
               disabled={!canManage || isSelf || isMutating}
             >
               <SelectTrigger size="sm">
-                <SelectValue placeholder="변경할 역할 선택" />
+                <SelectValue placeholder="역할 변경" />
               </SelectTrigger>
               <SelectContent>
                 {ASSIGNABLE_ROLES.map((role) => (
