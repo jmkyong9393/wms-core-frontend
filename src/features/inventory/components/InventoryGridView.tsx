@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   getCoreRowModel,
   getSortedRowModel,
@@ -34,7 +35,7 @@ const EXPORT_FILENAME = '재고_목록';
 const DEFAULT_PAGE_SIZE = 20;
 
 export function InventoryGridView() {
-  const [isbn, setIsbn] = useState('');
+  const router = useRouter();
   const [keyword, setKeyword] = useState('');
   const [gradeFilter, setGradeFilter] = useState<InventoryGrade | typeof GRADE_FILTER_ALL>(
     GRADE_FILTER_ALL
@@ -54,14 +55,13 @@ export function InventoryGridView() {
 
   const activeFilters = useMemo(
     () => ({
-      isbn: isbn.trim() || undefined,
       keyword: keyword.trim() || undefined,
       grade: gradeFilter === GRADE_FILTER_ALL ? undefined : gradeFilter,
       zone: zoneFilter === ZONE_FILTER_ALL ? undefined : zoneFilter,
       start_date: dateFrom || undefined,
       end_date: dateTo || undefined,
     }),
-    [isbn, keyword, gradeFilter, zoneFilter, dateFrom, dateTo]
+    [keyword, gradeFilter, zoneFilter, dateFrom, dateTo]
   );
 
   const params = {
@@ -132,15 +132,6 @@ export function InventoryGridView() {
           }}
           placeholder="도서명 또는 ISBN 검색"
           className="max-w-xs"
-        />
-        <Input
-          value={isbn}
-          onChange={(e) => {
-            setIsbn(e.target.value);
-            resetToFirstPage();
-          }}
-          placeholder="ISBN 정확 검색"
-          className="max-w-[160px]"
         />
         <Select
           value={gradeFilter}
@@ -235,7 +226,19 @@ export function InventoryGridView() {
       )}
       {exportError && <p className="text-xs text-red-600">{exportError}</p>}
 
-      <DataGrid table={table} isLoading={isLoading} isError={isError} isFetching={isFetching} />
+      <p className="text-xs text-gray-400">신간 묶음 재고 행을 클릭하면 상세 정보를 볼 수 있습니다.</p>
+      <DataGrid
+        table={table}
+        isLoading={isLoading}
+        isError={isError}
+        isFetching={isFetching}
+        onRowClick={(row) => {
+          // 중고 단품은 목록 응답에 lpn_barcode가 없어 이 id로 상세 조회를 할 수 없음 - LPN 조회 페이지에서 바코드로 별도 조회
+          if (row.stock_type === 'NEW_STOCK') {
+            router.push(`/admin/inventory/${row.id}`);
+          }
+        }}
+      />
     </div>
   );
 }

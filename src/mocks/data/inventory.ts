@@ -31,6 +31,8 @@ function buildInventorySeed(): InventoryRow[] {
     // 3건 중 1건은 신간 묶음 재고, 나머지는 중고·반품 단품 재고
     const isNewStock = i % 3 === 0;
 
+    const basePrice = 15000 + (i % 5) * 1000;
+
     if (isNewStock) {
       const quantity = 10 + i;
       const reservedQuantity = i % 6 === 0 ? 2 : 0;
@@ -44,12 +46,18 @@ function buildInventorySeed(): InventoryRow[] {
         reserved_quantity: reservedQuantity,
         available_quantity: quantity - reservedQuantity,
         lpn_status: null,
+        base_price: basePrice,
+        discount_rate: 0.1,
+        sale_price: basePrice * 0.9,
+        pricing_status: 'DEFAULT_POLICY',
         date,
       });
     } else {
       const grade = GRADES[i % GRADES.length];
       const quantity = 1;
       const reservedQuantity = i % 4 === 0 ? 1 : 0;
+      // 3건 중 1건은 Agent 가격 산정 전(PENDING) 상태로 시뮬레이션
+      const isPriced = i % 3 !== 0;
       rows.push({
         id: `inv-seed-${String(i + 1).padStart(3, '0')}`,
         stock_type: 'USED_ITEM',
@@ -60,6 +68,10 @@ function buildInventorySeed(): InventoryRow[] {
         reserved_quantity: reservedQuantity,
         available_quantity: quantity - reservedQuantity,
         lpn_status: reservedQuantity > 0 ? 'RESERVED' : 'AVAILABLE',
+        base_price: basePrice,
+        discount_rate: isPriced ? 0.3 : null,
+        sale_price: isPriced ? basePrice * 0.7 : null,
+        pricing_status: isPriced ? 'AGENT_PRICED' : 'PENDING',
         date,
       });
     }

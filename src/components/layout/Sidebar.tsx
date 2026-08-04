@@ -14,7 +14,8 @@ import {
   ListChecks,
   Warehouse,
   Users,
-  Truck
+  Truck,
+  ScanLine
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -34,6 +35,7 @@ const INBOUND_MENU_ITEMS = [
 // 스마트 패킹은 백엔드 미구현 예정으로 진입 경로만 숨김 (라우트/컴포넌트는 유지)
 const OUTBOUND_MENU_ITEMS = [
   { name: '재고 관리', href: '/admin/inventory', icon: Warehouse },
+  { name: 'LPN 조회', href: '/admin/lpn', icon: ScanLine },
   { name: '출고 관리', href: '/worker/outbound', icon: Truck },
 ];
 

@@ -1,5 +1,7 @@
 import type { ColumnDef } from '@tanstack/react-table';
 import { getInventoryGradeBadgeStyle, getInventoryGradeLabel } from '@/features/inventory/utils/gradeBadge';
+import { getPricingStatusBadgeStyle, getPricingStatusLabel } from '@/features/inventory/utils/pricingStatusBadge';
+import { formatCurrencyKRW, formatDiscountRate } from '@/lib/format';
 import type { InventoryRow, InventoryStockType } from '@/features/inventory/types/inventoryRow';
 
 const STOCK_TYPE_LABEL: Record<InventoryStockType, string> = {
@@ -60,6 +62,43 @@ export const inventoryColumns: ColumnDef<InventoryRow>[] = [
     header: '출고가능수량',
     accessorKey: 'available_quantity',
     cell: ({ getValue }) => `${getValue<number>()}권`,
+  },
+  {
+    id: 'basePrice',
+    header: '정가',
+    accessorKey: 'base_price',
+    cell: ({ getValue }) => formatCurrencyKRW(getValue<number>()),
+  },
+  {
+    id: 'discountRate',
+    header: '할인율',
+    accessorKey: 'discount_rate',
+    cell: ({ getValue }) => {
+      const rate = getValue<number | null>();
+      return rate == null ? '-' : formatDiscountRate(rate);
+    },
+  },
+  {
+    id: 'salePrice',
+    header: '판매가',
+    accessorKey: 'sale_price',
+    cell: ({ getValue }) => {
+      const price = getValue<number | null>();
+      return price == null ? '-' : formatCurrencyKRW(price);
+    },
+  },
+  {
+    id: 'pricingStatus',
+    header: '가격 상태',
+    accessorKey: 'pricing_status',
+    cell: ({ getValue }) => {
+      const pricingStatus = getValue<string>();
+      return (
+        <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${getPricingStatusBadgeStyle(pricingStatus)}`}>
+          {getPricingStatusLabel(pricingStatus)}
+        </span>
+      );
+    },
   },
   {
     id: 'date',

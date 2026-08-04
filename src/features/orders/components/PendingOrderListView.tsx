@@ -5,6 +5,7 @@ import { Loader2, ChevronRight, PackageSearch } from 'lucide-react';
 import { useOrderListQuery } from '@/features/orders/hooks/useOrderListQuery';
 import { useCreatePickingInstructionMutation } from '@/features/picking/hooks/useCreatePickingInstructionMutation';
 import { getOrderStatusLabel } from '@/features/orders/utils/orderStatusLabel';
+import { formatCurrencyKRW } from '@/lib/format';
 
 // 피킹 가능한 PENDING 주문 목록 - 선택 시 피킹 지시서를 생성하고 세션 화면으로 이동
 export function PendingOrderListView() {
@@ -59,7 +60,7 @@ export function PendingOrderListView() {
           <div className="min-w-0">
             <p className="font-semibold text-gray-900 truncate">{order.customer_name}</p>
             <p className="text-xs text-gray-500 mt-0.5">
-              {order.total_price.toLocaleString()}원 · {order.logistics_center ?? '물류센터 미지정'}
+              {formatCurrencyKRW(order.total_price)} · {order.logistics_center ?? '물류센터 미지정'}
             </p>
             <p className="text-[11px] text-gray-400 mt-0.5">{new Date(order.created_at).toLocaleString()}</p>
           </div>
