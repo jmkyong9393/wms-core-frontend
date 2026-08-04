@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { type HitlQueueItem } from '@/features/queue/store/queueAtoms';
 import { useHitlQueueAction } from '@/features/queue/hooks/useHitlQueueAction';
 
@@ -49,7 +48,7 @@ function TicketChip({ item, selected, onSelect }: TicketChipProps) {
   );
 }
 
-// 관리자 대시보드용 HITL 처리 현황
+// HITL 처리 현황 3열 보드 (대기/검토중/완료), 카드를 검토중 칸으로 드래그하면 검토 시작
 export default function HitlKanbanPreview({ queue, selectedId, onSelect }: HitlKanbanPreviewProps) {
   const { startReview } = useHitlQueueAction();
 
@@ -67,12 +66,6 @@ export default function HitlKanbanPreview({ queue, selectedId, onSelect }: HitlK
 
   return (
     <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 h-full flex flex-col">
-      <div className="flex items-center justify-between mb-3">
-        <h3 className="text-base font-bold text-gray-800">HITL 처리 현황</h3>
-        <Link href="/admin/queue" className="text-sm font-medium text-blue-600 hover:underline">
-          전체 보기 →
-        </Link>
-      </div>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 flex-1 min-h-0">
         {columns.map((col) => (
           <div

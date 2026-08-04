@@ -3,22 +3,22 @@ const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 
 export interface KpiTrend {
   direction: 'up' | 'down';
-  label: string; 
+  label: string;
 }
 
 export interface KpiBarSegment {
   label: string;
-  ratio: number; 
+  ratio: number;
   colorClass: string;
 }
 
 interface KpiDonutCardProps {
   label: string;
   centerValue: string;
-  ratio: number; 
-  colorClass: string; 
+  ratio: number;
+  colorClass: string;
   variant?: 'donut' | 'bar';
-  barSegments?: KpiBarSegment[]; 
+  barSegments?: KpiBarSegment[];
   // 어제 대비는 실제 일자별 집계 API가 없어 계산할 수 없는 값이라 고정 mock값
   // 백엔드 연동 때 실제 값으로 교체 필요
   trend?: KpiTrend;

@@ -27,7 +27,7 @@ const COMMON_MENU_ITEMS = [
 
 const INBOUND_MENU_ITEMS = [
   { name: '현장 반품 검수', href: '/worker/inbound', icon: Camera },
-  { name: '검토 대기', href: '/admin/queue', icon: ListChecks },
+  { name: 'HITL 처리 현황', href: '/admin/queue', icon: ListChecks },
   { name: '검수 처리 내역', href: '/admin/inspections', icon: ClipboardList },
   { name: '발주 추천안', href: '/admin/restock', icon: ShoppingCart },
 ];

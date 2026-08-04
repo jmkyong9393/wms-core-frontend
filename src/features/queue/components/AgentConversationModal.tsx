@@ -1,22 +1,17 @@
 'use client';
 
-import { useEffect } from 'react';
+import { Suspense, useEffect } from 'react';
 import { X, ImageOff } from 'lucide-react';
-import type { AgentLogEntry, HitlQueueItem } from '@/features/queue/store/queueAtoms';
-
-const AGENT_STYLE: Record<AgentLogEntry['agent'], string> = {
-  Vision: 'bg-blue-100 text-blue-700',
-  Policy: 'bg-purple-100 text-purple-700',
-  Critic: 'bg-orange-100 text-orange-700',
-  Report: 'bg-green-100 text-green-700',
-};
+import type { HitlQueueItem } from '@/features/queue/store/queueAtoms';
+import { ErrorBoundary } from '@/components/error-boundary';
+import AgentLogSection from '@/features/inspections/components/AgentLogSection';
 
 interface AgentConversationModalProps {
   item: HitlQueueItem | null;
   onClose: () => void;
 }
 
-// 검수 티켓 클릭 시 뜨는 에이전트 대화 로그 모달 (백엔드 연동 전 mock agentLogs 기반)
+// 검수 티켓 클릭 시 뜨는 Agent 단계별 실행 로그 모달
 export default function AgentConversationModal({ item, onClose }: AgentConversationModalProps) {
   useEffect(() => {
     if (!item) return;
@@ -62,30 +57,18 @@ export default function AgentConversationModal({ item, onClose }: AgentConversat
             </div>
           </div>
 
-          {/* 에이전트 대화 로그 (카카오톡 스타일 말풍선) */}
+          {/* Agent 단계별 실행 로그 */}
           <div className="p-4 flex flex-col min-h-0">
-            <div className="flex-1 overflow-y-auto space-y-3 pr-1">
-              {item.agentLogs && item.agentLogs.length > 0 ? (
-                item.agentLogs.map((log, idx) => (
-                  <div key={idx} className="flex flex-col items-start">
-                    <span className={`text-[11px] font-semibold rounded-full px-2 py-0.5 mb-1 ${AGENT_STYLE[log.agent]}`}>
-                      {log.agent}
-                    </span>
-                    <div className="bg-gray-100 rounded-2xl rounded-tl-sm px-3 py-2 text-xs text-gray-700 max-w-[90%]">
-                      {log.message}
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <p className="text-xs text-gray-400 text-center py-8">대화 로그가 없습니다.</p>
-              )}
+            <div className="flex-1 overflow-y-auto pr-1">
+              <ErrorBoundary
+                key={item.id}
+                fallback={<p className="text-xs text-red-500 text-center py-8">Agent 로그를 불러오는데 실패했습니다.</p>}
+              >
+                <Suspense fallback={<p className="text-xs text-gray-400 text-center py-8">Agent 로그 불러오는 중...</p>}>
+                  <AgentLogSection inspectionId={item.id} />
+                </Suspense>
+              </ErrorBoundary>
             </div>
-            {item.finalReport && (
-              <div className="pt-3 mt-3 border-t border-gray-100">
-                <p className="text-xs text-gray-400 mb-1">최종 판정 요약</p>
-                <p className="text-xs text-gray-600">{item.finalReport}</p>
-              </div>
-            )}
           </div>
         </div>
       </div>

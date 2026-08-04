@@ -12,21 +12,14 @@ export type HitlItemStatus =
   | 'APPROVED'
   | 'REJECTED';
 
-// 대응하는 에이전트 대화 한 줄
-export interface AgentLogEntry {
-  agent: 'Vision' | 'Policy' | 'Critic' | 'Report';
-  message: string;
-}
-
+// id는 검수 이력 API 응답의 return_job_id와 동일 — 상세/Agent 로그/판정 제출에 그대로 사용
 export interface HitlQueueItem {
   id: string;
   isbn?: string;
   title?: string;
   ubciScore?: number;
   status: HitlItemStatus;
-  agentLogs?: AgentLogEntry[];
-  finalReport?: string; 
-  reviewer?: string; 
+  reviewer?: string;
 }
 
 // 관리자가 확인해야 하는 검수 목록
