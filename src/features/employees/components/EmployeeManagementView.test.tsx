@@ -45,6 +45,8 @@ vi.mock("@/features/employees/api/employeeService", () => ({
   createEmployee: vi.fn(),
   updateEmployeeStatus: vi.fn(),
   updateEmployeeRole: vi.fn(),
+  downloadEmployeeBulkTemplate: vi.fn(),
+  bulkCreateEmployees: vi.fn(),
 }));
 
 // 역할별 인증 상태로 직원 관리 화면 렌더링

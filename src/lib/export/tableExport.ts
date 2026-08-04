@@ -1,20 +1,10 @@
 // 표 데이터를 CSV·Excel 파일로 내보내는 공통 함수
 // xlsx는 파일을 내보낼 때만 불러와 초기 로딩을 줄임
+import { downloadBlob } from '@/lib/download';
+
 export type ExportRecord = Record<string, string | number>;
 
 const UTF8_BOM = String.fromCharCode(0xfeff);
-
-// 만든 파일을 사용자 컴퓨터에 다운로드
-function downloadBlob(blob: Blob, filename: string) {
-  const url = URL.createObjectURL(blob);
-  const anchor = document.createElement('a');
-  anchor.href = url;
-  anchor.download = filename;
-  document.body.appendChild(anchor);
-  anchor.click();
-  document.body.removeChild(anchor);
-  URL.revokeObjectURL(url);
-}
 
 // 데이터를 CSV 파일로 내보내기
 export async function exportRowsToCsv(filename: string, records: ExportRecord[]): Promise<void> {
