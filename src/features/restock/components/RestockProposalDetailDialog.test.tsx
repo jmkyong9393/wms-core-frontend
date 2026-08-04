@@ -3,17 +3,25 @@ import { render, screen } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { RestockProposalDetailDialog } from './RestockProposalDetailDialog';
 import { getRestockProposal } from '@/features/restock/api/restockProposalService';
+import { getAgentLog } from '@/features/inspections/api/agentLogService';
 import type { RestockProposalDetail } from '@/features/restock/types/restockProposal';
 
 vi.mock('@/features/restock/api/restockProposalService', () => ({
   getRestockProposal: vi.fn(),
 }));
 
+vi.mock('@/features/inspections/api/agentLogService', () => ({
+  getAgentLog: vi.fn(),
+}));
+
+const mockedGetAgentLog = vi.mocked(getAgentLog);
+
 function buildDetail(overrides: Partial<RestockProposalDetail> = {}): RestockProposalDetail {
   return {
     id: 'p1',
     book: { id: 'b1', title: '테스트 도서', isbn: '9790000000999', publisher: null },
     returnJobId: 'r1',
+    proposalSource: 'RETURN_REJECTION',
     status: 'PENDING',
     recentSalesQuantity: 10,
     currentStock: 0,
@@ -49,6 +57,7 @@ function renderDialog(proposalId: string | null) {
 describe('RestockProposalDetailDialog', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockedGetAgentLog.mockResolvedValue([]);
   });
 
   it('PENDING 상태에서는 승인/반려 버튼을 노출한다', async () => {
@@ -122,6 +131,36 @@ describe('RestockProposalDetailDialog', () => {
     expect(await screen.findByText(/추가 발주가 필요하지 않습니다/)).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: '✓ 승인' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: '✕ 반려' })).not.toBeInTheDocument();
+  });
+
+  it('returnJobId가 있으면(반려 대체 발주) 관련 검수 Agent 로그 섹션을 표시한다', async () => {
+    mockedGetAgentLog.mockResolvedValueOnce([
+      {
+        stepOrder: 1,
+        agentName: 'Vision',
+        executionStatus: 'COMPLETED',
+        resultSummary: '표지 파손 탐지',
+      },
+    ]);
+    vi.mocked(getRestockProposal).mockResolvedValueOnce(buildDetail({ returnJobId: 'r1' }));
+
+    renderDialog('p1');
+
+    expect(await screen.findByText('관련 검수 Agent 로그')).toBeInTheDocument();
+    expect(await screen.findByText('Vision Agent')).toBeInTheDocument();
+    expect(getAgentLog).toHaveBeenCalledWith('r1');
+  });
+
+  it('returnJobId가 없으면(안전재고 부족) 관련 검수 Agent 로그 섹션을 표시하지 않는다', async () => {
+    vi.mocked(getRestockProposal).mockResolvedValueOnce(
+      buildDetail({ returnJobId: null, proposalSource: 'SAFETY_STOCK' })
+    );
+
+    renderDialog('p1');
+
+    await screen.findByRole('button', { name: /승인/ });
+    expect(screen.queryByText('관련 검수 Agent 로그')).not.toBeInTheDocument();
+    expect(getAgentLog).not.toHaveBeenCalled();
   });
 
   it('proposalId가 null이면 모달 내용을 조회하지 않는다', () => {

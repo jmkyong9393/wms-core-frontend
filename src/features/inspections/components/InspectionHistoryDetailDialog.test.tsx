@@ -1,15 +1,45 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { InspectionHistoryDetailDialog } from '@/features/inspections/components/InspectionHistoryDetailDialog';
 import type { InspectionHistoryRow } from '@/features/inspections/types/inspectionHistory';
+import type { InspectionDetailResponse } from '@/features/inspections/types/inspection';
 import { getAgentLog } from '@/features/inspections/api/agentLogService';
+import { getInspectionDetail } from '@/features/inspections/api/inspectionHistoryService';
 
 vi.mock('@/features/inspections/api/agentLogService', () => ({
   getAgentLog: vi.fn(),
 }));
 
+// InspectionHistoryDetailDialog가 LPN/원본 이미지 조회에 사용하는 실제 apiClient 호출을 대신 mock
+vi.mock('@/features/inspections/api/inspectionHistoryService', () => ({
+  getInspectionDetail: vi.fn(),
+}));
+
 const mockedGetAgentLog = vi.mocked(getAgentLog);
+const mockedGetInspectionDetail = vi.mocked(getInspectionDetail);
+
+function buildDetail(overrides: Partial<InspectionDetailResponse> = {}): InspectionDetailResponse {
+  return {
+    id: 'insp_001',
+    book: { id: 'book_001', title: '싯다르타', isbn: null },
+    status: 'APPROVED',
+    mode: 'RETURN',
+    finalGrade: 'MINT',
+    isFastTrack: true,
+    ubciScore: 100,
+    finalReport: null,
+    lpnBarcode: null,
+    originalImageUrls: [],
+    aiResult: { decision: null, reasonCode: null, defects: [], revisionCount: 0, repairDirective: null },
+    hitl: {},
+    hitlHistory: [],
+    steps: [],
+    inspectedAt: '2026-07-01T09:12:00.000Z',
+    updatedAt: '2026-07-01T09:14:00.000Z',
+    ...overrides,
+  };
+}
 
 function buildRow(overrides: Partial<InspectionHistoryRow> = {}): InspectionHistoryRow {
   return {
@@ -40,6 +70,10 @@ function renderDialog(row: InspectionHistoryRow | null) {
 }
 
 describe('InspectionHistoryDetailDialog', () => {
+  beforeEach(() => {
+    mockedGetInspectionDetail.mockResolvedValue(buildDetail());
+  });
+
   it('Agent 로그 조회가 실패해도 나머지 모달 내용은 정상적으로 유지된다', async () => {
     mockedGetAgentLog.mockRejectedValue(new Error('Not Found'));
 

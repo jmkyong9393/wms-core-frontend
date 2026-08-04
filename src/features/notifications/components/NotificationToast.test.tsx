@@ -29,6 +29,7 @@ const restockItem: NotificationItem = {
     orderProposalId: 'proposal-1',
     returnJobId: 'return-1',
     bookId: 'book-1',
+    proposalSource: 'SAFETY_STOCK',
     recommendedOrderQuantity: 11,
     riskLevel: 'HIGH',
   },
@@ -64,13 +65,25 @@ describe('NotificationToast', () => {
     vi.mocked(markNotificationReadApi).mockResolvedValue(undefined);
   });
 
-  it('RESTOCK_ALERT + payload가 있으면 추천 수량/위험도 배지와 바로 보기·닫기 버튼을 보여준다', () => {
+  it('RESTOCK_ALERT + payload가 있으면 추천 수량/위험도/발생사유 배지와 바로 보기·닫기 버튼을 보여준다', () => {
     renderToast(restockItem);
 
     expect(screen.getByText('추천 11권')).toBeInTheDocument();
     expect(screen.getByText(/위험도 높음/)).toBeInTheDocument();
+    expect(screen.getByText('안전재고 부족')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '바로 보기' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '닫기' })).toBeInTheDocument();
+  });
+
+  it('payload에 proposalSource가 없으면 발생사유 배지를 표시하지 않는다', () => {
+    renderToast({
+      ...restockItem,
+      payload: { ...restockItem.payload!, proposalSource: undefined },
+    });
+
+    expect(screen.getByText('추천 11권')).toBeInTheDocument();
+    expect(screen.queryByText('안전재고 부족')).not.toBeInTheDocument();
+    expect(screen.queryByText('반려 대체 발주')).not.toBeInTheDocument();
   });
 
   it('바로 보기를 클릭하면 읽음 처리·토스트 닫기·이동이 모두 일어난다', async () => {

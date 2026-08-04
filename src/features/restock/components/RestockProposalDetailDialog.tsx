@@ -1,10 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import { CheckCircle2, Sparkles } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { ErrorBoundary } from '@/components/error-boundary';
 import { useRestockProposalQuery } from '@/features/restock/hooks/useRestockProposalQuery';
 import {
+  getProposalSourceBadgeStyle,
+  getProposalSourceLabel,
   getRestockStatusBadgeStyle,
   getRestockStatusLabel,
   getRiskBadgeStyle,
@@ -14,6 +17,7 @@ import {
   RestockDecisionConfirmDialog,
   type RestockDecisionMode,
 } from '@/features/restock/components/RestockDecisionConfirmDialog';
+import AgentLogSection from '@/features/inspections/components/AgentLogSection';
 
 interface RestockProposalDetailDialogProps {
   proposalId: string | null;
@@ -45,6 +49,11 @@ export function RestockProposalDetailDialog({ proposalId, onClose }: RestockProp
                     className={`rounded-full px-2 py-0.5 text-xs font-semibold ${getRiskBadgeStyle(data.riskLevel)}`}
                   >
                     위험도 {getRiskLabel(data.riskLevel)}
+                  </span>
+                  <span
+                    className={`rounded-full px-2 py-0.5 text-xs font-semibold ${getProposalSourceBadgeStyle(data.proposalSource)}`}
+                  >
+                    {getProposalSourceLabel(data.proposalSource)}
                   </span>
                 </div>
               </DialogHeader>
@@ -105,6 +114,21 @@ export function RestockProposalDetailDialog({ proposalId, onClose }: RestockProp
                     })}
                   </ul>
                 </section>
+
+                {/* 반려 대체 발주 건에만 존재하는 원본 검수의 Agent 로그 */}
+                {data.returnJobId && (
+                  <section className="space-y-2 border-t border-gray-100 pt-4">
+                    <h4 className="text-sm font-semibold text-gray-800">관련 검수 Agent 로그</h4>
+                    <ErrorBoundary
+                      key={data.returnJobId}
+                      fallback={<p className="text-sm text-red-500">Agent 로그를 불러오는데 실패했습니다.</p>}
+                    >
+                      <Suspense fallback={<p className="text-sm text-gray-400">Agent 로그 불러오는 중...</p>}>
+                        <AgentLogSection inspectionId={data.returnJobId} />
+                      </Suspense>
+                    </ErrorBoundary>
+                  </section>
+                )}
 
                 {/* 상태별 처리 영역 */}
                 <section className="border-t border-gray-100 pt-4">

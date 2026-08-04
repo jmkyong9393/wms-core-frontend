@@ -1,5 +1,6 @@
 export type RestockProposalStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'NOT_REQUIRED';
 export type RiskLevel = 'HIGH' | 'MEDIUM' | 'LOW';
+export type RestockProposalSource = 'RETURN_REJECTION' | 'SAFETY_STOCK';
 
 export interface RestockProposalBook {
   id: string;
@@ -13,6 +14,7 @@ export interface RestockProposalListItem {
   id: string;
   book: RestockProposalBook;
   status: RestockProposalStatus;
+  proposalSource: RestockProposalSource;
   recommendedOrderQuantity: number;
   riskLevel: RiskLevel;
   recentSalesQuantity: number;
@@ -27,8 +29,10 @@ export interface RestockProposalListItem {
 export interface RestockProposalDetail {
   id: string;
   book: RestockProposalBook;
-  returnJobId: string;
+  // 안전재고 부족(SAFETY_STOCK) 추천안은 특정 반품 검수 건과 무관해 null
+  returnJobId: string | null;
   status: RestockProposalStatus;
+  proposalSource: RestockProposalSource;
   recentSalesQuantity: number;
   currentStock: number;
   pendingAutoPoQuantity: number;

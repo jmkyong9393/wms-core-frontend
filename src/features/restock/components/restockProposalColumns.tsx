@@ -1,6 +1,8 @@
 import type { ColumnDef } from '@tanstack/react-table';
 import { Button } from '@/components/ui/button';
 import {
+  getProposalSourceBadgeStyle,
+  getProposalSourceLabel,
   getRestockStatusBadgeStyle,
   getRestockStatusLabel,
   getRiskBadgeStyle,
@@ -59,6 +61,21 @@ export function createRestockProposalColumns({
         return (
           <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${getRiskBadgeStyle(riskLevel)}`}>
             {getRiskLabel(riskLevel)}
+          </span>
+        );
+      },
+    },
+    {
+      id: 'proposalSource',
+      header: '발생 사유',
+      accessorKey: 'proposalSource',
+      cell: ({ getValue }) => {
+        const proposalSource = getValue<RestockProposalListItem['proposalSource']>();
+        return (
+          <span
+            className={`whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-semibold ${getProposalSourceBadgeStyle(proposalSource)}`}
+          >
+            {getProposalSourceLabel(proposalSource)}
           </span>
         );
       },
