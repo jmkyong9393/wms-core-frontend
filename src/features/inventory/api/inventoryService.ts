@@ -1,5 +1,5 @@
 import { apiClient } from '@/lib/api-client';
-import { INVENTORY_LIST_ENDPOINT } from '@/features/inventory/constants/inventoryApi';
+import { INVENTORY_LIST_ENDPOINT, inventoryDetailEndpoint } from '@/features/inventory/constants/inventoryApi';
 import type { InventoryListParams, InventoryRow } from '@/features/inventory/types/inventoryRow';
 import type { PaginatedResponse } from '@/types/pagination';
 
@@ -10,5 +10,11 @@ export async function listInventory(
   const res = await apiClient.get<PaginatedResponse<InventoryRow>>(INVENTORY_LIST_ENDPOINT, {
     params,
   });
+  return res.data;
+}
+
+// 신간 묶음 재고 단건 상세 조회
+export async function getInventoryDetail(inventoryId: string): Promise<InventoryRow> {
+  const res = await apiClient.get<InventoryRow>(inventoryDetailEndpoint(inventoryId));
   return res.data;
 }

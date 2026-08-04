@@ -4,6 +4,7 @@ import { ShoppingCart, Truck, ExternalLink, AlertTriangle, RefreshCw } from 'luc
 import Link from 'next/link';
 import { useOutboundDashboardSummaryQuery } from '@/features/dashboard/hooks/useOutboundDashboardSummaryQuery';
 import { getOrderStatusLabel } from '@/features/orders/utils/orderStatusLabel';
+import { formatCurrencyKRW } from '@/lib/format';
 
 // 출고 관리자 대시보드 - 출고 탭 (실 API 연동, Mock 폴백 없음)
 export default function OutboundSummaryTab() {
@@ -114,7 +115,7 @@ export default function OutboundSummaryTab() {
                       </td>
                       <td className="py-3 px-1 font-medium">{order.customer_name ?? '미지정 고객'}</td>
                       <td className="py-3 px-1">{order.order_type}</td>
-                      <td className="py-3 px-1 font-semibold">{order.total_price.toLocaleString()}원</td>
+                      <td className="py-3 px-1 font-semibold">{formatCurrencyKRW(order.total_price)}</td>
                       <td className="py-3 px-1">
                         <span
                           className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold ${

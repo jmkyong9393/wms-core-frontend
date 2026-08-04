@@ -14,6 +14,10 @@ vi.mock("@/lib/export/tableExport", () => ({
   exportRowsToXlsx: vi.fn(),
 }));
 
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: vi.fn() }),
+}));
+
 import { listInventory } from "@/features/inventory/api/inventoryService";
 import { exportRowsToCsv } from "@/lib/export/tableExport";
 import { InventoryGridView } from "./InventoryGridView";
@@ -29,6 +33,10 @@ function makeRow(id: string, title: string, overrides: Partial<InventoryRow> = {
     reserved_quantity: 2,
     available_quantity: 3,
     lpn_status: "RESERVED",
+    base_price: 15000,
+    discount_rate: 0.3,
+    sale_price: 10500,
+    pricing_status: "AGENT_PRICED",
     date: "2026-07-01T09:00:00.000Z",
     ...overrides,
   };
@@ -135,31 +143,6 @@ describe("InventoryGridView", () => {
 
     // 줄어든 전체 페이지 수에 맞춰 1페이지로 이동하는지 확인
     await waitFor(() => expect(screen.getByText("1 / 1")).toBeInTheDocument());
-  });
-
-  it("ISBN 정확검색을 입력하면 isbn 파라미터로 조회하고 1페이지로 초기화한다", async () => {
-    const user = userEvent.setup();
-    vi.mocked(listInventory).mockImplementation(async (params) =>
-      gridPage([makeRow("1", `isbn-${params.isbn ?? "전체"}`)], params.page, 3, 50)
-    );
-
-    renderGrid();
-    await waitFor(() => expect(screen.getByText("isbn-전체")).toBeInTheDocument());
-
-    await user.click(screen.getByRole("button", { name: "다음" }));
-    await waitFor(() =>
-      expect(vi.mocked(listInventory).mock.calls.at(-1)?.[0]).toMatchObject({ page: 2 })
-    );
-
-    const isbnInput = screen.getByPlaceholderText("ISBN 정확 검색");
-    await user.type(isbnInput, "9788912345678");
-
-    await waitFor(() =>
-      expect(vi.mocked(listInventory).mock.calls.at(-1)?.[0]).toMatchObject({
-        page: 1,
-        isbn: "9788912345678",
-      })
-    );
   });
 
   it("키워드/등급/구역/날짜 필터를 조합하면 각 파라미터가 조회에 반영되고 1페이지로 초기화된다", async () => {

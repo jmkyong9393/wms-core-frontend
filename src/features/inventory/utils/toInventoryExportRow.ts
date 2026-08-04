@@ -1,5 +1,6 @@
 import type { InventoryRow, InventoryStockType } from '@/features/inventory/types/inventoryRow';
 import { getInventoryGradeLabel } from '@/features/inventory/utils/gradeBadge';
+import { getPricingStatusLabel } from '@/features/inventory/utils/pricingStatusBadge';
 
 const STOCK_TYPE_LABEL: Record<InventoryStockType, string> = {
   NEW_STOCK: '신간 묶음',
@@ -16,6 +17,10 @@ export function toInventoryExportRow(row: InventoryRow): Record<string, string |
     구역: row.zone,
     재고수량: row.quantity,
     출고가능수량: row.available_quantity,
+    정가: row.base_price,
+    할인율: row.discount_rate ?? '-',
+    판매가: row.sale_price ?? '-',
+    가격상태: getPricingStatusLabel(row.pricing_status),
     일자: row.date,
   };
 }
