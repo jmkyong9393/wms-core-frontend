@@ -1,5 +1,6 @@
 import { Suspense, useState, useEffect } from 'react';
 import Link from 'next/link';
+import { QRCodeSVG } from 'qrcode.react';
 import { ImageOff, ChevronLeft, ChevronRight, Loader2, Award, QrCode, Calendar, Info, ShieldCheck } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -141,11 +142,12 @@ export function InspectionHistoryDetailDialog({ row, onClose }: InspectionHistor
                     <div className="flex flex-col items-center space-y-2.5 w-full">
                       {/* 스캔을 고려한 고대비 화이트 박스 QR (정사각형 고정) */}
                       <div className="p-1.5 bg-white rounded-xl shadow-sm border border-gray-100 flex items-center justify-center w-[75px] h-[75px] flex-shrink-0">
-                        <img
-                          src={`https://api.qrserver.com/v1/create-qr-code/?size=75x75&margin=0&data=${detail.lpnBarcode}`}
-                          alt="LPN QR"
-                          className="w-[62px] h-[62px] aspect-square object-contain flex-shrink-0 select-none"
-                          loading="lazy"
+                        <QRCodeSVG
+                          value={detail.lpnBarcode}
+                          size={62}
+                          level="M"
+                          includeMargin={false}
+                          className="aspect-square flex-shrink-0 select-none"
                         />
                       </div>
                       {/* LPN 텍스트 */}

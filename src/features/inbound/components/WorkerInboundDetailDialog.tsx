@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { QRCodeSVG } from "qrcode.react";
 import { ImageOff, ChevronLeft, ChevronRight, Loader2, BookOpen, Tag, Award, Calendar, QrCode } from "lucide-react";
 import {
   Dialog,
@@ -195,11 +196,12 @@ export function WorkerInboundDetailDialog({ row, onClose }: WorkerInboundDetailD
                       <div className="flex flex-col items-center space-y-2.5 w-full">
                         {/* 스캔을 고려한 고대비 화이트 박스 QR (정사각형 고정) */}
                         <div className="p-1.5 bg-white rounded-xl shadow-sm border border-gray-100 flex items-center justify-center w-[75px] h-[75px] flex-shrink-0">
-                          <img
-                            src={`https://api.qrserver.com/v1/create-qr-code/?size=75x75&margin=0&data=${row.lpn}`}
-                            alt="LPN QR"
-                            className="w-[62px] h-[62px] aspect-square object-contain flex-shrink-0 select-none"
-                            loading="lazy"
+                          <QRCodeSVG
+                            value={row.lpn}
+                            size={62}
+                            level="M"
+                            includeMargin={false}
+                            className="aspect-square flex-shrink-0 select-none"
                           />
                         </div>
                         {/* LPN 텍스트 (길어질 시 줄바꿈 처리 및 겹침 방지) */}
