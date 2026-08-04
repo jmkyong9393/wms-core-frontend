@@ -1,52 +1,12 @@
 'use client';
 
-import { useMemo, useState } from 'react';
-import { useAtomValue } from 'jotai';
-import { hitlQueueAtom } from '@/features/queue/store/queueAtoms';
-import { currentUserAtom } from '@/features/auth/store/authAtoms';
-import KpiDonutCard from './KpiDonutCard';
-import HitlKanbanPreview from './HitlKanbanPreview';
-import SelectedTicketSummaryPanel from './SelectedTicketSummaryPanel';
+import { useState } from 'react';
 import ComprehensiveStatsTab from './ComprehensiveStatsTab';
-import { ShoppingCart, Package, ArrowUpRight, Truck, ExternalLink, Activity } from 'lucide-react';
+import { ShoppingCart, Package, Truck, ExternalLink, Activity } from 'lucide-react';
 import Link from 'next/link';
 
-// 전체 건수가 0이면 NaN 대신 0%로 처리
-function toRatio(count: number, total: number): number {
-  return total > 0 ? (count / total) * 100 : 0;
-}
-
 export default function DashboardView() {
-  const hitlQueue = useAtomValue(hitlQueueAtom);
-  const currentUser = useAtomValue(currentUserAtom);
-  
   const [mainTab, setMainTab] = useState<'inbound' | 'outbound'>('inbound');
-  const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'hitl' | 'stats'>('hitl');
-
-  // MASTER 또는 ADMIN 권한을 가진 사용자만 종합 통계 대시보드 탭에 진입 가능
-  const isAdminOrMaster = currentUser?.role === 'MASTER' || currentUser?.role === 'ADMIN';
-  const activeTabToShow = isAdminOrMaster ? activeTab : 'hitl';
-
-  const total = hitlQueue.length;
-  const approvedCount = hitlQueue.filter((item) => item.status === 'APPROVED').length;
-  const rejectedCount = hitlQueue.filter((item) => item.status === 'REJECTED').length;
-  const processedCount = approvedCount + rejectedCount;
-  const pendingCount = total - processedCount;
-
-  const processedRatio = toRatio(processedCount, total);
-  const approvalRatio = toRatio(approvedCount, total);
-  const rejectionRatio = toRatio(rejectedCount, total);
-  const pendingRatio = toRatio(pendingCount, total);
-
-  const selectedItem = useMemo(() => {
-    return (
-      hitlQueue.find((item) => item.id === selectedTicketId) ??
-      hitlQueue.find((item) => item.status === 'AWAITING_REVIEW') ??
-      hitlQueue[0] ??
-      null
-    );
-  }, [hitlQueue, selectedTicketId]);
 
   return (
     <div className="max-w-[1600px] mx-auto space-y-4 h-full flex flex-col font-sans">
@@ -58,132 +18,45 @@ export default function DashboardView() {
             물류 센터 통합 대시보드
           </h2>
           <p className="text-xs text-gray-400 dark:text-zinc-500">
-            {isAdminOrMaster 
-              ? '실시간 AI 검수 현황, 입고/출고 모니터링 및 FDS 분석 정보를 조회합니다.' 
-              : '실시간 AI 검수 현황 및 재고 정보 조회'}
+            입고/출고 모니터링 및 FDS 분석 정보를 조회합니다.
           </p>
         </div>
 
         {/* Top-level Master Tab Switcher */}
-        {isAdminOrMaster && (
-          <div className="flex bg-gray-100 dark:bg-zinc-800 p-1.5 rounded-2xl self-start lg:self-center gap-1.5">
-            <button
-              onClick={() => setMainTab('inbound')}
-              className={`px-5 py-2.5 font-bold text-xs rounded-xl transition-all cursor-pointer ${
-                mainTab === 'inbound'
-                  ? 'bg-white dark:bg-zinc-950 text-indigo-600 dark:text-indigo-400 shadow-sm'
-                  : 'text-gray-500 dark:text-zinc-400 hover:text-gray-800'
-              }`}
-            >
-              입고 현황 (Inbound)
-            </button>
-            <button
-              onClick={() => setMainTab('outbound')}
-              className={`px-5 py-2.5 font-bold text-xs rounded-xl transition-all cursor-pointer ${
-                mainTab === 'outbound'
-                  ? 'bg-white dark:bg-zinc-950 text-orange-600 dark:text-orange-400 shadow-sm'
-                  : 'text-gray-500 dark:text-zinc-400 hover:text-gray-800'
-              }`}
-            >
-              출고 현황 (Outbound)
-            </button>
-          </div>
-        )}
+        <div className="flex bg-gray-100 dark:bg-zinc-800 p-1.5 rounded-2xl self-start lg:self-center gap-1.5">
+          <button
+            onClick={() => setMainTab('inbound')}
+            className={`px-5 py-2.5 font-bold text-xs rounded-xl transition-all cursor-pointer ${
+              mainTab === 'inbound'
+                ? 'bg-white dark:bg-zinc-950 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                : 'text-gray-500 dark:text-zinc-400 hover:text-gray-800'
+            }`}
+          >
+            입고 현황 (Inbound)
+          </button>
+          <button
+            onClick={() => setMainTab('outbound')}
+            className={`px-5 py-2.5 font-bold text-xs rounded-xl transition-all cursor-pointer ${
+              mainTab === 'outbound'
+                ? 'bg-white dark:bg-zinc-950 text-orange-600 dark:text-orange-400 shadow-sm'
+                : 'text-gray-500 dark:text-zinc-400 hover:text-gray-800'
+            }`}
+          >
+            출고 현황 (Outbound)
+          </button>
+        </div>
       </div>
 
       {/* Main Tab Views */}
       {mainTab === 'inbound' ? (
         /* Inbound Dashboard View */
         <div className="flex-1 flex flex-col space-y-4 min-h-0">
-          <div className="flex justify-between items-center shrink-0">
-            <h3 className="text-sm font-bold text-gray-700 dark:text-zinc-300">
-              입고 검수 & FDS 종합 데이터
-            </h3>
-            {/* Original Sub-tabs for Inbound */}
-            {isAdminOrMaster && (
-              <div className="flex bg-gray-100 dark:bg-zinc-800 p-1 rounded-xl gap-1">
-                <button
-                  onClick={() => setActiveTab('hitl')}
-                  className={`px-3 py-1.5 font-bold text-[10px] rounded-lg transition-all cursor-pointer ${
-                    activeTabToShow === 'hitl'
-                      ? 'bg-white dark:bg-zinc-900 text-indigo-600 dark:text-indigo-400 shadow-sm'
-                      : 'text-gray-500'
-                  }`}
-                >
-                  실시간 검수 (HITL)
-                </button>
-                <button
-                  onClick={() => setActiveTab('stats')}
-                  className={`px-3 py-1.5 font-bold text-[10px] rounded-lg transition-all cursor-pointer ${
-                    activeTabToShow === 'stats'
-                      ? 'bg-white dark:bg-zinc-900 text-indigo-600 dark:text-indigo-400 shadow-sm'
-                      : 'text-gray-500'
-                  }`}
-                >
-                  종합 통계 & FDS 리포트
-                </button>
-              </div>
-            )}
+          <h3 className="text-sm font-bold text-gray-700 dark:text-zinc-300 shrink-0">
+            종합 통계 & FDS 리포트
+          </h3>
+          <div className="flex-1 overflow-y-auto min-h-0">
+            <ComprehensiveStatsTab />
           </div>
-
-          {activeTabToShow === 'hitl' ? (
-            <>
-              {/* KPI Cards */}
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 shrink-0">
-                <KpiDonutCard
-                  label="금일 누적 처리량"
-                  centerValue={`${processedCount}건`}
-                  ratio={processedRatio}
-                  colorClass="text-indigo-600"
-                  variant="bar"
-                  barSegments={[
-                    { label: '대기', ratio: pendingRatio, colorClass: 'bg-yellow-400' },
-                    { label: '완료', ratio: processedRatio, colorClass: 'bg-indigo-500' },
-                  ]}
-                  trend={{ direction: 'up', label: '18.6%' }}
-                />
-                <KpiDonutCard
-                  label="실시간 자동 승인율"
-                  centerValue={`${Math.round(approvalRatio)}%`}
-                  ratio={approvalRatio}
-                  colorClass="text-green-600"
-                  trend={{ direction: 'up', label: '3.4%' }}
-                />
-                <KpiDonutCard
-                  label="에이전트 반려율"
-                  centerValue={`${Math.round(rejectionRatio)}%`}
-                  ratio={rejectionRatio}
-                  colorClass="text-red-500"
-                  trend={{ direction: 'down', label: '1.2%' }}
-                />
-                <KpiDonutCard
-                  label="검토 대기건수"
-                  centerValue={`${pendingCount}건`}
-                  ratio={pendingRatio}
-                  colorClass="text-yellow-600"
-                  trend={{ direction: 'down', label: '11.3%' }}
-                />
-              </div>
-
-              {/* HITL list preview */}
-              <div className="grid grid-cols-1 lg:grid-cols-4 gap-3 flex-1 min-h-0">
-                <div className="lg:col-span-3 min-h-0">
-                  <HitlKanbanPreview
-                    queue={hitlQueue}
-                    selectedId={selectedItem?.id ?? null}
-                    onSelect={setSelectedTicketId}
-                  />
-                </div>
-                <div className="lg:col-span-1 min-h-0">
-                  <SelectedTicketSummaryPanel item={selectedItem} />
-                </div>
-              </div>
-            </>
-          ) : (
-            <div className="flex-1 overflow-y-auto min-h-0">
-              <ComprehensiveStatsTab />
-            </div>
-          )}
         </div>
       ) : (
         /* Outbound Dashboard View (NEW) */

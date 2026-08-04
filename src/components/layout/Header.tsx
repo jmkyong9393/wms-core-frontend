@@ -18,7 +18,7 @@ export default function Header() {
   let pageTitle = 'Dashboard';
   if (pathname === '/inbound') pageTitle = '현장 반품 검수';
   if (pathname === '/reports') pageTitle = 'AI 품질 리포트';
-  if (pathname === '/admin/queue') pageTitle = '검토 대기';
+  if (pathname === '/admin/queue') pageTitle = 'HITL 처리 현황';
   if (pathname === '/admin/inspections') pageTitle = '검수 처리 내역';
   if (pathname === '/admin/inventory') pageTitle = '재고·출고 관리';
   if (pathname === '/admin/employees') pageTitle = '직원 계정 관리';

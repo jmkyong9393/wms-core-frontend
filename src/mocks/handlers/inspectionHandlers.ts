@@ -9,8 +9,8 @@ import type { PaginatedResponse } from '@/types/pagination';
 /**
  * 검수 Agent 로그 / 검수 이력 Mock
  *
- * 백엔드에 아직 없는 Agent 로그 조회 API를 대신해
- * 기존 mockInspectionRecords의 steps를 반환
+ * 로컬 MSW 개발 모드에서 실제 백엔드 없이 조회 화면을 확인할 수 있도록
+ * mockInspectionRecords 기반으로 목록/steps를 반환
  */
 export const inspectionHandlers = [
   // 관리자 검수 이력 조회 (검색/필터/페이지네이션)
@@ -49,8 +49,8 @@ export const inspectionHandlers = [
   }),
 
   // 검수 건의 Agent 실행 로그 조회
-  http.get(`${API_BASE_URL}/api/v1/inspections/:inspectionId/agent-logs`, ({ params }) => {
-    const { inspectionId } = params;
+  http.get(`${API_BASE_URL}${ADMIN_INSPECTIONS_ENDPOINT}/:jobId/agent-logs`, ({ params }) => {
+    const { jobId: inspectionId } = params;
     const record = mockInspectionRecords.find((r) => r.id === inspectionId);
     if (!record) {
       return HttpResponse.json({ detail: '검수 건을 찾을 수 없습니다.' }, { status: 404 });

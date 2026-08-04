@@ -11,6 +11,10 @@ interface AgentLogAccordionProps {
 }
 
 export default function AgentLogAccordion({ steps }: AgentLogAccordionProps) {
+  if (steps.length === 0) {
+    return <p className="text-sm text-gray-400">저장된 Agent 단계 로그가 없습니다.</p>;
+  }
+
   return (
     <Accordion multiple defaultValue={[]}>
       {/* 검수 단계별 로그를 아코디언 항목으로 표시 */}

@@ -1,3 +1,5 @@
+'use client';
+
 import { useState } from 'react';
 import { type HitlQueueItem } from '@/features/queue/store/queueAtoms';
 import { STATUS_LABEL } from '@/features/queue/utils/statusLabel';
