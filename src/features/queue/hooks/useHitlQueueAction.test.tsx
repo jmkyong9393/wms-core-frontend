@@ -71,7 +71,39 @@ describe('useHitlQueueAction', () => {
     vi.clearAllMocks();
   });
 
-  it('optimistically moves the item to PROCESSING and calls submitHitlDecision for APPROVE_NORMAL', async () => {
+  it('optimistically moves the item to PROCESSING before the request resolves', async () => {
+    let resolveDecision!: (value: HitlDecisionResponse) => void;
+    vi.mocked(submitHitlDecision).mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          resolveDecision = resolve;
+        })
+    );
+
+    const { result, store } = setupHook();
+
+    let decisionPromise!: Promise<unknown>;
+    await act(async () => {
+      decisionPromise = result.current.runDecision('hitl_1', {
+        action: 'APPROVE_NORMAL',
+        reviewerReasonCode: 'FP_SHADOW',
+      });
+      await Promise.resolve();
+    });
+
+    expect(submitHitlDecision).toHaveBeenCalledWith('hitl_1', {
+      action: 'APPROVE_NORMAL',
+      reviewerReasonCode: 'FP_SHADOW',
+    });
+    expect(store.get(hitlQueueAtom).find((item) => item.id === 'hitl_1')?.status).toBe('PROCESSING');
+
+    await act(async () => {
+      resolveDecision({ jobId: 'hitl_1', action: 'APPROVE_NORMAL', status: 'PROCESSING', taskId: 'task-1', message: 'ok' });
+      await decisionPromise;
+    });
+  });
+
+  it('resolves the item to APPROVED after a successful APPROVE_NORMAL decision', async () => {
     vi.mocked(submitHitlDecision).mockResolvedValueOnce({
       jobId: 'hitl_1',
       action: 'APPROVE_NORMAL',
@@ -89,11 +121,61 @@ describe('useHitlQueueAction', () => {
       });
     });
 
-    expect(submitHitlDecision).toHaveBeenCalledWith('hitl_1', {
-      action: 'APPROVE_NORMAL',
-      reviewerReasonCode: 'FP_SHADOW',
+    expect(store.get(hitlQueueAtom).find((item) => item.id === 'hitl_1')?.status).toBe('APPROVED');
+  });
+
+  it('resolves the item to REJECTED after a successful REJECT_RETURN decision', async () => {
+    vi.mocked(submitHitlDecision).mockResolvedValueOnce({
+      jobId: 'hitl_1',
+      action: 'REJECT_RETURN',
+      status: 'PROCESSING',
+      taskId: 'task-1',
+      message: 'ok',
     });
-    expect(store.get(hitlQueueAtom).find((item) => item.id === 'hitl_1')?.status).toBe('PROCESSING');
+
+    const { result, store } = setupHook();
+
+    await act(async () => {
+      await result.current.runDecision('hitl_1', {
+        action: 'REJECT_RETURN',
+        reviewerReasonCode: 'DMG_EXT_WET',
+      });
+    });
+
+    expect(store.get(hitlQueueAtom).find((item) => item.id === 'hitl_1')?.status).toBe('REJECTED');
+  });
+
+  it('invalidates the inspection metrics query after a successful decision', async () => {
+    vi.mocked(submitHitlDecision).mockResolvedValueOnce({
+      jobId: 'hitl_1',
+      action: 'APPROVE_NORMAL',
+      status: 'PROCESSING',
+      taskId: 'task-1',
+      message: 'ok',
+    });
+
+    const store = createStore();
+    store.set(hitlQueueAtom, [seedItem]);
+    store.set(currentUserAtom, DEFAULT_CURRENT_USER);
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    const invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries');
+
+    const wrapper = ({ children }: { children: ReactNode }) => (
+      <QueryClientProvider client={queryClient}>
+        <JotaiProvider store={store}>{children}</JotaiProvider>
+      </QueryClientProvider>
+    );
+
+    const { result } = renderHook(() => useHitlQueueAction(), { wrapper });
+
+    await act(async () => {
+      await result.current.runDecision('hitl_1', {
+        action: 'APPROVE_NORMAL',
+        reviewerReasonCode: 'FP_SHADOW',
+      });
+    });
+
+    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['inspectionMetrics'] });
   });
 
   it('moves the item to RECHECK_REQUIRED for RE_CHECK', async () => {
