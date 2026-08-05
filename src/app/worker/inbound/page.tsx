@@ -3,9 +3,10 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAtomValue } from "jotai";
-import { BookOpen, RefreshCw, Trash2, ClipboardList, BookMarked, History } from "lucide-react";
+import { BookOpen, RefreshCw, Trash2, ClipboardList, BookMarked, History, Printer } from "lucide-react";
 import { currentUserAtom } from "@/features/auth/store/authAtoms";
 import { WorkerInboundDetailDialog } from "@/features/inbound/components/WorkerInboundDetailDialog";
+import { LabelPrintModal } from "@/features/inbound/components/LabelPrintModal";
 
 interface ProcessedBook {
   id: string;
@@ -23,6 +24,7 @@ export default function WorkerInboundPage() {
   const currentUser = useAtomValue(currentUserAtom);
   const [processedBooks, setProcessedBooks] = useState<ProcessedBook[]>([]);
   const [selectedBook, setSelectedBook] = useState<ProcessedBook | null>(null);
+  const [printingBook, setPrintingBook] = useState<ProcessedBook | null>(null);
   const [mounted, setMounted] = useState(false);
 
   const storageKey = currentUser
@@ -158,6 +160,7 @@ export default function WorkerInboundPage() {
                       <th className="py-2.5 px-2">구분</th>
                       <th className="py-2.5 px-2">상태</th>
                       <th className="py-2.5 px-2 text-right">처리 시각</th>
+                      <th className="py-2.5 px-2 text-center w-12">라벨</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-50 dark:divide-zinc-800/50 text-xs">
@@ -198,6 +201,18 @@ export default function WorkerInboundPage() {
                         </td>
                         <td className="py-3 px-2 text-right text-gray-400 dark:text-zinc-500 font-medium">
                           {new Date(book.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                        </td>
+                        <td className="py-3 px-2 text-center">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setPrintingBook(book);
+                            }}
+                            className="p-1.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg transition-colors inline-flex"
+                            title="라벨 출력"
+                          >
+                            <Printer className="w-4 h-4" />
+                          </button>
                         </td>
                       </tr>
                     ))}
@@ -246,6 +261,15 @@ export default function WorkerInboundPage() {
                         <span className="text-[10px] text-gray-400 dark:text-zinc-500">
                           {new Date(book.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </span>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setPrintingBook(book);
+                          }}
+                          className="ml-2 p-1 text-gray-400 hover:text-indigo-600 rounded bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 shadow-sm"
+                        >
+                          <Printer className="w-3.5 h-3.5" />
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -260,6 +284,13 @@ export default function WorkerInboundPage() {
       <WorkerInboundDetailDialog
         row={selectedBook}
         onClose={() => setSelectedBook(null)}
+      />
+
+      {/* Label Print Modal Skeleton */}
+      <LabelPrintModal
+        book={printingBook}
+        workerId={currentUser?.employeeId || "UNKNOWN"}
+        onClose={() => setPrintingBook(null)}
       />
     </div>
   );
