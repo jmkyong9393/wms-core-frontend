@@ -1,7 +1,6 @@
 'use client';
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { isAxiosError } from 'axios';
 import { createPickingInstruction } from '@/features/picking/api/pickingService';
 import { pickingKeys } from '@/features/picking/constants/queryKeys';
 import { orderKeys } from '@/features/orders/constants/queryKeys';
@@ -15,12 +14,11 @@ export function useCreatePickingInstructionMutation() {
       queryClient.setQueryData(pickingKeys.detail(data.order_id), data);
       queryClient.invalidateQueries({ queryKey: orderKeys.all });
     },
-    onError: (error, orderId) => {
-      // 이미 PICKING으로 전환된 주문에 재요청한 경우 - 상세 조회 및 주문 목록을 최신 상태로 갱신
-      if (isAxiosError(error) && error.response?.status === 409) {
-        queryClient.invalidateQueries({ queryKey: pickingKeys.detail(orderId) });
-        queryClient.invalidateQueries({ queryKey: orderKeys.all });
-      }
+    onError: (_error, orderId) => {
+      // 실패 원인(409뿐 아니라 네트워크 오류 등)과 무관하게 최신 상태를 다시 조회해
+      // 실제로는 반영됐지만 클라이언트만 실패로 인식하는 경우를 재조회로 보정한다.
+      queryClient.invalidateQueries({ queryKey: pickingKeys.detail(orderId) });
+      queryClient.invalidateQueries({ queryKey: orderKeys.all });
     },
   });
 }
