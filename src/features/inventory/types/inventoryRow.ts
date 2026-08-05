@@ -26,6 +26,8 @@ export interface InventoryRow {
   reserved_quantity: number;
   available_quantity: number;
   lpn_status: InventoryLpnStatus | null;
+  // 중고·반품 단품 식별용 LPN 바코드. 신간 묶음 재고는 null
+  lpn_barcode: string | null;
   base_price: number;
   discount_rate: number | null;
   sale_price: number | null;
