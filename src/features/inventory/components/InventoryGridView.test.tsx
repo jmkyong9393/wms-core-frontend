@@ -14,8 +14,10 @@ vi.mock("@/lib/export/tableExport", () => ({
   exportRowsToXlsx: vi.fn(),
 }));
 
+const mockPush = vi.fn();
+
 vi.mock("next/navigation", () => ({
-  useRouter: () => ({ push: vi.fn() }),
+  useRouter: () => ({ push: mockPush }),
 }));
 
 import { listInventory } from "@/features/inventory/api/inventoryService";
@@ -33,6 +35,7 @@ function makeRow(id: string, title: string, overrides: Partial<InventoryRow> = {
     reserved_quantity: 2,
     available_quantity: 3,
     lpn_status: "RESERVED",
+    lpn_barcode: "LPN-TEST0000000000000000000000001",
     base_price: 15000,
     discount_rate: 0.3,
     sale_price: 10500,
@@ -266,5 +269,43 @@ describe("InventoryGridView", () => {
     );
     expect(exportRowsToCsv).not.toHaveBeenCalled();
     expect(screen.getByRole("button", { name: "CSV 내보내기" })).not.toBeDisabled();
+  });
+
+  it("중고 단품 행을 클릭하면 LPN 상세로 이동한다", async () => {
+    const user = userEvent.setup();
+    vi.mocked(listInventory).mockResolvedValue(
+      gridPage(
+        [makeRow("1", "사피엔스", { stock_type: "USED_ITEM", lpn_barcode: "LPN-ABC123" })],
+        1,
+        1,
+        1
+      )
+    );
+
+    renderGrid();
+    await waitFor(() => expect(screen.getByText("사피엔스")).toBeInTheDocument());
+
+    await user.click(screen.getByText("사피엔스"));
+
+    expect(mockPush).toHaveBeenCalledWith("/admin/lpn/LPN-ABC123");
+  });
+
+  it("신간 묶음 행을 클릭하면 재고 상세로 이동한다", async () => {
+    const user = userEvent.setup();
+    vi.mocked(listInventory).mockResolvedValue(
+      gridPage(
+        [makeRow("inv-1", "사피엔스", { stock_type: "NEW_STOCK", lpn_barcode: null })],
+        1,
+        1,
+        1
+      )
+    );
+
+    renderGrid();
+    await waitFor(() => expect(screen.getByText("사피엔스")).toBeInTheDocument());
+
+    await user.click(screen.getByText("사피엔스"));
+
+    expect(mockPush).toHaveBeenCalledWith("/admin/inventory/inv-1");
   });
 });

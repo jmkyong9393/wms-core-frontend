@@ -40,6 +40,15 @@ export const inventoryColumns: ColumnDef<InventoryRow>[] = [
     cell: ({ getValue }) => getValue<string | null>() ?? '-',
   },
   {
+    id: 'lpnBarcode',
+    header: 'LPN',
+    accessorKey: 'lpn_barcode',
+    cell: ({ getValue }) => {
+      const lpnBarcode = getValue<string | null>();
+      return lpnBarcode ? <span className="font-mono text-xs">{lpnBarcode}</span> : '-';
+    },
+  },
+  {
     id: 'grade',
     header: '등급',
     accessorKey: 'grade',

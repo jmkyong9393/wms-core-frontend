@@ -37,11 +37,11 @@ export function LpnDetailView({ lpnBarcode }: LpnDetailViewProps) {
     <div className="max-w-xl mx-auto space-y-4">
       <button
         type="button"
-        onClick={() => router.push('/admin/lpn')}
+        onClick={() => router.push('/admin/inventory')}
         className="inline-flex items-center gap-1 text-xs font-bold text-gray-500 hover:text-gray-700"
       >
         <ChevronLeft className="w-4 h-4" />
-        LPN 조회로 돌아가기
+        재고 관리로 돌아가기
       </button>
 
       {isLoading && <p className="text-sm text-gray-400">불러오는 중...</p>}
