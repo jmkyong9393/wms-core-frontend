@@ -12,6 +12,7 @@ import {
 import type { CurrentUser, UserStatus } from "@/features/auth/types/authTypes";
 import { ASSIGNABLE_ROLES, type EmployeeListItem, type AssignableRole } from "@/features/employees/types/employee";
 import { canManageEmployees } from "@/features/employees/utils/permissions";
+import { formatKstDate } from "@/lib/date";
 import {
   ROLE_BADGE_STYLE,
   ROLE_LABEL,
@@ -235,7 +236,7 @@ function EmployeeRow({
         </div>
       </td>
       <td className="px-4 py-3 text-gray-500">
-        {new Date(employee.created_at).toLocaleDateString("ko-KR")}
+        {formatKstDate(employee.created_at)}
       </td>
     </tr>
   );

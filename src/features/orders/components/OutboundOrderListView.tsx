@@ -8,6 +8,7 @@ import { useOrderListQuery } from '@/features/orders/hooks/useOrderListQuery';
 import { useCreatePickingInstructionMutation } from '@/features/picking/hooks/useCreatePickingInstructionMutation';
 import { getOrderStatusLabel } from '@/features/orders/utils/orderStatusLabel';
 import { formatCurrencyKRW } from '@/lib/format';
+import { formatKstDateTime } from '@/lib/date';
 import type { OrderListItem } from '@/features/orders/types/order';
 
 // 이미 피킹이 시작된 주문에 지시서 생성을 재요청했을 때(409)의 안내 문구
@@ -43,7 +44,7 @@ function OrderRow({ order, actionLabel, disabled, onSelect, errorMessage }: Orde
           <p className="text-xs text-gray-500 mt-0.5">
             {formatCurrencyKRW(order.total_price)} · {order.logistics_center ?? '물류센터 미지정'}
           </p>
-          <p className="text-[11px] text-gray-400 mt-0.5">{new Date(order.created_at).toLocaleString()}</p>
+          <p className="text-[11px] text-gray-400 mt-0.5">{formatKstDateTime(order.created_at)}</p>
         </div>
         <div className="flex items-center gap-1.5 shrink-0 pl-3">
           <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-yellow-50 text-yellow-600">

@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { AlertTriangle, ArrowLeft, PackageCheck } from 'lucide-react';
+import { formatKstDateTime } from '@/lib/date';
 import type { ShipmentConfirmResponse } from '@/features/picking/types/picking';
 
 interface WaybillPreviewProps {
@@ -65,7 +66,7 @@ export function WaybillPreview({ result }: WaybillPreviewProps) {
           </div>
           <div>
             <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wide">출고 완료 시각</p>
-            <p className="mt-0.5">{new Date(result.shipped_at).toLocaleString()}</p>
+            <p className="mt-0.5">{formatKstDateTime(result.shipped_at)}</p>
           </div>
         </div>
 

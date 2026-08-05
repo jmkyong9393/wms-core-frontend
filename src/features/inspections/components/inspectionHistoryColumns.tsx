@@ -1,5 +1,6 @@
 import type { ColumnDef } from '@tanstack/react-table';
 import { Button } from '@/components/ui/button';
+import { formatKstDateTime } from '@/lib/date';
 import { getGradeBadgeStyle, getGradeLabel } from '@/features/inspections/utils/gradeBadge';
 import { getStatusBadgeStyle, getStatusLabel } from '@/features/inspections/utils/statusBadge';
 import type { InspectionHistoryRow } from '@/features/inspections/types/inspectionHistory';
@@ -95,7 +96,7 @@ export function createInspectionHistoryColumns({
       id: 'inspectedAt',
       header: '검수 요청일시',
       accessorKey: 'inspectedAt',
-      cell: ({ getValue }) => <span className="whitespace-nowrap">{getValue<string>().slice(0, 10)}</span>,
+      cell: ({ getValue }) => <span className="whitespace-nowrap">{formatKstDateTime(getValue<string>())}</span>,
     },
     {
       id: 'detail',

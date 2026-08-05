@@ -5,6 +5,7 @@ import { CheckCircle2, Sparkles } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ErrorBoundary } from '@/components/error-boundary';
 import { useRestockProposalQuery } from '@/features/restock/hooks/useRestockProposalQuery';
+import { formatKstDateTime } from '@/lib/date';
 import {
   getProposalSourceBadgeStyle,
   getProposalSourceLabel,
@@ -73,7 +74,7 @@ export function RestockProposalDetailDialog({ proposalId, onClose }: RestockProp
                     진행 중인 발주 수량: {data.pendingAutoPoQuantity}권 · 반려 수량: {data.rejectedQuantity}권
                   </p>
                   {data.rejectionReasonCode && <p>반려 사유 코드: {data.rejectionReasonCode}</p>}
-                  <p>생성일시: {data.createdAt.slice(0, 10)}</p>
+                  <p>생성일시: {formatKstDateTime(data.createdAt)}</p>
                 </section>
 
                 {/* Agent 추천 사유 */}
@@ -173,7 +174,7 @@ export function RestockProposalDetailDialog({ proposalId, onClose }: RestockProp
                   <section className="space-y-1 border-t border-gray-100 pt-4 text-sm text-gray-600">
                     <h4 className="text-sm font-semibold text-gray-800">검토 이력</h4>
                     <p>검토자: {data.reviewerEmployeeId ?? '-'}</p>
-                    <p>검토 시각: {data.reviewedAt.slice(0, 10)}</p>
+                    <p>검토 시각: {formatKstDateTime(data.reviewedAt)}</p>
                     {data.reviewComment && <p className="text-xs text-gray-500">코멘트: {data.reviewComment}</p>}
                   </section>
                 )}
