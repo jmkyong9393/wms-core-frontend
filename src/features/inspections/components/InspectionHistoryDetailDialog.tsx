@@ -1,8 +1,9 @@
 import { Suspense, useState, useEffect } from 'react';
-import Link from 'next/link';
+
 import { QRCodeSVG } from 'qrcode.react';
-import { ImageOff, ChevronLeft, ChevronRight, Loader2, Award, QrCode, Calendar, Info, ShieldCheck } from 'lucide-react';
+import { ImageOff, ChevronLeft, ChevronRight, Loader2, Award, QrCode, Calendar, Info, ShieldCheck, Printer } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
+import { LabelPrintModal } from '@/features/inbound/components/LabelPrintModal';
 import {
   Dialog,
   DialogContent,
@@ -60,6 +61,7 @@ export function parseFinalReport(report: string | null): string {
 
 export function InspectionHistoryDetailDialog({ row, onClose }: InspectionHistoryDetailDialogProps) {
   const [currentImgIdx, setCurrentImgIdx] = useState(0);
+  const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
 
   useEffect(() => {
     setCurrentImgIdx(0);
@@ -85,9 +87,10 @@ export function InspectionHistoryDetailDialog({ row, onClose }: InspectionHistor
   };
 
   return (
-    <Dialog open={row !== null} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto overflow-x-hidden rounded-3xl border border-gray-150 bg-white/95 p-6 shadow-xl backdrop-blur-md dark:border-zinc-800 dark:bg-zinc-900/95 font-sans">
-        {row && (
+    <>
+      <Dialog open={row !== null} onOpenChange={(open) => !open && onClose()}>
+        <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto overflow-x-hidden rounded-3xl border border-gray-150 bg-white/95 p-6 shadow-xl backdrop-blur-md dark:border-zinc-800 dark:bg-zinc-900/95 font-sans">
+          {row && (
           <>
             {/* Header */}
             <DialogHeader className="border-b border-gray-100 dark:border-zinc-800/80 pb-4">
@@ -156,14 +159,23 @@ export function InspectionHistoryDetailDialog({ row, onClose }: InspectionHistor
                       </span>
                       {/* QR 스캔 URL 이동 링크 */}
                       {(detail.labelScanUrl || detail.lpnBarcode) && (
-                        <a
-                          href={detail.labelScanUrl || (typeof window !== "undefined" ? `${window.location.origin}/scan/${detail.lpnBarcode}` : "#")}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-[9px] text-indigo-500/80 hover:text-indigo-650 hover:underline transition-all tracking-tight break-all max-w-full block select-all mt-1.5"
-                        >
-                          🔗 QR 스캔 URL 접속하기
-                        </a>
+                        <div className="flex flex-col items-center gap-2 w-full mt-1.5">
+                          <a
+                            href={detail.labelScanUrl || (typeof window !== "undefined" ? `${window.location.origin}/scan/${detail.lpnBarcode}` : "#")}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-[9px] text-indigo-500/80 hover:text-indigo-650 hover:underline transition-all tracking-tight break-all max-w-full block select-all text-center"
+                          >
+                            🔗 QR 스캔 URL 접속하기
+                          </a>
+                          <button
+                            onClick={() => setIsPrintModalOpen(true)}
+                            className="flex items-center justify-center gap-1.5 rounded-xl border border-indigo-200 dark:border-indigo-900 bg-indigo-50 dark:bg-indigo-900/30 px-4 py-2 text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors w-full"
+                          >
+                            <Printer className="w-3.5 h-3.5" />
+                            라벨 출력
+                          </button>
+                        </div>
                       )}
                     </div>
                   ) : (
@@ -268,27 +280,29 @@ export function InspectionHistoryDetailDialog({ row, onClose }: InspectionHistor
                   </ErrorBoundary>
                 </section>
 
-                {/* 보증서 연동 안내 */}
-                <section className="border-t border-gray-100 dark:border-zinc-800 pt-4">
-                  {row.finalGrade ? (
-                    <Link
-                      href={`/certificate/${row.id}`}
-                      target="_blank"
-                      className="flex items-center justify-center rounded-2xl border border-indigo-100 dark:border-indigo-900/30 bg-indigo-50/40 dark:bg-indigo-950/20 p-3.5 text-center text-indigo-600 dark:text-indigo-400 hover:bg-indigo-500 hover:text-white dark:hover:bg-indigo-950/50 transition-all font-bold text-xs shadow-sm hover:shadow active:scale-[0.99]"
-                    >
-                      UBCI 품질 보증서 발급 & 확인하기
-                    </Link>
-                  ) : (
-                    <div className="flex items-center justify-center rounded-2xl border border-gray-100 dark:border-zinc-800 bg-gray-50 dark:bg-zinc-850/10 p-3.5 text-center text-gray-400 text-xs">
-                      종합 판정 완료 후 공식 품질 보증서를 확인할 수 있습니다.
-                    </div>
-                  )}
-                </section>
               </div>
             )}
           </>
         )}
       </DialogContent>
     </Dialog>
+    {detail && isPrintModalOpen && (
+      <LabelPrintModal
+        book={{
+          id: detail.id,
+          title: detail.book.title,
+          publisher: '정보 없음',
+          isbn: detail.book.isbn || '미상',
+          lpn: detail.lpnBarcode || '미발급',
+          labelScanUrl: detail.labelScanUrl || undefined,
+          type: 'RETURNS',
+          status: detail.status === 'APPROVED' ? 'APPROVED' : detail.status === 'REJECTED' ? 'REJECTED' : 'PROCESSING',
+          timestamp: detail.inspectedAt,
+        }}
+        workerId="ADMIN"
+        onClose={() => setIsPrintModalOpen(false)}
+      />
+    )}
+    </>
   );
 }
