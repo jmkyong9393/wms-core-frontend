@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { useAuthSession } from '@/features/auth/hooks/useAuthSession';
@@ -19,14 +19,20 @@ export default function ScanPage() {
   const { token } = useParams<{ token: string }>();
   const router = useRouter();
   const authSession = useAuthSession();
+  
+  const [isClient, setIsClient] = useState(false);
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const role = authSession.status === 'ready' ? authSession.currentUser.role : null;
   const isStaff = !!role && STAFF_ROLES.includes(role);
 
   const shouldRedirectToCertificate =
-    authSession.status === 'unauthenticated' ||
-    authSession.status === 'pendingPasswordChange' ||
-    (authSession.status === 'ready' && !isStaff);
+    isClient &&
+    (authSession.status === 'unauthenticated' ||
+      authSession.status === 'pendingPasswordChange' ||
+      (authSession.status === 'ready' && !isStaff));
 
   useEffect(() => {
     if (shouldRedirectToCertificate) {
@@ -34,7 +40,7 @@ export default function ScanPage() {
     }
   }, [shouldRedirectToCertificate, router, token]);
 
-  if (authSession.status === 'loading') {
+  if (!isClient || authSession.status === 'loading') {
     return <p className="p-8 text-center text-sm text-gray-400">세션 확인 중...</p>;
   }
 
