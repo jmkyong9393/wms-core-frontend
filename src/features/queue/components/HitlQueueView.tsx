@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useAtomValue, useSetAtom } from 'jotai';
-import { hitlQueueAtom, type HitlQueueItem } from '@/features/queue/store/queueAtoms';
+import { hitlQueueAtom, mergeHitlQueueFromServerAtom } from '@/features/queue/store/queueAtoms';
 import { useInspectionHistoryQuery } from '@/features/inspections/hooks/useInspectionHistoryQuery';
 import { useInspectionMetricsQuery } from '@/features/queue/hooks/useInspectionMetricsQuery';
 import KpiDonutCard from '@/features/queue/components/KpiDonutCard';
@@ -21,26 +21,24 @@ export default function HitlQueueView() {
   const [page, setPage] = useState(1);
   const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
 
-  const setQueue = useSetAtom(hitlQueueAtom);
+  const mergeQueue = useSetAtom(mergeHitlQueueFromServerAtom);
   const queue = useAtomValue(hitlQueueAtom);
 
   // 검토가 필요한(HITL_REQUIRED) 검수 건 목록 — 별도 HITL 목록 API 없이 검수 이력 API에 상태 필터만 사용
   const { data } = useInspectionHistoryQuery({ status: 'HITL_REQUIRED', page, size: PAGE_SIZE });
 
-  // 페이지 조회 결과가 오면 큐 상태를 새로 채움 (id는 return_job_id와 동일해 상세·로그·판정에 그대로 사용 가능)
+  // 페이지 조회 결과가 오면 큐에 병합 (id는 return_job_id와 동일해 상세·로그·판정에 그대로 사용 가능)
+  // 이미 검토중/판정 완료로 로컬 반영된 항목은 재조회로 AWAITING_REVIEW로 되돌아가지 않도록 병합 atom이 보존함
   useEffect(() => {
     if (!data) return;
-    setQueue(
-      data.items.map(
-        (row): HitlQueueItem => ({
-          id: row.id,
-          title: row.bookTitle,
-          ubciScore: row.ubciScore ?? undefined,
-          status: 'AWAITING_REVIEW',
-        })
-      )
+    mergeQueue(
+      data.items.map((row) => ({
+        id: row.id,
+        title: row.bookTitle,
+        ubciScore: row.ubciScore ?? undefined,
+      }))
     );
-  }, [data, setQueue]);
+  }, [data, mergeQueue]);
 
   const totalPages = data?.total_pages ?? 0;
 

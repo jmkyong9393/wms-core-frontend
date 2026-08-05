@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef } from 'react';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useStore } from 'jotai';
 import {
   hitlQueueAtom,
@@ -9,21 +9,34 @@ import {
   restoreHitlItemAtom,
   applyHitlDecisionAtom,
   startReviewHitlItemAtom,
+  setHitlItemStatusAtom,
   type HitlQueueItem,
+  type HitlItemStatus,
 } from '@/features/queue/store/queueAtoms';
 import {
   submitHitlDecision,
   startReviewHitlItem,
   type HitlDecisionPayload,
 } from '@/features/queue/api/hitlQueueService';
+import type { HitlDecisionAction } from '@/features/queue/constants/hitlReasonCodes';
 
 interface OptimisticContext {
   previousItem: HitlQueueItem | undefined;
 }
 
+// 판정 액션별 최종 확정 상태 — RE_CHECK는 onMutate에서 이미 RECHECK_REQUIRED로 반영되므로 null(변경 없음)
+const RESOLVED_STATUS_BY_ACTION: Record<HitlDecisionAction, HitlItemStatus | null> = {
+  APPROVE_NORMAL: 'APPROVED',
+  APPROVE_DOWNGRADE: 'APPROVED',
+  REJECT_RETURN: 'REJECTED',
+  REJECT_DISCARD: 'REJECTED',
+  RE_CHECK: null,
+};
+
 // HITL 큐 검토 시작(드래그) 액션 - 판정 API와 무관한 로컬 상태 전환
 export function useHitlQueueAction() {
   const store = useStore();
+  const queryClient = useQueryClient();
 
   const startReviewMutation = useMutation<void, Error, string, OptimisticContext>({
     mutationKey: ['hitlStartReview'],
@@ -52,6 +65,11 @@ export function useHitlQueueAction() {
       const previousItem = store.get(hitlQueueAtom).find((item) => item.id === id);
       store.set(applyHitlDecisionAtom, { id, action: payload.action });
       return { previousItem };
+    },
+    onSuccess: (_data, { id, payload }) => {
+      const status = RESOLVED_STATUS_BY_ACTION[payload.action];
+      if (status) store.set(setHitlItemStatusAtom, { id, status });
+      queryClient.invalidateQueries({ queryKey: ['inspectionMetrics'] });
     },
     onError: (_err, _vars, context) => {
       if (context?.previousItem) store.set(restoreHitlItemAtom, context.previousItem);

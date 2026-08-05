@@ -6,6 +6,7 @@ import HitlQueueView from './HitlQueueView';
 import { listInspectionHistory } from '@/features/inspections/api/inspectionHistoryService';
 import { getInspectionMetrics } from '@/services/dashboardService';
 import type { InspectionHistoryRow } from '@/features/inspections/types/inspectionHistory';
+import { hitlQueueAtom, type HitlQueueItem } from '@/features/queue/store/queueAtoms';
 
 // 테스트용 localStorage 설정 (queueAtoms → authAtoms의 atomWithStorage가 의존)
 vi.hoisted(() => {
@@ -52,16 +53,18 @@ function buildRow(overrides: Partial<InspectionHistoryRow> = {}): InspectionHist
   };
 }
 
-function renderView() {
+function renderView(seedQueue?: HitlQueueItem[]) {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   const store = createStore();
-  return render(
+  if (seedQueue) store.set(hitlQueueAtom, seedQueue);
+  const view = render(
     <QueryClientProvider client={queryClient}>
       <JotaiProvider store={store}>
         <HitlQueueView />
       </JotaiProvider>
     </QueryClientProvider>
   );
+  return { ...view, store };
 }
 
 describe('HitlQueueView', () => {
@@ -143,5 +146,45 @@ describe('HitlQueueView', () => {
     expect(await screen.findByText('2건')).toBeInTheDocument();
     // 금일 누적 처리량 = approved_jobs + rejected_jobs
     expect(await screen.findByText('6건')).toBeInTheDocument();
+  });
+
+  it('승인 처리 중(PROCESSING)인 카드는 목록이 재조회돼도 검토 대기로 되돌아가지 않는다', async () => {
+    // 백엔드 비동기 처리 지연으로 승인한 건이 여전히 HITL_REQUIRED로 응답에 남아있는 상황을 재현
+    mockedListInspectionHistory.mockResolvedValueOnce({
+      items: [buildRow({ id: 'insp_001', bookTitle: '승인 처리중 도서' })],
+      total: 1,
+      page: 1,
+      size: 20,
+      total_pages: 1,
+    });
+
+    const { store } = renderView([
+      { id: 'insp_001', title: '승인 처리중 도서', status: 'PROCESSING', reviewer: '관리자A' },
+    ]);
+
+    await waitFor(() => {
+      expect(mockedListInspectionHistory).toHaveBeenCalled();
+    });
+
+    expect(store.get(hitlQueueAtom).find((item) => item.id === 'insp_001')?.status).toBe('PROCESSING');
+  });
+
+  it('승인 완료(APPROVED)된 카드는 목록 응답에서 빠져도 큐에서 사라지지 않는다', async () => {
+    // 백엔드가 실제로 HITL_REQUIRED에서 전이를 완료해 목록 응답에서 빠진 상황을 재현
+    mockedListInspectionHistory.mockResolvedValueOnce({
+      items: [],
+      total: 0,
+      page: 1,
+      size: 20,
+      total_pages: 0,
+    });
+
+    const { store } = renderView([{ id: 'insp_001', title: '승인 완료 도서', status: 'APPROVED' }]);
+
+    await waitFor(() => {
+      expect(mockedListInspectionHistory).toHaveBeenCalled();
+    });
+
+    expect(store.get(hitlQueueAtom).find((item) => item.id === 'insp_001')?.status).toBe('APPROVED');
   });
 });

@@ -59,6 +59,41 @@ export const applyHitlDecisionAtom = atom(
   }
 );
 
+// 검수 이력 API(status=HITL_REQUIRED)에서 새로 받아온 목록
+export interface HitlQueueServerRow {
+  id: string;
+  title?: string;
+  ubciScore?: number;
+}
+
+// 목록 재조회 결과를 큐에 반영 — 이미 로컬에서 진행 중이거나(IN_PROGRESS/PROCESSING/RECHECK_REQUIRED)
+// 완료된(APPROVED/REJECTED) 항목은 서버 응답에 여전히 HITL_REQUIRED로 남아있어도(비동기 처리 지연)
+// 혹은 응답에서 빠져도(실제로 상태 전이 완료) 로컬 상태를 그대로 유지한다.
+// AWAITING_REVIEW였는데 이번 응답에 없는 항목만 제거 대상(다른 관리자 처리, 페이지 이동 등).
+export const mergeHitlQueueFromServerAtom = atom(null, (get, set, rows: HitlQueueServerRow[]) => {
+  const prev = get(hitlQueueAtom);
+  const prevById = new Map(prev.map((item) => [item.id, item]));
+  const incomingIds = new Set(rows.map((row) => row.id));
+
+  const merged = rows.map((row): HitlQueueItem => {
+    const existing = prevById.get(row.id);
+    if (existing && existing.status !== 'AWAITING_REVIEW') return existing;
+    return { id: row.id, title: row.title, ubciScore: row.ubciScore, status: 'AWAITING_REVIEW' };
+  });
+
+  const keptLocalOnly = prev.filter(
+    (item) =>
+      !incomingIds.has(item.id) &&
+      (item.status === 'IN_PROGRESS' ||
+        item.status === 'PROCESSING' ||
+        item.status === 'RECHECK_REQUIRED' ||
+        item.status === 'APPROVED' ||
+        item.status === 'REJECTED')
+  );
+
+  set(hitlQueueAtom, [...merged, ...keptLocalOnly]);
+});
+
 // API 처리 실패 시 티켓을 버튼 클릭 전 상태로 복구
 // 상태와 담당 관리자 정보를 함께 되돌림
 export const restoreHitlItemAtom = atom(null, (get, set, previousItem: HitlQueueItem) => {
