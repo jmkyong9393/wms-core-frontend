@@ -9,6 +9,7 @@ import {
 } from './useRestockProposalMutations';
 import { approveRestockProposal, rejectRestockProposal } from '@/features/restock/api/restockProposalService';
 import { restockProposalKeys } from '@/features/restock/constants/queryKeys';
+import { inventoryKeys } from '@/features/inventory/constants/queryKeys';
 
 vi.mock('@/features/restock/api/restockProposalService', () => ({
   approveRestockProposal: vi.fn(),
@@ -59,6 +60,27 @@ describe('useRestockProposalMutations', () => {
     expect(approveRestockProposal).toHaveBeenCalledWith('p1', {});
     await waitFor(() => {
       expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: restockProposalKeys.all });
+    });
+  });
+
+  it('invalidates inventoryKeys.all after a successful approve (approval increases real inventory)', async () => {
+    vi.mocked(approveRestockProposal).mockResolvedValueOnce({
+      proposalId: 'p1',
+      status: 'APPROVED',
+      autoPoOrderId: 'po1',
+      reviewedAt: 't',
+      message: 'ok',
+    });
+    const { wrapper, invalidateSpy } = setupQueryClient();
+
+    const { result } = renderHook(() => useApproveRestockProposalMutation(), { wrapper });
+
+    await act(async () => {
+      await result.current.mutateAsync({ proposalId: 'p1', payload: {} });
+    });
+
+    await waitFor(() => {
+      expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: inventoryKeys.all });
     });
   });
 

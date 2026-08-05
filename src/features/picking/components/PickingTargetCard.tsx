@@ -1,10 +1,9 @@
 import { getGradeBadgeStyle, getGradeLabel } from '@/features/inspections/utils/gradeBadge';
 import { cn } from '@/lib/utils';
-import type { PickingListItem } from '@/features/picking/types/picking';
+import type { FlattenedPickingItem } from '@/features/picking/utils/flattenPickingGroups';
 
 interface PickingTargetCardProps {
-  item: PickingListItem;
-  pickedQty: number;
+  item: FlattenedPickingItem;
 }
 
 function LocationBadge({ label, value }: { label: string; value: string }) {
@@ -16,8 +15,9 @@ function LocationBadge({ label, value }: { label: string; value: string }) {
   );
 }
 
-export function PickingTargetCard({ item, pickedQty }: PickingTargetCardProps) {
-  const isDone = pickedQty >= item.quantity;
+// 백엔드 피킹 지시서 응답에는 도서명이 포함되지 않으므로 ISBN/LPN 바코드를 주요 식별 정보로 표시
+export function PickingTargetCard({ item }: PickingTargetCardProps) {
+  const isDone = item.picked_quantity >= item.quantity;
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
@@ -29,18 +29,24 @@ export function PickingTargetCard({ item, pickedQty }: PickingTargetCardProps) {
       </div>
 
       <div className="mt-4 space-y-1.5">
-        <p className="text-lg font-bold text-gray-900">{item.bookTitle}</p>
-        <p className="text-xs font-mono text-gray-500">ISBN {item.isbn}</p>
-        {item.lpnBarcode && <p className="text-xs font-mono text-gray-500">LPN {item.lpnBarcode}</p>}
+        <p className="text-lg font-bold text-gray-900">
+          {item.allocation_type === 'NEW_STOCK' ? '신품 도서' : '중고 단품 (LPN)'}
+        </p>
+        {item.isbn && <p className="text-xs font-mono text-gray-500">ISBN {item.isbn}</p>}
+        {item.lpn_barcode && <p className="text-xs font-mono text-gray-500">LPN {item.lpn_barcode}</p>}
       </div>
 
       <div className="mt-3 flex items-center justify-between">
-        <span className={cn('px-2.5 py-1 rounded-full text-xs font-semibold', getGradeBadgeStyle(item.conditionGrade))}>
-          {getGradeLabel(item.conditionGrade)}
-        </span>
-        <div className="flex items-baseline gap-1">
+        {item.condition_grade && (
+          <span
+            className={cn('px-2.5 py-1 rounded-full text-xs font-semibold', getGradeBadgeStyle(item.condition_grade))}
+          >
+            {getGradeLabel(item.condition_grade)}
+          </span>
+        )}
+        <div className="flex items-baseline gap-1 ml-auto">
           <span className={cn('text-2xl font-bold', isDone ? 'text-green-600' : 'text-gray-900')}>
-            {pickedQty}
+            {item.picked_quantity}
           </span>
           <span className="text-gray-400 text-sm">/ {item.quantity}</span>
         </div>

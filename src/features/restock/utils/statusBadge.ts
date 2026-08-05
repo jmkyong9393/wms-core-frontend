@@ -1,4 +1,8 @@
-import type { RestockProposalStatus, RiskLevel } from '@/features/restock/types/restockProposal';
+import type {
+  RestockProposalSource,
+  RestockProposalStatus,
+  RiskLevel,
+} from '@/features/restock/types/restockProposal';
 
 export const STATUS_BADGE_STYLE: Record<RestockProposalStatus, string> = {
   PENDING: 'bg-gray-100 text-gray-600',
@@ -40,4 +44,22 @@ export function getRiskBadgeStyle(riskLevel: RiskLevel): string {
 
 export function getRiskLabel(riskLevel: RiskLevel): string {
   return RISK_LABEL_KO[riskLevel];
+}
+
+export const PROPOSAL_SOURCE_BADGE_STYLE: Record<RestockProposalSource, string> = {
+  RETURN_REJECTION: 'bg-purple-100 text-purple-700',
+  SAFETY_STOCK: 'bg-blue-100 text-blue-700',
+};
+
+export const PROPOSAL_SOURCE_LABEL_KO: Record<RestockProposalSource, string> = {
+  RETURN_REJECTION: '반려 대체 발주',
+  SAFETY_STOCK: '안전재고 부족',
+};
+
+export function getProposalSourceBadgeStyle(proposalSource: RestockProposalSource): string {
+  return PROPOSAL_SOURCE_BADGE_STYLE[proposalSource];
+}
+
+export function getProposalSourceLabel(proposalSource: RestockProposalSource): string {
+  return PROPOSAL_SOURCE_LABEL_KO[proposalSource];
 }

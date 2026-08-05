@@ -36,6 +36,7 @@ const restockItemWithPayload: NotificationItem = {
     orderProposalId: 'proposal-1',
     returnJobId: 'return-1',
     bookId: 'book-1',
+    proposalSource: 'RETURN_REJECTION',
     recommendedOrderQuantity: 11,
     riskLevel: 'HIGH',
   },
@@ -135,6 +136,14 @@ describe('NotificationBell', () => {
     expect(screen.getByText('FDS 이상거래')).toBeInTheDocument();
     expect(screen.getByText('자동발주 알림')).toBeInTheDocument();
     expect(screen.getByText('FDS 이상거래 적발')).toBeInTheDocument();
+  });
+
+  it('shows a proposalSource badge for a RESTOCK_ALERT item that has one', () => {
+    renderBell([restockItemWithPayload]);
+
+    fireEvent.click(screen.getByLabelText('알림'));
+
+    expect(screen.getByText('반려 대체 발주')).toBeInTheDocument();
   });
 
   it('shows the empty state when there are no notifications', () => {

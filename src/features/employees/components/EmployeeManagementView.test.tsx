@@ -104,7 +104,8 @@ describe("EmployeeManagementView", () => {
   it("MASTER 로그인 시 '직원 추가' 버튼이 노출된다", async () => {
     await renderAs("MASTER");
 
-    expect(screen.getByRole("button", { name: /직원 추가/ })).toBeInTheDocument();
+    // 부하가 큰 환경에서는 렌더 커밋이 지연될 수 있어 동기 getByRole 대신 findByRole로 재시도 허용
+    expect(await screen.findByRole("button", { name: /직원 추가/ })).toBeInTheDocument();
     await waitFor(() => expect(screen.getByText("박민우")).toBeInTheDocument());
   });
 

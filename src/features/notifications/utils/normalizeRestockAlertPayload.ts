@@ -6,6 +6,7 @@ export function normalizeRestockAlertPayload(wire: RestockAlertPayloadWire): Res
     orderProposalId: wire.order_proposal_id,
     returnJobId: wire.return_job_id,
     bookId: wire.book_id,
+    proposalSource: wire.proposal_source,
     recommendedOrderQuantity: wire.recommended_order_quantity,
     riskLevel: wire.risk_level,
   };
