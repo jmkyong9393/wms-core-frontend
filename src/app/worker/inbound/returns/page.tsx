@@ -32,6 +32,7 @@ interface BookInfo {
 interface InboundInfo {
   inboundItemId: string;
   lpnBarcode: string;
+  labelScanUrl?: string;
 }
 
 type PhotoType = "front" | "back" | "inside";
@@ -232,6 +233,7 @@ export default function UsedItemReturnsPage() {
       setInboundInfo({
         inboundItemId: inbound.inboundItemId,
         lpnBarcode: inbound.lpnBarcode || `LPN-RET-${book.isbn}-${idempotencyKey.slice(0,4)}`,
+        labelScanUrl: inbound.labelScanUrl,
       });
 
       // Advance to step 2 (photo taking)
@@ -352,6 +354,7 @@ export default function UsedItemReturnsPage() {
       publisher: bookInfo.publisher,
       isbn: bookInfo.isbn,
       lpn: inboundInfo.lpnBarcode,
+      labelScanUrl: inboundInfo.labelScanUrl,
       type: "RETURNS",
       status: status,
       timestamp: new Date().toISOString(),
