@@ -6,7 +6,6 @@ import {
   LayoutDashboard,
   Camera,
   ShoppingCart,
-  LineChart,
   Settings,
   Menu,
   X,
@@ -22,7 +21,6 @@ import { useState } from 'react';
 // PM님이 요청하신 사이드바 추천 메뉴 구성
 const COMMON_MENU_ITEMS = [
   { name: '통합 대시보드', href: '/admin', icon: LayoutDashboard },
-  { name: 'AI 품질 리포트', href: '/reports', icon: LineChart },
 ];
 
 const INBOUND_MENU_ITEMS = [
