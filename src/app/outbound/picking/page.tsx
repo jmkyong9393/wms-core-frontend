@@ -1,6 +1,6 @@
-import { PendingOrderListView } from '@/features/orders/components/PendingOrderListView';
+import { OutboundOrderListView } from '@/features/orders/components/OutboundOrderListView';
 
-// 출고 피킹 대상 PENDING 주문 목록
+// 출고 피킹 대상 주문 목록 (피킹 대기 / 피킹 진행 중)
 export default function PickingOrderListPage() {
-  return <PendingOrderListView />;
+  return <OutboundOrderListView />;
 }

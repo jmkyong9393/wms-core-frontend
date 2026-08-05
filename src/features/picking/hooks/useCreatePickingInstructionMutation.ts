@@ -16,9 +16,10 @@ export function useCreatePickingInstructionMutation() {
       queryClient.invalidateQueries({ queryKey: orderKeys.all });
     },
     onError: (error, orderId) => {
-      // 이미 PICKING으로 전환된 주문에 재요청한 경우 - 상세 조회로 최신 상태를 반영
+      // 이미 PICKING으로 전환된 주문에 재요청한 경우 - 상세 조회 및 주문 목록을 최신 상태로 갱신
       if (isAxiosError(error) && error.response?.status === 409) {
         queryClient.invalidateQueries({ queryKey: pickingKeys.detail(orderId) });
+        queryClient.invalidateQueries({ queryKey: orderKeys.all });
       }
     },
   });

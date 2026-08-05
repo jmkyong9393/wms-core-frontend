@@ -1,4 +1,5 @@
-import { AlertTriangle, PackageCheck } from 'lucide-react';
+import Link from 'next/link';
+import { AlertTriangle, ArrowLeft, PackageCheck } from 'lucide-react';
 import type { ShipmentConfirmResponse } from '@/features/picking/types/picking';
 
 interface WaybillPreviewProps {
@@ -93,6 +94,14 @@ export function WaybillPreview({ result }: WaybillPreviewProps) {
           </div>
         </div>
       </div>
+
+      <Link
+        href="/outbound/picking"
+        className="w-full h-12 flex items-center justify-center gap-1.5 rounded-xl border border-gray-200 bg-white text-sm font-bold text-gray-700 hover:bg-gray-50 transition-colors"
+      >
+        <ArrowLeft className="w-4 h-4" />
+        피킹 목록으로 돌아가기
+      </Link>
     </div>
   );
 }
