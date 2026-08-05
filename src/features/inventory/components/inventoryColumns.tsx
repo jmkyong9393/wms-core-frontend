@@ -2,6 +2,7 @@ import type { ColumnDef } from '@tanstack/react-table';
 import { getInventoryGradeBadgeStyle, getInventoryGradeLabel } from '@/features/inventory/utils/gradeBadge';
 import { getPricingStatusBadgeStyle, getPricingStatusLabel } from '@/features/inventory/utils/pricingStatusBadge';
 import { formatCurrencyKRW, formatDiscountRate } from '@/lib/format';
+import { formatKstDate } from '@/lib/date';
 import type { InventoryRow, InventoryStockType } from '@/features/inventory/types/inventoryRow';
 
 const STOCK_TYPE_LABEL: Record<InventoryStockType, string> = {
@@ -113,6 +114,6 @@ export const inventoryColumns: ColumnDef<InventoryRow>[] = [
     id: 'date',
     header: '일자',
     accessorKey: 'date',
-    cell: ({ getValue }) => getValue<string>().slice(0, 10),
+    cell: ({ getValue }) => formatKstDate(getValue<string>()),
   },
 ];

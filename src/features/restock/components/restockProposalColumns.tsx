@@ -1,5 +1,6 @@
 import type { ColumnDef } from '@tanstack/react-table';
 import { Button } from '@/components/ui/button';
+import { formatKstDateTime } from '@/lib/date';
 import {
   getProposalSourceBadgeStyle,
   getProposalSourceLabel,
@@ -104,7 +105,7 @@ export function createRestockProposalColumns({
       id: 'createdAt',
       header: '생성일시',
       accessorKey: 'createdAt',
-      cell: ({ getValue }) => <span className="whitespace-nowrap">{getValue<string>().slice(0, 10)}</span>,
+      cell: ({ getValue }) => <span className="whitespace-nowrap">{formatKstDateTime(getValue<string>())}</span>,
     },
     {
       id: 'reviewedAt',
@@ -112,7 +113,7 @@ export function createRestockProposalColumns({
       accessorKey: 'reviewedAt',
       cell: ({ getValue }) => {
         const reviewedAt = getValue<RestockProposalListItem['reviewedAt']>();
-        return <span className="whitespace-nowrap">{reviewedAt ? reviewedAt.slice(0, 10) : '-'}</span>;
+        return <span className="whitespace-nowrap">{reviewedAt ? formatKstDateTime(reviewedAt) : '-'}</span>;
       },
     },
     {

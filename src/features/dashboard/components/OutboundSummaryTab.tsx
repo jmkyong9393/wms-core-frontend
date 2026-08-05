@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useOutboundDashboardSummaryQuery } from '@/features/dashboard/hooks/useOutboundDashboardSummaryQuery';
 import { getOrderStatusLabel } from '@/features/orders/utils/orderStatusLabel';
 import { formatCurrencyKRW } from '@/lib/format';
+import { formatKstDateTime } from '@/lib/date';
 
 // 출고 관리자 대시보드 - 출고 탭 (실 API 연동, Mock 폴백 없음)
 export default function OutboundSummaryTab() {
@@ -104,6 +105,7 @@ export default function OutboundSummaryTab() {
                   <th className="py-2 px-1">주문 유형</th>
                   <th className="py-2 px-1">총금액</th>
                   <th className="py-2 px-1">상태</th>
+                  <th className="py-2 px-1">주문 시각</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50 dark:divide-zinc-800/30">
@@ -129,11 +131,14 @@ export default function OutboundSummaryTab() {
                           {getOrderStatusLabel(order.status)}
                         </span>
                       </td>
+                      <td className="py-3 px-1 text-gray-400 whitespace-nowrap">
+                        {formatKstDateTime(order.created_at)}
+                      </td>
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={5} className="py-8 text-center text-gray-400 text-sm">
+                    <td colSpan={6} className="py-8 text-center text-gray-400 text-sm">
                       최근 출고 주문이 없습니다.
                     </td>
                   </tr>

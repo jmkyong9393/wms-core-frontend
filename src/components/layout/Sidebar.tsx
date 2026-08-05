@@ -6,7 +6,6 @@ import {
   LayoutDashboard,
   Camera,
   ShoppingCart,
-  LineChart,
   Settings,
   Menu,
   X,
@@ -22,7 +21,6 @@ import { useState } from 'react';
 // PM님이 요청하신 사이드바 추천 메뉴 구성
 const COMMON_MENU_ITEMS = [
   { name: '통합 대시보드', href: '/admin', icon: LayoutDashboard },
-  { name: 'AI 품질 리포트', href: '/reports', icon: LineChart },
 ];
 
 const INBOUND_MENU_ITEMS = [
@@ -97,9 +95,13 @@ export default function Sidebar() {
       `}>
         {/* Logo Area */}
         <div className="h-16 flex items-center px-6 border-b border-gray-200">
-          <span className="text-lg font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+          <Link
+            href="/admin"
+            onClick={() => setIsOpen(false)}
+            className="text-lg font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent cursor-pointer hover:opacity-80 transition-opacity"
+          >
             NEWZED
-          </span>
+          </Link>
         </div>
 
         {/* Main Menu */}

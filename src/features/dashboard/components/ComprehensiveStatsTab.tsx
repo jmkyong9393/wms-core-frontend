@@ -39,6 +39,7 @@ import {
   getMockFdsPolicies,
   updateMockFdsPolicy,
 } from '@/services/dashboardService';
+import { formatKstTime } from '@/lib/date';
 import type {
   InspectionMetrics,
   WeeklyInsight,
@@ -416,7 +417,7 @@ export default function ComprehensiveStatsTab() {
                         {report.fraud_reason || '사유가 기록되지 않았습니다.'}
                       </td>
                       <td className="py-3.5 px-2 text-right text-gray-400 text-xs font-medium">
-                        {new Date(report.detected_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                        {formatKstTime(report.detected_at)}
                       </td>
                     </tr>
                   );

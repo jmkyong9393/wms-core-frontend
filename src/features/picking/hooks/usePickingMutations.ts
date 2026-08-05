@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { isAxiosError } from 'axios';
 import { confirmShipment, scanPickingAllocation } from '@/features/picking/api/pickingService';
 import { pickingKeys } from '@/features/picking/constants/queryKeys';
+import { orderKeys } from '@/features/orders/constants/queryKeys';
 import type { PickingScanRequest } from '@/features/picking/types/picking';
 
 // 404/409 응답을 받으면 화면이 최신 상태를 반영하도록 재조회
@@ -38,6 +39,8 @@ export function useConfirmShipmentMutation(orderId: string) {
           ? { ...prev, status: data.status, is_picking_completed: true }
           : prev
       );
+      // 출고 확정으로 PICKING → SHIPPED 전환 - 주문 목록(피킹 진행 중)에서 즉시 제외되도록 갱신
+      queryClient.invalidateQueries({ queryKey: orderKeys.all });
     },
     onError: (error) => {
       if (shouldRefetchOnError(error)) {

@@ -6,6 +6,7 @@ import { useInventoryDetailQuery } from '@/features/inventory/hooks/useInventory
 import { getInventoryGradeBadgeStyle, getInventoryGradeLabel } from '@/features/inventory/utils/gradeBadge';
 import { getPricingStatusBadgeStyle, getPricingStatusLabel } from '@/features/inventory/utils/pricingStatusBadge';
 import { formatCurrencyKRW, formatDiscountRate } from '@/lib/format';
+import { formatKstDate } from '@/lib/date';
 import { cn } from '@/lib/utils';
 
 interface InventoryDetailViewProps {
@@ -81,7 +82,7 @@ export function InventoryDetailView({ inventoryId }: InventoryDetailViewProps) {
             />
           </div>
 
-          <p className="text-xs text-gray-400 pt-1">마지막 변경: {inventory.date.slice(0, 10)}</p>
+          <p className="text-xs text-gray-400 pt-1">마지막 변경: {formatKstDate(inventory.date)}</p>
         </div>
       )}
     </div>

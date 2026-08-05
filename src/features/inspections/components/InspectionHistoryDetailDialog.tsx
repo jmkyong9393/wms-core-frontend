@@ -11,6 +11,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { ErrorBoundary } from '@/components/error-boundary';
+import { formatKstDateTime } from '@/lib/date';
 import AgentLogSection from '@/features/inspections/components/AgentLogSection';
 import InspectionBadges from '@/features/inspections/components/InspectionBadges';
 import { getStatusLabel } from '@/features/inspections/utils/statusBadge';
@@ -195,7 +196,7 @@ export function InspectionHistoryDetailDialog({ row, onClose }: InspectionHistor
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-gray-400 dark:text-zinc-500 font-medium flex items-center gap-1"><Calendar className="w-3.5 h-3.5" /> 검수 요청일시</span>
-                    <span className="font-semibold text-gray-700 dark:text-zinc-300">{new Date(row.inspectedAt).toLocaleString()}</span>
+                    <span className="font-semibold text-gray-700 dark:text-zinc-300">{formatKstDateTime(row.inspectedAt)}</span>
                   </div>
                 </div>
 

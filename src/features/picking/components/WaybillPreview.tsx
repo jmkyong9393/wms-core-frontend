@@ -1,4 +1,6 @@
-import { AlertTriangle, PackageCheck } from 'lucide-react';
+import Link from 'next/link';
+import { AlertTriangle, ArrowLeft, PackageCheck } from 'lucide-react';
+import { formatKstDateTime } from '@/lib/date';
 import type { ShipmentConfirmResponse } from '@/features/picking/types/picking';
 
 interface WaybillPreviewProps {
@@ -64,7 +66,7 @@ export function WaybillPreview({ result }: WaybillPreviewProps) {
           </div>
           <div>
             <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wide">출고 완료 시각</p>
-            <p className="mt-0.5">{new Date(result.shipped_at).toLocaleString()}</p>
+            <p className="mt-0.5">{formatKstDateTime(result.shipped_at)}</p>
           </div>
         </div>
 
@@ -93,6 +95,14 @@ export function WaybillPreview({ result }: WaybillPreviewProps) {
           </div>
         </div>
       </div>
+
+      <Link
+        href="/outbound/picking"
+        className="w-full h-12 flex items-center justify-center gap-1.5 rounded-xl border border-gray-200 bg-white text-sm font-bold text-gray-700 hover:bg-gray-50 transition-colors"
+      >
+        <ArrowLeft className="w-4 h-4" />
+        피킹 목록으로 돌아가기
+      </Link>
     </div>
   );
 }
