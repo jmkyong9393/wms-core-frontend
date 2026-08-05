@@ -1,6 +1,6 @@
 "use client";
 
-import { Printer, X } from "lucide-react";
+import { Printer, X, Loader2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -8,6 +8,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { QRCodeSVG } from "qrcode.react";
+import { usePrintLpnMutation } from "@/features/lpn/hooks/usePrintLpnMutation";
 
 interface ProcessedBook {
   id: string;
@@ -29,11 +30,24 @@ interface LabelPrintModalProps {
 }
 
 export function LabelPrintModal({ book, workerId, onClose }: LabelPrintModalProps) {
+  const { mutate: printLpn, isPending } = usePrintLpnMutation();
+
   if (!book) return null;
 
   const handlePrint = () => {
-    // LAN+USB 연동을 위한 스켈레톤 함수
-    alert("LAN+USB 프린터 출력 기능 연동 예정입니다. (LPN: " + book.lpn + ")");
+    printLpn(
+      {
+        lpnBarcode: book.lpn,
+        title: book.title,
+        isbn: book.isbn,
+        workerId: workerId,
+      },
+      {
+        onSuccess: () => {
+          onClose();
+        },
+      }
+    );
   };
 
   const qrValue = book.labelScanUrl || (typeof window !== "undefined" ? `${window.location.origin}/scan/${book.lpn}` : "");
@@ -95,9 +109,14 @@ export function LabelPrintModal({ book, workerId, onClose }: LabelPrintModalProp
         <div className="flex gap-2 pt-2">
           <button
             onClick={handlePrint}
-            className="flex-1 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-bold py-3.5 rounded-2xl flex items-center justify-center gap-2 transition-colors"
+            disabled={isPending}
+            className="flex-1 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 disabled:bg-indigo-400 text-white font-bold py-3.5 rounded-2xl flex items-center justify-center gap-2 transition-colors"
           >
-            <Printer className="w-4 h-4" />
+            {isPending ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Printer className="w-4 h-4" />
+            )}
             50x30mm 열전사 출력
           </button>
           <button
