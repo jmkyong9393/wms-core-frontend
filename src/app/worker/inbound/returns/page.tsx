@@ -448,9 +448,8 @@ export default function UsedItemReturnsPage() {
 
             {/* Barcode scanner camera stream */}
             {isScannerActive && (
-              <div className="relative aspect-video bg-black rounded-2xl overflow-hidden border border-zinc-800 shadow-inner">
+              <div className="mt-2">
                 <BarcodeScanner onScan={handleScan} isActive={isScannerActive} />
-                <div className="absolute inset-x-4 top-1/2 h-[2px] bg-red-500 opacity-60 animate-pulse pointer-events-none" />
               </div>
             )}
 
