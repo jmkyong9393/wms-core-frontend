@@ -38,6 +38,8 @@ import {
   getMockFdsReports,
   getMockFdsPolicies,
   updateMockFdsPolicy,
+  getFlowTrend,
+  getMockFlowTrend,
 } from '@/services/dashboardService';
 import { formatKstTime } from '@/lib/date';
 import type {
@@ -45,6 +47,8 @@ import type {
   WeeklyInsight,
   FdsReport,
   FdsPolicy,
+  FlowTrendItem,
+  ChartTrendItem,
 } from '@/types/dashboardTypes';
 
 const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
@@ -56,22 +60,14 @@ const POLICY_FRIENDLY_NAMES: Record<string, string> = {
   MAX_REFUND_AMT: '최대 누적 환불 제한 금액',
 };
 
-// 일별 입출고 추이 시뮬레이션용 시계열 데이터
-const MOCK_DAILY_FLOW = [
-  { date: '07/22', 입고건수: 120, 출고건수: 85, 평균시간: 5.2 },
-  { date: '07/23', 입고건수: 145, 출고건수: 95, 평균시간: 4.8 },
-  { date: '07/24', 입고건수: 110, 출고건수: 115, 평균시간: 5.5 },
-  { date: '07/25', 입고건수: 130, 출고건수: 110, 평균시간: 4.6 },
-  { date: '07/26', 입고건수: 155, 출고건수: 125, 평균시간: 4.2 },
-  { date: '07/27', 입고건수: 90, 출고건수: 70, 평균시간: 5.0 },
-  { date: '07/28', 입고건수: 140, 출고건수: 105, 평균시간: 4.8 },
-];
+
 
 export default function ComprehensiveStatsTab() {
   const [metrics, setMetrics] = useState<InspectionMetrics | null>(null);
   const [insights, setInsights] = useState<WeeklyInsight[]>([]);
   const [fdsReports, setFdsReports] = useState<FdsReport[]>([]);
   const [fdsPolicies, setFdsPolicies] = useState<FdsPolicy[]>([]);
+  const [flowTrend, setFlowTrend] = useState<ChartTrendItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [updatingKey, setUpdatingKey] = useState<string | null>(null);
   const [successKey, setSuccessKey] = useState<string | null>(null);
@@ -86,14 +82,21 @@ export default function ComprehensiveStatsTab() {
       let fetchedInsights: WeeklyInsight[];
       let fetchedReports: FdsReport[];
       let fetchedPolicies: FdsPolicy[];
+      let fetchedFlowTrend: FlowTrendItem[];
 
       try {
-        [fetchedMetrics, fetchedInsights, fetchedReports, fetchedPolicies] = await Promise.all([
+        const [metricsRes, insightsRes, reportsRes, policiesRes, flowTrendRes] = await Promise.all([
           getInspectionMetrics(),
           getWeeklyInsights(),
           getFdsReports(),
           getFdsPolicies(),
+          getFlowTrend(7),
         ]);
+        fetchedMetrics = metricsRes;
+        fetchedInsights = insightsRes;
+        fetchedReports = reportsRes;
+        fetchedPolicies = policiesRes;
+        fetchedFlowTrend = flowTrendRes.items;
         setIsApiFallback(false);
       } catch (error) {
         console.warn('실제 백엔드 API 연동 실패, Mock 시뮬레이션 데이터로 대체 로드합니다:', error);
@@ -102,12 +105,22 @@ export default function ComprehensiveStatsTab() {
         fetchedInsights = getMockWeeklyInsights();
         fetchedReports = getMockFdsReports();
         fetchedPolicies = getMockFdsPolicies();
+        fetchedFlowTrend = getMockFlowTrend(7).items;
       }
 
       setMetrics(fetchedMetrics);
       setInsights(fetchedInsights);
       setFdsReports(fetchedReports);
       setFdsPolicies(fetchedPolicies);
+      
+      // 차트용 한글 키 매핑 적용
+      const mappedFlowTrend: ChartTrendItem[] = fetchedFlowTrend.map(item => ({
+        date: item.date.slice(5).replace('-', '/'), // '2026-08-04' -> '08/04'
+        입고건수: item.inbound_quantity,
+        출고건수: item.outbound_quantity,
+        평균시간: Number(item.average_inspection_processing_seconds.toFixed(1)),
+      }));
+      setFlowTrend(mappedFlowTrend);
 
       // 정책 편집 폼 기본값 설정
       const initialEditValues: Record<string, number> = {};
@@ -267,9 +280,8 @@ export default function ComprehensiveStatsTab() {
             <span className="text-2xl font-extrabold text-foreground">
               ₩{savedLaborCost.toLocaleString()}
             </span>
-            <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400 block flex items-center gap-1">
-              <TrendingUp className="w-3.5 h-3.5" />
-              전주 대비 +12.4%
+            <span className="text-xs font-medium text-transparent select-none block">
+              &nbsp;
             </span>
           </div>
           <div className="bg-indigo-50 dark:bg-indigo-950/40 p-3 rounded-2xl text-indigo-600 dark:text-indigo-300">
@@ -304,9 +316,8 @@ export default function ComprehensiveStatsTab() {
             <span className="text-2xl font-extrabold text-foreground">
               {predictedReturns}건
             </span>
-            <span className="text-xs font-medium text-amber-600 dark:text-amber-400 block flex items-center gap-1">
-              <AlertTriangle className="w-3.5 h-3.5" />
-              전주 대비 예측량 소폭 증가
+            <span className="text-xs font-medium text-transparent select-none block">
+              &nbsp;
             </span>
           </div>
           <div className="bg-amber-50 dark:bg-amber-950/40 p-3 rounded-2xl text-amber-600 dark:text-amber-300">
@@ -345,7 +356,7 @@ export default function ComprehensiveStatsTab() {
         </div>
         <div className="h-[300px]">
           <ResponsiveContainer width="100%" height="100%">
-            <ComposedChart data={MOCK_DAILY_FLOW}>
+            <ComposedChart data={flowTrend} margin={{ top: 20, right: 30, left: 10, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
               <XAxis dataKey="date" stroke="#9ca3af" fontSize={11} tickLine={false} />
               <YAxis yAxisId="left" stroke="#9ca3af" fontSize={11} tickLine={false} label={{ value: '입출고 수량 (건)', angle: -90, position: 'insideLeft', style: { textAnchor: 'middle', fill: '#9ca3af', fontSize: 10 } }} />
