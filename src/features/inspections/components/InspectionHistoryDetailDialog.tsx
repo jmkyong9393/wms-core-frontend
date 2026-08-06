@@ -108,7 +108,7 @@ export function InspectionHistoryDetailDialog({ row, onClose }: InspectionHistor
                   {row.finalGrade ? (
                     <InspectionBadges isFastTrack={row.isFastTrack} finalGrade={row.finalGrade} />
                   ) : (
-                    <span className="text-xs font-semibold text-gray-400 bg-gray-100 dark:bg-zinc-800 px-2 py-1 rounded-md">
+                    <span className="text-xs font-semibold text-gray-400 dark:text-zinc-500 bg-gray-100 dark:bg-zinc-800 px-2 py-1 rounded-md">
                       판정 대기
                     </span>
                   )}
@@ -118,7 +118,7 @@ export function InspectionHistoryDetailDialog({ row, onClose }: InspectionHistor
 
             {isLoading ? (
               <div className="flex h-64 flex-col items-center justify-center space-y-3">
-                <Loader2 className="h-8 w-8 animate-spin text-indigo-500" />
+                <Loader2 className="h-8 w-8 animate-spin text-indigo-500 dark:text-indigo-400" />
                 <p className="text-xs text-gray-400 dark:text-zinc-500 font-medium">데이터를 분석 및 패치하는 중입니다...</p>
               </div>
             ) : (
@@ -126,7 +126,7 @@ export function InspectionHistoryDetailDialog({ row, onClose }: InspectionHistor
                 {/* 1. UBCI 점수 카드 */}
                 <div className="bg-gradient-to-r from-indigo-50/40 to-indigo-100/10 dark:from-zinc-800/30 dark:to-zinc-800/10 border border-indigo-100/30 dark:border-zinc-850 rounded-2xl p-3 flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Award className="w-5 h-5 text-indigo-500" />
+                    <Award className="w-5 h-5 text-indigo-500 dark:text-indigo-400" />
                     <div>
                       <span className="text-[9px] text-indigo-400 dark:text-indigo-400 font-bold uppercase tracking-wider block">UBCI AI 점수</span>
                       <span className="text-sm font-black text-gray-800 dark:text-zinc-100">
@@ -165,7 +165,7 @@ export function InspectionHistoryDetailDialog({ row, onClose }: InspectionHistor
                             href={detail.labelScanUrl || (typeof window !== "undefined" ? `${window.location.origin}/scan/${detail.lpnBarcode}` : "#")}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-[9px] text-indigo-500/80 hover:text-indigo-650 hover:underline transition-all tracking-tight break-all max-w-full block select-all text-center"
+                            className="text-[9px] text-indigo-500/80 dark:text-indigo-400/80 hover:text-indigo-650 hover:underline transition-all tracking-tight break-all max-w-full block select-all text-center"
                           >
                             🔗 QR 스캔 URL 접속하기
                           </a>
@@ -239,7 +239,7 @@ export function InspectionHistoryDetailDialog({ row, onClose }: InspectionHistor
                       </div>
                     </div>
                   ) : (
-                    <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-gray-250 dark:border-zinc-800 p-8 text-center text-gray-400">
+                    <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-gray-250 dark:border-zinc-800 p-8 text-center text-gray-400 dark:text-zinc-500">
                       <ImageOff className="mb-2 h-7 w-7 text-gray-300 dark:text-zinc-700" />
                       <span className="text-xs">촬영된 도서 사진이 존재하지 않습니다.</span>
                     </div>
@@ -263,7 +263,7 @@ export function InspectionHistoryDetailDialog({ row, onClose }: InspectionHistor
                         </span>
                       ))
                     ) : (
-                      <span className="text-[10px] text-gray-400">분석 예외 사유 없음</span>
+                      <span className="text-[10px] text-gray-400 dark:text-zinc-500">분석 예외 사유 없음</span>
                     )}
                   </div>
                 </section>
@@ -273,9 +273,9 @@ export function InspectionHistoryDetailDialog({ row, onClose }: InspectionHistor
                   <h4 className="text-xs font-extrabold text-gray-400 dark:text-zinc-500 uppercase tracking-wider">Agent 실시간 의사결정 추적 (Chain-of-Thought)</h4>
                   <ErrorBoundary
                     key={row.id}
-                    fallback={<p className="text-xs text-red-500">Agent 로그를 불러오는데 실패했습니다.</p>}
+                    fallback={<p className="text-xs text-red-500 dark:text-red-400">Agent 로그를 불러오는데 실패했습니다.</p>}
                   >
-                    <Suspense fallback={<p className="text-xs text-gray-400">Agent 로그 분석 불러오는 중...</p>}>
+                    <Suspense fallback={<p className="text-xs text-gray-400 dark:text-zinc-500">Agent 로그 분석 불러오는 중...</p>}>
                       <AgentLogSection inspectionId={row.id} />
                     </Suspense>
                   </ErrorBoundary>

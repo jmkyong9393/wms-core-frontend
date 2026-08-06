@@ -74,6 +74,8 @@ async function renderAs(role: Role) {
     id,
     employeeId,
     name,
+    email: null,
+    status: "ACTIVE",
     role,
     mustChangePassword: false,
     tenantId: "wms-local",

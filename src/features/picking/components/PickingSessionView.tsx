@@ -47,7 +47,7 @@ export function PickingSessionView({ orderId }: PickingSessionViewProps) {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center h-64 text-gray-400">
+      <div className="flex flex-col items-center justify-center h-64 text-gray-400 dark:text-zinc-500">
         <Loader2 className="h-8 w-8 animate-spin mb-2" />
         <p className="text-sm">피킹 지시서를 불러오는 중...</p>
       </div>
@@ -56,7 +56,7 @@ export function PickingSessionView({ orderId }: PickingSessionViewProps) {
 
   if (isError || !data) {
     return (
-      <div className="flex flex-col items-center justify-center h-64 text-red-500 text-sm text-center px-4">
+      <div className="flex flex-col items-center justify-center h-64 text-red-500 dark:text-red-400 text-sm text-center px-4">
         피킹 지시서를 불러오지 못했습니다.
       </div>
     );
@@ -64,7 +64,7 @@ export function PickingSessionView({ orderId }: PickingSessionViewProps) {
 
   if (items.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-64 text-gray-400 text-sm">
+      <div className="flex flex-col items-center justify-center h-64 text-gray-400 dark:text-zinc-500 text-sm">
         피킹할 항목이 없습니다.
       </div>
     );
@@ -73,7 +73,7 @@ export function PickingSessionView({ orderId }: PickingSessionViewProps) {
   if (data.status === 'SHIPPED') {
     if (!shipmentResult) {
       return (
-        <div className="flex flex-col items-center justify-center h-64 text-gray-400">
+        <div className="flex flex-col items-center justify-center h-64 text-gray-400 dark:text-zinc-500">
           <Loader2 className="h-8 w-8 animate-spin mb-2" />
           <p className="text-sm">송장 정보를 불러오는 중...</p>
         </div>

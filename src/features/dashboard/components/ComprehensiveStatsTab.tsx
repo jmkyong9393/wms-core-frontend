@@ -211,7 +211,7 @@ export default function ComprehensiveStatsTab() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] gap-3">
         <RefreshCw className="animate-spin text-indigo-600 w-8 h-8" />
-        <p className="text-gray-500 font-medium text-sm">종합 대시보드 통계 데이터 분석 중...</p>
+        <p className="text-muted-foreground font-medium text-sm">종합 대시보드 통계 데이터 분석 중...</p>
       </div>
     );
   }
@@ -249,8 +249,8 @@ export default function ComprehensiveStatsTab() {
     <div className="space-y-4 max-w-[1600px] mx-auto animate-fade-in pb-8">
       {/* API 연결 상태 경고 배너 */}
       {isApiFallback && (
-        <div className="bg-amber-50 border border-amber-200 text-amber-800 text-xs px-4 py-2.5 rounded-xl flex items-center gap-2">
-          <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+        <div className="bg-amber-50 border border-amber-200 text-amber-800 dark:bg-amber-950/40 dark:border-amber-900 dark:text-amber-300 text-xs px-4 py-2.5 rounded-xl flex items-center gap-2">
+          <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
           <span>
             <strong>백엔드 API 미연결 안내</strong>: 백엔드에 대시보드 API 엔드포인트가 연동되지 않아 모의(Mock) 데이터 시뮬레이션 모드로 자동 대체되었습니다. 임계치 수정은 로컬 브라우저 세션에 정상 기록됩니다.
           </span>
@@ -259,89 +259,89 @@ export default function ComprehensiveStatsTab() {
       {/* ─── 상단 요약 카드 행 (KPI Summary) ─── */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* KPI 1: 누적 인건비 절감액 */}
-        <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
+        <div className="bg-card p-5 rounded-2xl border border-border shadow-sm flex items-center justify-between">
           <div className="space-y-1">
-            <span className="text-xs font-bold text-gray-400 block uppercase tracking-wider">
+            <span className="text-xs font-bold text-muted-foreground block uppercase tracking-wider">
               주간 누적 인건비 절감액
             </span>
-            <span className="text-2xl font-extrabold text-gray-800">
+            <span className="text-2xl font-extrabold text-foreground">
               ₩{savedLaborCost.toLocaleString()}
             </span>
-            <span className="text-xs font-medium text-emerald-600 block flex items-center gap-1">
+            <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400 block flex items-center gap-1">
               <TrendingUp className="w-3.5 h-3.5" />
               전주 대비 +12.4%
             </span>
           </div>
-          <div className="bg-indigo-50 p-3 rounded-2xl text-indigo-600">
+          <div className="bg-indigo-50 dark:bg-indigo-950/40 p-3 rounded-2xl text-indigo-600 dark:text-indigo-300">
             <Coins className="w-6 h-6" />
           </div>
         </div>
 
         {/* KPI 2: 자동화 처리 비중 */}
-        <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
+        <div className="bg-card p-5 rounded-2xl border border-border shadow-sm flex items-center justify-between">
           <div className="space-y-1">
-            <span className="text-xs font-bold text-gray-400 block uppercase tracking-wider">
+            <span className="text-xs font-bold text-muted-foreground block uppercase tracking-wider">
               AI 검수 자동 승인율
             </span>
-            <span className="text-2xl font-extrabold text-gray-800">
+            <span className="text-2xl font-extrabold text-foreground">
               {automationRatio.toFixed(1)}%
             </span>
-            <span className="text-xs font-medium text-gray-400 block">
+            <span className="text-xs font-medium text-muted-foreground block">
               총 {totalJobs}건 중 {approvedJobs + rejectedJobs}건 자동 판정
             </span>
           </div>
-          <div className="bg-emerald-50 p-3 rounded-2xl text-emerald-600">
+          <div className="bg-emerald-50 dark:bg-emerald-950/40 p-3 rounded-2xl text-emerald-600 dark:text-emerald-300">
             <Activity className="w-6 h-6" />
           </div>
         </div>
 
         {/* KPI 3: 예측 반품량 */}
-        <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
+        <div className="bg-card p-5 rounded-2xl border border-border shadow-sm flex items-center justify-between">
           <div className="space-y-1">
-            <span className="text-xs font-bold text-gray-400 block uppercase tracking-wider">
+            <span className="text-xs font-bold text-muted-foreground block uppercase tracking-wider">
               주간 예측 반품량
             </span>
-            <span className="text-2xl font-extrabold text-gray-800">
+            <span className="text-2xl font-extrabold text-foreground">
               {predictedReturns}건
             </span>
-            <span className="text-xs font-medium text-amber-600 block flex items-center gap-1">
+            <span className="text-xs font-medium text-amber-600 dark:text-amber-400 block flex items-center gap-1">
               <AlertTriangle className="w-3.5 h-3.5" />
               전주 대비 예측량 소폭 증가
             </span>
           </div>
-          <div className="bg-amber-50 p-3 rounded-2xl text-amber-600">
+          <div className="bg-amber-50 dark:bg-amber-950/40 p-3 rounded-2xl text-amber-600 dark:text-amber-300">
             <TrendingUp className="w-6 h-6" />
           </div>
         </div>
 
         {/* KPI 4: FDS 활성 이상징후 */}
-        <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
+        <div className="bg-card p-5 rounded-2xl border border-border shadow-sm flex items-center justify-between">
           <div className="space-y-1">
-            <span className="text-xs font-bold text-gray-400 block uppercase tracking-wider">
+            <span className="text-xs font-bold text-muted-foreground block uppercase tracking-wider">
               FDS 실시간 이상거래 탐지
             </span>
-            <span className="text-2xl font-extrabold text-gray-800">
+            <span className="text-2xl font-extrabold text-foreground">
               {fdsReports.length}건
             </span>
-            <span className="text-xs font-semibold text-rose-500 block flex items-center gap-1">
+            <span className="text-xs font-semibold text-rose-500 dark:text-rose-400 block flex items-center gap-1">
               <ShieldAlert className="w-3.5 h-3.5" />
               위험군(Critical): {criticalFdsCount}건 / 요주의: {warningFdsCount}건
             </span>
           </div>
-          <div className="bg-rose-50 p-3 rounded-2xl text-rose-600">
+          <div className="bg-rose-50 dark:bg-rose-950/40 p-3 rounded-2xl text-rose-600 dark:text-rose-300">
             <ShieldAlert className="w-6 h-6" />
           </div>
         </div>
       </div>
 
       {/* ─── 중앙 차트 영역: 입출고 및 검수 속도 추이 (Double Axis ComposedChart) ─── */}
-      <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+      <div className="bg-card p-6 rounded-2xl border border-border shadow-sm">
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h3 className="text-base font-bold text-gray-800">입출고 추이 및 AI 검수 처리 소요시간</h3>
-            <p className="text-xs text-gray-400 mt-0.5">최근 7일간의 물류 처리량 대비 AI 검수의 일자별 평균 처리 시간 병목 진단</p>
+            <h3 className="text-base font-bold text-foreground">입출고 추이 및 AI 검수 처리 소요시간</h3>
+            <p className="text-xs text-muted-foreground mt-0.5">최근 7일간의 물류 처리량 대비 AI 검수의 일자별 평균 처리 시간 병목 진단</p>
           </div>
-          {loading && <RefreshCw className="animate-spin text-gray-400 w-4 h-4" />}
+          {loading && <RefreshCw className="animate-spin text-muted-foreground w-4 h-4" />}
         </div>
         <div className="h-[300px]">
           <ResponsiveContainer width="100%" height="100%">
@@ -361,21 +361,21 @@ export default function ComprehensiveStatsTab() {
       </div>
 
       {/* ─── FDS 이상 유저 리스트 영역 ─── */}
-      <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex flex-col">
+      <div className="bg-card p-5 rounded-2xl border border-border shadow-sm flex flex-col">
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mb-4">
           <div>
-            <h3 className="text-base font-bold text-gray-800">FDS 탐지 악성/의심 고객 리스트</h3>
-            <p className="text-xs text-gray-400 mt-0.5">반품 주기, 환불금액 임계치 및 UBCI 지수를 종합한 AI 위험 분석 결과</p>
+            <h3 className="text-base font-bold text-foreground">FDS 탐지 악성/의심 고객 리스트</h3>
+            <p className="text-xs text-muted-foreground mt-0.5">반품 주기, 환불금액 임계치 및 UBCI 지수를 종합한 AI 위험 분석 결과</p>
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={() => setIsPolicyOpen(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-indigo-600 dark:text-indigo-300 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/40 dark:hover:bg-indigo-950/60 rounded-lg transition-colors cursor-pointer"
             >
               <Settings className="w-3.5 h-3.5" />
               임계값 설정 조절
             </button>
-            <span className="text-xs bg-rose-50 text-rose-600 px-2.5 py-1 rounded-full font-bold">
+            <span className="text-xs bg-rose-50 text-rose-600 dark:bg-rose-950/40 dark:text-rose-300 px-2.5 py-1 rounded-full font-bold">
               이상거래 감지 활성
             </span>
           </div>
@@ -384,39 +384,39 @@ export default function ComprehensiveStatsTab() {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-gray-100 text-gray-400 text-xs font-bold uppercase tracking-wider">
+              <tr className="border-b border-border text-muted-foreground text-xs font-bold uppercase tracking-wider">
                 <th className="py-3 px-2">고객명</th>
                 <th className="py-3 px-2">위험 등급</th>
                 <th className="py-3 px-2">판정 근거 및 감지 룰</th>
                 <th className="py-3 px-2 text-right">감지 시각</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-50 text-sm">
+            <tbody className="divide-y divide-border text-sm">
               {fdsReports.length > 0 ? (
                 fdsReports.map((report) => {
                   const isCritical = report.fraud_score >= 90;
                   return (
-                    <tr key={report.id} className="hover:bg-gray-50/50 transition-colors">
-                      <td className="py-3.5 px-2 font-semibold text-gray-700">
+                    <tr key={report.id} className="hover:bg-accent/50 transition-colors">
+                      <td className="py-3.5 px-2 font-semibold text-foreground">
                         {report.customer_name || '비공개'}
-                        <span className="text-xs text-gray-400 block font-normal mt-0.5">ID: {report.customer_id}</span>
+                        <span className="text-xs text-muted-foreground block font-normal mt-0.5">ID: {report.customer_id}</span>
                       </td>
                       <td className="py-3.5 px-2">
                         <span
                           className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold ${
                             isCritical
-                              ? 'bg-rose-50 text-rose-600 border border-rose-100'
-                              : 'bg-amber-50 text-amber-600 border border-amber-100'
+                              ? 'bg-rose-50 text-rose-600 border border-rose-100 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-900'
+                              : 'bg-amber-50 text-amber-600 border border-amber-100 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-900'
                           }`}
                         >
                           <span className={`w-1.5 h-1.5 rounded-full ${isCritical ? 'bg-rose-500' : 'bg-amber-400'}`}></span>
                           {isCritical ? `Critical (${report.fraud_score}점)` : `Warning (${report.fraud_score}점)`}
                         </span>
                       </td>
-                      <td className="py-3.5 px-2 text-xs text-gray-500 max-w-[250px] truncate" title={report.fraud_reason || ''}>
+                      <td className="py-3.5 px-2 text-xs text-muted-foreground max-w-[250px] truncate" title={report.fraud_reason || ''}>
                         {report.fraud_reason || '사유가 기록되지 않았습니다.'}
                       </td>
-                      <td className="py-3.5 px-2 text-right text-gray-400 text-xs font-medium">
+                      <td className="py-3.5 px-2 text-right text-muted-foreground text-xs font-medium">
                         {formatKstTime(report.detected_at)}
                       </td>
                     </tr>
@@ -424,7 +424,7 @@ export default function ComprehensiveStatsTab() {
                 })
               ) : (
                 <tr>
-                  <td colSpan={4} className="py-8 text-center text-gray-400 text-sm">
+                  <td colSpan={4} className="py-8 text-center text-muted-foreground text-sm">
                     현재 탐지된 위협 또는 이상 징후가 없습니다.
                   </td>
                 </tr>
@@ -445,19 +445,19 @@ export default function ComprehensiveStatsTab() {
             ></div>
 
             <div className="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10">
-              <div className="pointer-events-auto w-screen max-w-md transform transition duration-500 ease-in-out sm:duration-700 bg-white shadow-2xl border-l border-gray-100 flex flex-col h-full">
+              <div className="pointer-events-auto w-screen max-w-md transform transition duration-500 ease-in-out sm:duration-700 bg-card shadow-2xl border-l border-border flex flex-col h-full">
                 {/* Header */}
-                <div className="px-5 py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+                <div className="px-5 py-5 border-b border-border flex justify-between items-center bg-muted/50">
                   <div>
-                    <h2 className="text-base font-bold text-gray-800 flex items-center gap-1.5" id="slide-over-title">
+                    <h2 className="text-base font-bold text-foreground flex items-center gap-1.5" id="slide-over-title">
                       <Settings className="w-4 h-4 text-indigo-500" />
                       FDS 룰셋 실시간 설정
                     </h2>
-                    <p className="text-xs text-gray-400 mt-0.5">이상거래 감지 임계값을 조절하여 룰을 수정합니다.</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">이상거래 감지 임계값을 조절하여 룰을 수정합니다.</p>
                   </div>
-                  <button 
-                    type="button" 
-                    className="rounded-lg p-1.5 text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none transition-colors cursor-pointer"
+                  <button
+                    type="button"
+                    className="rounded-lg p-1.5 text-muted-foreground hover:text-accent-foreground hover:bg-accent focus:outline-none transition-colors cursor-pointer"
                     onClick={() => setIsPolicyOpen(false)}
                   >
                     <span className="sr-only">Close panel</span>
@@ -475,12 +475,12 @@ export default function ComprehensiveStatsTab() {
                     const isSuccess = successKey === policy.policy_key;
 
                     return (
-                      <div key={policy.policy_key} className="p-4 bg-gray-50 rounded-xl space-y-2.5 border border-gray-100">
+                      <div key={policy.policy_key} className="p-4 bg-muted rounded-xl space-y-2.5 border border-border">
                         <div>
-                          <span className="font-bold text-xs text-indigo-600 block">
+                          <span className="font-bold text-xs text-indigo-600 dark:text-indigo-400 block">
                             {POLICY_FRIENDLY_NAMES[policy.policy_key] || policy.policy_key}
                           </span>
-                          <span className="text-[11px] text-gray-400 leading-tight block mt-1">
+                          <span className="text-[11px] text-muted-foreground leading-tight block mt-1">
                             {policy.description}
                           </span>
                         </div>
@@ -488,7 +488,7 @@ export default function ComprehensiveStatsTab() {
                         <div className="flex items-center gap-2">
                           <input
                             type="number"
-                            className="w-full bg-white border border-gray-200 rounded-lg px-2.5 py-1.5 text-sm font-semibold text-gray-800 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                            className="w-full bg-card border border-border rounded-lg px-2.5 py-1.5 text-sm font-semibold text-foreground focus:outline-none focus:ring-1 focus:ring-indigo-500"
                             value={currentValue}
                             onChange={(e) => handlePolicyChange(policy.policy_key, parseFloat(e.target.value) || 0)}
                             disabled={isUpdating}
@@ -499,7 +499,7 @@ export default function ComprehensiveStatsTab() {
                               isSuccess
                                 ? 'bg-emerald-500 text-white'
                                 : isUpdating
-                                ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                                ? 'bg-muted text-muted-foreground cursor-not-allowed'
                                 : 'bg-indigo-600 text-white hover:bg-indigo-700'
                             }`}
                             onClick={() => handlePolicySubmit(policy.policy_key)}
@@ -530,10 +530,10 @@ export default function ComprehensiveStatsTab() {
       {/* ─── 최하단 3분할 그리드: 분석 핫스팟 (Analytics Hotspots Grid) ─── */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* 출판사별 불량 비율 (Defective Publishers) */}
-        <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex flex-col h-[280px]">
+        <div className="bg-card p-5 rounded-2xl border border-border shadow-sm flex flex-col h-[280px]">
           <div>
-            <h3 className="text-sm font-bold text-gray-800">출판사별 불량 도서 비율</h3>
-            <p className="text-[11px] text-gray-400 mt-0.5">가장 오염/파손이 빈번한 출판사 집계</p>
+            <h3 className="text-sm font-bold text-foreground">출판사별 불량 도서 비율</h3>
+            <p className="text-[11px] text-muted-foreground mt-0.5">가장 오염/파손이 빈번한 출판사 집계</p>
           </div>
           <div className="flex-1 mt-4">
             {publisherData.length > 0 ? (
@@ -547,16 +547,16 @@ export default function ComprehensiveStatsTab() {
                 </BarChart>
               </ResponsiveContainer>
             ) : (
-              <div className="h-full flex items-center justify-center text-xs text-gray-400">데이터가 없습니다.</div>
+              <div className="h-full flex items-center justify-center text-xs text-muted-foreground">데이터가 없습니다.</div>
             )}
           </div>
         </div>
 
         {/* 물류센터별 반품 집중도 (Logistics Hotspots PieChart) */}
-        <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex flex-col h-[280px]">
+        <div className="bg-card p-5 rounded-2xl border border-border shadow-sm flex flex-col h-[280px]">
           <div>
-            <h3 className="text-sm font-bold text-gray-800">물류센터별 반품 점유율</h3>
-            <p className="text-[11px] text-gray-400 mt-0.5">물류 유입 비중이 높은 상위 물류창고 정보</p>
+            <h3 className="text-sm font-bold text-foreground">물류센터별 반품 점유율</h3>
+            <p className="text-[11px] text-muted-foreground mt-0.5">물류 유입 비중이 높은 상위 물류창고 정보</p>
           </div>
           <div className="flex-1 mt-4 relative">
             {logisticsData.length > 0 ? (
@@ -581,16 +581,16 @@ export default function ComprehensiveStatsTab() {
                 </PieChart>
               </ResponsiveContainer>
             ) : (
-              <div className="h-full flex items-center justify-center text-xs text-gray-400">데이터가 없습니다.</div>
+              <div className="h-full flex items-center justify-center text-xs text-muted-foreground">데이터가 없습니다.</div>
             )}
           </div>
         </div>
 
         {/* 창고 로케이션 이상 구역 (Location Hotspots) */}
-        <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex flex-col h-[280px]">
+        <div className="bg-card p-5 rounded-2xl border border-border shadow-sm flex flex-col h-[280px]">
           <div>
-            <h3 className="text-sm font-bold text-gray-800">로케이션별 불량 집중 구역</h3>
-            <p className="text-[11px] text-gray-400 mt-0.5">반입된 도서 불량 중 적재된 구역의 위험 빈도 진단</p>
+            <h3 className="text-sm font-bold text-foreground">로케이션별 불량 집중 구역</h3>
+            <p className="text-[11px] text-muted-foreground mt-0.5">반입된 도서 불량 중 적재된 구역의 위험 빈도 진단</p>
           </div>
           <div className="flex-1 mt-4 overflow-y-auto space-y-2.5">
             {locationData.length > 0 ? (
@@ -599,11 +599,11 @@ export default function ComprehensiveStatsTab() {
                 const pct = totalCount > 0 ? (loc.count / totalCount) * 100 : 0;
                 return (
                   <div key={loc.name} className="space-y-1">
-                    <div className="flex justify-between text-xs font-semibold text-gray-700">
+                    <div className="flex justify-between text-xs font-semibold text-foreground">
                       <span>{loc.name} 구역</span>
                       <span>{loc.count}건 ({pct.toFixed(0)}%)</span>
                     </div>
-                    <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
+                    <div className="w-full bg-muted h-2 rounded-full overflow-hidden">
                       <div
                         className="bg-indigo-500 h-full rounded-full"
                         style={{ width: `${pct}%` }}
@@ -613,7 +613,7 @@ export default function ComprehensiveStatsTab() {
                 );
               })
             ) : (
-              <div className="h-full flex items-center justify-center text-xs text-gray-400">데이터가 없습니다.</div>
+              <div className="h-full flex items-center justify-center text-xs text-muted-foreground">데이터가 없습니다.</div>
             )}
           </div>
         </div>

@@ -83,15 +83,15 @@ export function EmployeeTable({ employees, currentUser }: EmployeeTableProps) {
   };
 
   return (
-    <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-x-auto">
+    <div className="bg-card rounded-xl border border-border shadow-sm overflow-x-auto">
       {errorMessage && (
-        <p className="px-4 py-2 text-sm text-red-600 border-b border-gray-100 bg-red-50">
+        <p className="px-4 py-2 text-sm text-red-600 dark:text-red-400 border-b border-border bg-red-50 dark:bg-red-950/40">
           {errorMessage}
         </p>
       )}
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b border-gray-100 text-left text-gray-500">
+          <tr className="border-b border-border text-left text-muted-foreground">
             <th className="px-4 py-3 font-medium">사번</th>
             <th className="px-4 py-3 font-medium">이름</th>
             <th className="px-4 py-3 font-medium">역할</th>
@@ -102,7 +102,7 @@ export function EmployeeTable({ employees, currentUser }: EmployeeTableProps) {
         <tbody>
           {employees.length === 0 && (
             <tr>
-              <td colSpan={5} className="px-4 py-8 text-center text-gray-400">
+              <td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">
                 조건에 맞는 직원이 없습니다.
               </td>
             </tr>
@@ -187,9 +187,9 @@ function EmployeeRow({
   }
 
   return (
-    <tr className="border-b border-gray-50 last:border-0">
-      <td className="px-4 py-3 font-medium text-gray-800">{employee.employee_id}</td>
-      <td className="px-4 py-3 text-gray-700">{employee.name}</td>
+    <tr className="border-b border-border last:border-0">
+      <td className="px-4 py-3 font-medium text-foreground">{employee.employee_id}</td>
+      <td className="px-4 py-3 text-foreground">{employee.name}</td>
       <td className="px-4 py-3">
         <div className="flex items-center gap-2">
           <span
@@ -235,7 +235,7 @@ function EmployeeRow({
           />
         </div>
       </td>
-      <td className="px-4 py-3 text-gray-500">
+      <td className="px-4 py-3 text-muted-foreground">
         {formatKstDate(employee.created_at)}
       </td>
     </tr>

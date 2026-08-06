@@ -53,6 +53,12 @@ export default function RootLayout({
                 e.preventDefault();
                 window.__deferredPrompt = e;
               });
+              try {
+                // 'wms_theme'는 src/stores/atoms.ts의 THEME_STORAGE_KEY와 동일해야 함
+                if (JSON.parse(localStorage.getItem('wms_theme') || '"light"') === 'dark') {
+                  document.documentElement.classList.add('dark');
+                }
+              } catch (e) {}
             `,
           }}
         />

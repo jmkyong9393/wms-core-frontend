@@ -54,8 +54,8 @@ export function EmployeeManagementView() {
     <div className="max-w-5xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-800">직원 관리</h2>
-          <p className="text-sm text-gray-500 mt-1">직원 계정을 조회하고 상태·역할을 관리합니다.</p>
+          <h2 className="text-2xl font-bold text-foreground">직원 관리</h2>
+          <p className="text-sm text-muted-foreground mt-1">직원 계정을 조회하고 상태·역할을 관리합니다.</p>
         </div>
         {canManage && (
           <div className="flex items-center gap-2">
@@ -118,13 +118,13 @@ export function EmployeeManagementView() {
         </Select>
       </div>
 
-      {isLoading && <p className="text-sm text-gray-400">불러오는 중...</p>}
-      {isError && <p className="text-sm text-red-600">직원 목록을 불러오지 못했습니다.</p>}
+      {isLoading && <p className="text-sm text-muted-foreground">불러오는 중...</p>}
+      {isError && <p className="text-sm text-red-600 dark:text-red-400">직원 목록을 불러오지 못했습니다.</p>}
 
       {data && (
         <>
           <EmployeeTable employees={data.items} currentUser={currentUser} />
-          <div className="flex items-center justify-between text-sm text-gray-500">
+          <div className="flex items-center justify-between text-sm text-muted-foreground">
             <span>총 {data.total}명</span>
             <div className="flex items-center gap-2">
               <Button

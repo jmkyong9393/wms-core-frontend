@@ -32,6 +32,8 @@ export interface CurrentUser {
   id: string;
   employeeId: string;
   name: string;
+  email: string | null;
+  status: UserStatus;
   role: Role;
   mustChangePassword: boolean;
   tenantId?: string;

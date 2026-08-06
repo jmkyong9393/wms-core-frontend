@@ -20,8 +20,8 @@ export function NotificationListItem({ item, onClick }: NotificationListItemProp
     <button
       type="button"
       onClick={() => onClick(item.id)}
-      className={`flex w-full flex-col gap-1 border-b border-gray-100 px-4 py-3 text-left transition-colors last:border-b-0 hover:bg-gray-50 ${
-        item.read ? '' : 'bg-blue-50/50'
+      className={`flex w-full flex-col gap-1 border-b border-border px-4 py-3 text-left transition-colors last:border-b-0 hover:bg-accent ${
+        item.read ? '' : 'bg-blue-50/50 dark:bg-blue-950/20'
       }`}
     >
       <div className="flex items-center justify-between gap-2">
@@ -37,13 +37,13 @@ export function NotificationListItem({ item, onClick }: NotificationListItemProp
             </span>
           )}
         </span>
-        <span className="flex items-center gap-1.5 text-[11px] text-gray-400">
+        <span className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
           {!item.read && <span className={`h-1.5 w-1.5 rounded-full ${style.dotClass}`} />}
           {formatRelativeTime(item.timestamp)}
         </span>
       </div>
-      <p className="text-sm font-semibold text-gray-800">{item.title}</p>
-      <p className="text-xs text-gray-500">{item.message}</p>
+      <p className="text-sm font-semibold text-foreground">{item.title}</p>
+      <p className="text-xs text-muted-foreground">{item.message}</p>
     </button>
   );
 }

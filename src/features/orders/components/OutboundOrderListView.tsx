@@ -37,25 +37,25 @@ function OrderRow({ order, actionLabel, disabled, onSelect, errorMessage }: Orde
         type="button"
         onClick={() => onSelect(order.id)}
         disabled={disabled}
-        className="w-full flex items-center justify-between p-4 bg-white rounded-2xl border border-gray-100 shadow-sm hover:border-orange-300 transition-colors disabled:opacity-60 text-left"
+        className="w-full flex items-center justify-between p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 shadow-sm hover:border-orange-300 dark:hover:border-orange-800 transition-colors disabled:opacity-60 text-left"
       >
         <div className="min-w-0">
-          <p className="font-semibold text-gray-900 truncate">{order.customer_name}</p>
-          <p className="text-xs text-gray-500 mt-0.5">
+          <p className="font-semibold text-gray-900 dark:text-zinc-100 truncate">{order.customer_name}</p>
+          <p className="text-xs text-gray-500 dark:text-zinc-400 mt-0.5">
             {formatCurrencyKRW(order.total_price)} · {order.logistics_center ?? '물류센터 미지정'}
           </p>
-          <p className="text-[11px] text-gray-400 mt-0.5">{formatKstDateTime(order.created_at)}</p>
+          <p className="text-[11px] text-gray-400 dark:text-zinc-500 mt-0.5">{formatKstDateTime(order.created_at)}</p>
         </div>
         <div className="flex items-center gap-1.5 shrink-0 pl-3">
-          <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-yellow-50 text-yellow-600">
+          <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-yellow-50 dark:bg-yellow-900/40 text-yellow-600 dark:text-yellow-300">
             {getOrderStatusLabel(order.status)}
           </span>
-          <span className="text-[11px] font-bold text-orange-600 whitespace-nowrap">{actionLabel}</span>
-          <ChevronRight className="w-4 h-4 text-gray-400" />
+          <span className="text-[11px] font-bold text-orange-600 dark:text-orange-400 whitespace-nowrap">{actionLabel}</span>
+          <ChevronRight className="w-4 h-4 text-gray-400 dark:text-zinc-500" />
         </div>
       </button>
       {errorMessage && (
-        <p className="text-xs text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2 mt-1.5">
+        <p className="text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/30 border border-red-100 dark:border-red-900/50 rounded-lg px-3 py-2 mt-1.5">
           {errorMessage}
         </p>
       )}
@@ -93,7 +93,7 @@ export function OutboundOrderListView() {
 
   if (pendingQuery.isLoading || pickingQuery.isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center h-64 text-gray-400">
+      <div className="flex flex-col items-center justify-center h-64 text-gray-400 dark:text-zinc-500">
         <Loader2 className="h-8 w-8 animate-spin mb-2" />
         <p className="text-sm">출고 대상 주문을 불러오는 중...</p>
       </div>
@@ -102,7 +102,7 @@ export function OutboundOrderListView() {
 
   if (pendingQuery.isError || pickingQuery.isError || !pendingQuery.data || !pickingQuery.data) {
     return (
-      <div className="flex flex-col items-center justify-center h-64 text-red-500 text-sm text-center px-4">
+      <div className="flex flex-col items-center justify-center h-64 text-red-500 dark:text-red-400 text-sm text-center px-4">
         주문 목록을 불러오지 못했습니다.
       </div>
     );
@@ -113,7 +113,7 @@ export function OutboundOrderListView() {
 
   if (pendingOrders.length === 0 && pickingOrders.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-64 text-gray-400 text-sm gap-2">
+      <div className="flex flex-col items-center justify-center h-64 text-gray-400 dark:text-zinc-500 text-sm gap-2">
         <PackageSearch className="h-8 w-8" />
         피킹 가능한 주문이 없습니다.
       </div>
@@ -123,9 +123,9 @@ export function OutboundOrderListView() {
   return (
     <div className="w-full max-w-md mx-auto flex flex-col gap-6">
       <div className="flex flex-col gap-3">
-        <h1 className="text-xl font-bold text-gray-900 px-1">피킹 대기</h1>
+        <h1 className="text-xl font-bold text-gray-900 dark:text-zinc-100 px-1">피킹 대기</h1>
         {pendingOrders.length === 0 ? (
-          <p className="text-sm text-gray-400 px-1">대기 중인 주문이 없습니다.</p>
+          <p className="text-sm text-gray-400 dark:text-zinc-500 px-1">대기 중인 주문이 없습니다.</p>
         ) : (
           pendingOrders.map((order) => (
             <OrderRow
@@ -141,9 +141,9 @@ export function OutboundOrderListView() {
       </div>
 
       <div className="flex flex-col gap-3">
-        <h1 className="text-xl font-bold text-gray-900 px-1">피킹 진행 중</h1>
+        <h1 className="text-xl font-bold text-gray-900 dark:text-zinc-100 px-1">피킹 진행 중</h1>
         {pickingOrders.length === 0 ? (
-          <p className="text-sm text-gray-400 px-1">진행 중인 피킹이 없습니다.</p>
+          <p className="text-sm text-gray-400 dark:text-zinc-500 px-1">진행 중인 피킹이 없습니다.</p>
         ) : (
           pickingOrders.map((order) => (
             <OrderRow key={order.id} order={order} actionLabel="이어하기" disabled={false} onSelect={handleResume} />

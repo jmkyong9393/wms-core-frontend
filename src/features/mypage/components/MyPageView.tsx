@@ -1,0 +1,43 @@
+"use client";
+
+import Link from "next/link";
+import { useAtomValue } from "jotai";
+import { ArrowLeft } from "lucide-react";
+import { currentUserAtom } from "@/features/auth/store/authAtoms";
+import { ROLE_HOME_ROUTE } from "@/features/auth/constants/roleRoutes";
+import { ChangePasswordForm } from "@/features/auth/components/ChangePasswordForm";
+import { ProfileInfoCard } from "@/features/mypage/components/ProfileInfoCard";
+
+export function MyPageView() {
+  const currentUser = useAtomValue(currentUserAtom);
+  const homeRoute = (currentUser && ROLE_HOME_ROUTE[currentUser.role]) || "/login";
+
+  return (
+    <div className="min-h-screen bg-gray-50 px-4 py-8 dark:bg-zinc-950 sm:py-12">
+      <div className="mx-auto w-full max-w-lg space-y-4">
+        <Link
+          href={homeRoute}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-gray-500 hover:text-gray-700 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-lg hover:shadow-xs transition-all cursor-pointer"
+        >
+          <ArrowLeft className="w-3.5 h-3.5" />
+          홈으로 돌아가기
+        </Link>
+
+        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8 dark:border-zinc-800 dark:bg-zinc-900">
+          <div className="mb-4 text-center">
+            <span className="text-lg font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+              NEWZED
+            </span>
+            <h1 className="mt-1 text-base font-semibold text-gray-800 dark:text-zinc-100">마이페이지</h1>
+          </div>
+          <ProfileInfoCard />
+        </div>
+
+        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8 dark:border-zinc-800 dark:bg-zinc-900">
+          <h2 className="mb-4 text-sm font-semibold text-gray-800 dark:text-zinc-100">비밀번호 변경</h2>
+          <ChangePasswordForm />
+        </div>
+      </div>
+    </div>
+  );
+}
