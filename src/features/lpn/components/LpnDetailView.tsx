@@ -1,14 +1,12 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { ChevronLeft, RefreshCw } from 'lucide-react';
+import { ChevronLeft } from 'lucide-react';
 import { useLpnDetailQuery } from '@/features/lpn/hooks/useLpnDetailQuery';
-import { useRecalculateLpnPricingMutation } from '@/features/lpn/hooks/useRecalculateLpnPricingMutation';
 import { getLpnErrorMessage } from '@/features/lpn/utils/lpnErrorMessage';
 import { getInventoryGradeBadgeStyle, getInventoryGradeLabel } from '@/features/inventory/utils/gradeBadge';
 import { getPricingStatusBadgeStyle, getPricingStatusLabel } from '@/features/inventory/utils/pricingStatusBadge';
 import { formatCurrencyKRW, formatDiscountRate } from '@/lib/format';
-import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 interface LpnDetailViewProps {
@@ -24,14 +22,10 @@ function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
   );
 }
 
-// LPN 단품 재고 상세 (동적 가격 정보 + 수동 재산정)
+// LPN 단품 재고 상세 (동적 가격 정보 조회)
 export function LpnDetailView({ lpnBarcode }: LpnDetailViewProps) {
   const router = useRouter();
   const { data: lpn, isLoading, isError, error } = useLpnDetailQuery(lpnBarcode);
-  const recalculateMutation = useRecalculateLpnPricingMutation(lpnBarcode);
-
-  // AVAILABLE 상태의 판매 가능 LPN만 재산정 가능 (백엔드 409 조건과 동일)
-  const canRecalculate = lpn?.inventory_status === 'AVAILABLE';
 
   return (
     <div className="max-w-xl mx-auto space-y-4">
@@ -78,35 +72,6 @@ export function LpnDetailView({ lpnBarcode }: LpnDetailViewProps) {
             <InfoRow label="할인율" value={lpn.discount_rate == null ? '-' : formatDiscountRate(lpn.discount_rate)} />
             <InfoRow label="판매가" value={lpn.sale_price == null ? '-' : formatCurrencyKRW(lpn.sale_price)} />
           </div>
-
-          {recalculateMutation.isError && (
-            <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2 dark:text-red-400 dark:bg-red-950/40 dark:border-red-900">
-              {getLpnErrorMessage(recalculateMutation.error)}
-            </p>
-          )}
-          {recalculateMutation.isSuccess && (
-            <p className="text-sm text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-lg px-3 py-2 dark:text-emerald-300 dark:bg-emerald-950/40 dark:border-emerald-900">
-              {recalculateMutation.data.pricing_changed
-                ? '가격이 새로 산정되어 갱신되었습니다.'
-                : '재산정 결과가 기존 가격과 동일합니다.'}
-            </p>
-          )}
-
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full rounded-full"
-            disabled={!canRecalculate || recalculateMutation.isPending}
-            onClick={() => recalculateMutation.mutate()}
-          >
-            <RefreshCw className={cn('w-4 h-4 mr-1.5', recalculateMutation.isPending && 'animate-spin')} />
-            {recalculateMutation.isPending ? '재산정 중...' : '가격 수동 재산정'}
-          </Button>
-          {!canRecalculate && (
-            <p className="text-xs text-muted-foreground text-center">
-              AVAILABLE 상태의 판매 가능 LPN만 재산정할 수 있습니다.
-            </p>
-          )}
         </div>
       )}
     </div>
