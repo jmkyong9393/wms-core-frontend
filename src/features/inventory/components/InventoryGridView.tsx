@@ -130,7 +130,7 @@ export function InventoryGridView() {
             setKeyword(e.target.value);
             resetToFirstPage();
           }}
-          placeholder="도서명 또는 ISBN 검색"
+          placeholder="도서명, ISBN, LPN 검색"
           className="max-w-xs"
         />
         <Select

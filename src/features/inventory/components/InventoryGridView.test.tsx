@@ -162,7 +162,7 @@ describe("InventoryGridView", () => {
       expect(vi.mocked(listInventory).mock.calls.at(-1)?.[0]).toMatchObject({ page: 2 })
     );
 
-    const keywordInput = screen.getByPlaceholderText("도서명 또는 ISBN 검색");
+    const keywordInput = screen.getByPlaceholderText("도서명, ISBN, LPN 검색");
     await user.type(keywordInput, "사피엔스");
     await waitFor(() =>
       expect(vi.mocked(listInventory).mock.calls.at(-1)?.[0]).toMatchObject({
@@ -204,7 +204,7 @@ describe("InventoryGridView", () => {
     renderGrid();
     await waitFor(() => expect(screen.getByText("사피엔스")).toBeInTheDocument());
 
-    const keywordInput = screen.getByPlaceholderText("도서명 또는 ISBN 검색");
+    const keywordInput = screen.getByPlaceholderText("도서명, ISBN, LPN 검색");
     await user.type(keywordInput, "사피엔스");
     await waitFor(() =>
       expect(vi.mocked(listInventory).mock.calls.at(-1)?.[0]).toMatchObject({ keyword: "사피엔스" })
