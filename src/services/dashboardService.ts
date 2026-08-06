@@ -12,6 +12,7 @@ import type {
   WeeklyInsight,
   FdsReport,
   FdsPolicy,
+  FlowTrendResponse,
 } from "@/types/dashboardTypes";
 
 const MOCK_POLICIES_KEY = "wms_fds_policies";
@@ -210,6 +211,22 @@ export function updateMockFdsPolicy(policyKey: string, policyValue: number): Fds
   return updatedPolicies.find((p) => p.policy_key === policyKey)!;
 }
 
+export function getMockFlowTrend(days: number = 7): FlowTrendResponse {
+  const items = [
+    { date: '07/22', inbound_quantity: 120, outbound_quantity: 85, average_inspection_processing_seconds: 5.2 },
+    { date: '07/23', inbound_quantity: 145, outbound_quantity: 95, average_inspection_processing_seconds: 4.8 },
+    { date: '07/24', inbound_quantity: 110, outbound_quantity: 115, average_inspection_processing_seconds: 5.5 },
+    { date: '07/25', inbound_quantity: 130, outbound_quantity: 110, average_inspection_processing_seconds: 4.6 },
+    { date: '07/26', inbound_quantity: 155, outbound_quantity: 125, average_inspection_processing_seconds: 4.2 },
+    { date: '07/27', inbound_quantity: 90, outbound_quantity: 70, average_inspection_processing_seconds: 5.0 },
+    { date: '07/28', inbound_quantity: 140, outbound_quantity: 105, average_inspection_processing_seconds: 4.8 },
+  ];
+  return {
+    days,
+    items,
+  };
+}
+
 // ─── 1. 검수 수량 통계 및 평균 처리 속도 조회 ───
 export async function getInspectionMetrics(): Promise<InspectionMetrics> {
   if (isMockMode()) {
@@ -257,5 +274,14 @@ export async function updateFdsPolicy(
   const res = await apiClient.put<FdsPolicy>(`/api/v1/admin/fds/policies/${policyKey}`, {
     policy_value: policyValue,
   });
+  return res.data;
+}
+
+// ─── 6. 대시보드 입출고 및 검수 속도 추이 조회 ───
+export async function getFlowTrend(days: number = 7): Promise<FlowTrendResponse> {
+  if (isMockMode()) {
+    return getMockFlowTrend(days);
+  }
+  const res = await apiClient.get<FlowTrendResponse>(`/api/v1/admin/dashboard/flow-trend?days=${days}`);
   return res.data;
 }
