@@ -1,4 +1,4 @@
-import { Suspense, useState, useEffect } from 'react';
+import { Suspense, useState, useEffect, useRef } from 'react';
 
 import { QRCodeSVG } from 'qrcode.react';
 import { ImageOff, ChevronLeft, ChevronRight, Loader2, Award, QrCode, Calendar, Info, ShieldCheck, Printer } from 'lucide-react';
@@ -16,6 +16,7 @@ import AgentLogSection from '@/features/inspections/components/AgentLogSection';
 import InspectionBadges from '@/features/inspections/components/InspectionBadges';
 import { getStatusLabel } from '@/features/inspections/utils/statusBadge';
 import { getInspectionDetail } from '@/features/inspections/api/inspectionHistoryService';
+import { VisionDefectOverlay } from '@/features/inspections/components/VisionDefectOverlay';
 import type { InspectionHistoryRow } from '@/features/inspections/types/inspectionHistory';
 
 interface InspectionHistoryDetailDialogProps {
@@ -63,6 +64,7 @@ export function parseFinalReport(report: string | null): string {
 export function InspectionHistoryDetailDialog({ row, onClose }: InspectionHistoryDetailDialogProps) {
   const [currentImgIdx, setCurrentImgIdx] = useState(0);
   const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
+  const currentImgRef = useRef<HTMLImageElement | null>(null);
 
   useEffect(() => {
     setCurrentImgIdx(0);
@@ -76,6 +78,9 @@ export function InspectionHistoryDetailDialog({ row, onClose }: InspectionHistor
 
   const images = detail?.originalImageUrls || [];
   const hasImages = images.length > 0;
+  const currentDetections = (detail?.visionDetections || []).filter(
+    (detection) => detection.imageIndex === currentImgIdx
+  );
 
   const handlePrevImg = () => {
     if (!hasImages) return;
@@ -215,12 +220,14 @@ export function InspectionHistoryDetailDialog({ row, onClose }: InspectionHistor
                   {hasImages ? (
                     <div className="relative group overflow-hidden rounded-2xl border border-gray-150 dark:border-zinc-800/80 bg-zinc-950 flex items-center justify-center min-h-[300px] max-h-[340px] shadow-inner">
                       <img
+                        ref={currentImgRef}
                         src={images[currentImgIdx]}
                         alt={`도서 촬영 사진 ${currentImgIdx + 1}`}
                         className="max-h-[340px] object-contain select-none transition-all duration-300"
                         loading="lazy"
                       />
-                      
+                      <VisionDefectOverlay detections={currentDetections} imgRef={currentImgRef} />
+
                       {images.length > 1 && (
                         <>
                           <button

@@ -65,6 +65,20 @@ export interface InspectionAIResult {
   repairDirective: string | null;
 }
 
+// Vision AI 결함 BBox 탐지 결과 (원본 사진 기준 정규화 좌표)
+export type VisionDetection = {
+  imageIndex: number;
+  imageView: 'FRONT' | 'BACK' | 'INSIDE';
+  imageUrl: string;
+  type: string;
+  defectType: string;
+  ratio: number;
+  confidence: number;
+  yoloConfidence: number;
+  bbox: [number, number, number, number];
+  coordinateSpace: 'ORIGINAL_IMAGE_NORMALIZED';
+};
+
 export interface HITLHistoryItem {
   action: string | null;
   reviewerReasonCode: string | null;
@@ -88,6 +102,7 @@ export interface InspectionDetailResponse {
   lpnBarcode: string | null;
   labelScanUrl: string | null; // 추가: LPN QR 스캔 대상 공개 URL
   originalImageUrls: string[];
+  visionDetections: VisionDetection[];
   aiResult: InspectionAIResult;
   hitl: Record<string, any>;
   hitlHistory: HITLHistoryItem[];

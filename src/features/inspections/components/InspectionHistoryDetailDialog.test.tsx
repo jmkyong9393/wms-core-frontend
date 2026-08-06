@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { InspectionHistoryDetailDialog } from '@/features/inspections/components/InspectionHistoryDetailDialog';
 import type { InspectionHistoryRow } from '@/features/inspections/types/inspectionHistory';
@@ -30,7 +30,9 @@ function buildDetail(overrides: Partial<InspectionDetailResponse> = {}): Inspect
     ubciScore: 100,
     finalReport: null,
     lpnBarcode: null,
+    labelScanUrl: null,
     originalImageUrls: [],
+    visionDetections: [],
     aiResult: { decision: null, reasonCode: null, defects: [], revisionCount: 0, repairDirective: null },
     hitl: {},
     hitlHistory: [],
@@ -113,5 +115,43 @@ describe('InspectionHistoryDetailDialog', () => {
 
     expect(await screen.findByText('Vision Agent')).toBeInTheDocument();
     expect(screen.queryByText('Agent 로그를 불러오는데 실패했습니다.')).not.toBeInTheDocument();
+  });
+
+  it('imageIndex가 일치하는 결함만 현재 사진 위에 오버레이 배지로 표시된다', async () => {
+    mockedGetAgentLog.mockResolvedValue([]);
+    mockedGetInspectionDetail.mockResolvedValue(
+      buildDetail({
+        originalImageUrls: ['https://example.com/front.jpg', 'https://example.com/back.jpg'],
+        visionDetections: [
+          {
+            imageIndex: 0,
+            imageView: 'FRONT',
+            imageUrl: 'https://example.com/front.jpg',
+            type: 'COVER_TEAR',
+            defectType: 'COVER_TEAR',
+            ratio: 15,
+            confidence: 0.91,
+            yoloConfidence: 0.84,
+            bbox: [0.1, 0.1, 0.3, 0.3],
+            coordinateSpace: 'ORIGINAL_IMAGE_NORMALIZED',
+          },
+        ],
+      })
+    );
+
+    renderDialog(buildRow());
+
+    const img = await screen.findByAltText('도서 촬영 사진 1');
+    Object.defineProperty(img, 'naturalWidth', { value: 800, configurable: true });
+    Object.defineProperty(img, 'naturalHeight', { value: 600, configurable: true });
+    Object.defineProperty(img, 'offsetWidth', { value: 400, configurable: true });
+    Object.defineProperty(img, 'offsetHeight', { value: 300, configurable: true });
+    fireEvent.load(img);
+
+    expect(await screen.findByText(/COVER_TEAR/)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByTitle('다음 사진'));
+
+    expect(screen.queryByText(/COVER_TEAR/)).not.toBeInTheDocument();
   });
 });
