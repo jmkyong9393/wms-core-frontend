@@ -100,7 +100,7 @@ export default function NewStockInboundPage() {
         status: "APPROVED",
         timestamp: new Date().toISOString(),
       });
-      localStorage.setItem(storageKey, JSON.stringify(list.slice(0, 100))); // Keep last 100
+      localStorage.setItem(storageKey, JSON.stringify(list.slice(0, 10))); // Keep last 10
     } catch (e: any) {
       console.error(e);
       setErrorMsg("입고 처리 중 서버 오류가 발생했습니다.");
@@ -242,9 +242,8 @@ export default function NewStockInboundPage() {
 
               {/* Camera Scanner View */}
               {isScannerActive && (
-                <div className="relative aspect-video bg-black rounded-2xl overflow-hidden border border-zinc-800 shadow-inner">
+                <div className="mt-2">
                   <BarcodeScanner onScan={handleScan} isActive={isScannerActive} />
-                  <div className="absolute inset-x-4 top-1/2 h-[2px] bg-red-500 opacity-60 animate-pulse pointer-events-none" />
                 </div>
               )}
 

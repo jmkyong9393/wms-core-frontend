@@ -286,8 +286,8 @@ export function BarcodeScanner({ onScan, isActive = true }: BarcodeScannerProps)
       
       {/* 저격 스코프 가이드라인 */}
       <div className="absolute inset-0 z-20 pointer-events-none flex items-center justify-center">
-        <div className="w-3/4 h-1/3 sm:h-1/2 border-2 border-green-500/50 rounded-lg shadow-[0_0_0_9999px_rgba(0,0,0,0.5)]">
-          <div className="w-full h-[1px] bg-red-500/60 absolute top-1/2 shadow-[0_0_10px_rgba(239,68,68,1)] animate-pulse" />
+        <div className="relative w-3/4 h-1/3 sm:h-1/2 border-2 border-green-500/50 rounded-lg shadow-[0_0_0_9999px_rgba(0,0,0,0.5)] overflow-hidden">
+          <div className="w-full h-[1px] bg-red-500/60 absolute top-1/2 left-0 shadow-[0_0_10px_rgba(239,68,68,1)] animate-pulse" />
         </div>
       </div>
     </div>
