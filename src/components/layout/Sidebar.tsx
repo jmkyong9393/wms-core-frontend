@@ -34,7 +34,7 @@ const INBOUND_MENU_ITEMS = [
 const OUTBOUND_MENU_ITEMS = [
   { name: '재고 관리', href: '/admin/inventory', icon: Warehouse },
   { name: 'LPN 조회', href: '/admin/lpn', icon: ScanLine },
-  { name: '출고 관리', href: '/worker/outbound', icon: Truck },
+  { name: '피킹 현황', href: '/admin/picking', icon: Truck },
 ];
 
 // 운영 메뉴와 성격이 달라 구분선 아래 별도로 배치하는 관리자용 메뉴

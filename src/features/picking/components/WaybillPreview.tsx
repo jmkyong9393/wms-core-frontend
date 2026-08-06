@@ -5,6 +5,7 @@ import type { ShipmentConfirmResponse } from '@/features/picking/types/picking';
 
 interface WaybillPreviewProps {
   result: ShipmentConfirmResponse;
+  backHref?: string;
 }
 
 function ContactBlock({ label, name, phone, postalCode, address }: {
@@ -30,7 +31,7 @@ function ContactBlock({ label, name, phone, postalCode, address }: {
 }
 
 // 출고 확정 완료 후 표시하는 Mock 송장 미리보기
-export function WaybillPreview({ result }: WaybillPreviewProps) {
+export function WaybillPreview({ result, backHref = '/outbound/picking' }: WaybillPreviewProps) {
   const { shipping_label: label } = result;
 
   return (
@@ -97,7 +98,7 @@ export function WaybillPreview({ result }: WaybillPreviewProps) {
       </div>
 
       <Link
-        href="/outbound/picking"
+        href={backHref}
         className="w-full h-12 flex items-center justify-center gap-1.5 rounded-xl border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-sm font-bold text-gray-700 dark:text-zinc-200 hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors"
       >
         <ArrowLeft className="w-4 h-4" />
