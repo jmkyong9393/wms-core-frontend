@@ -2,9 +2,40 @@
 
 import { Suspense, useEffect } from 'react';
 import { X, ImageOff } from 'lucide-react';
-import type { HitlQueueItem } from '@/features/queue/store/queueAtoms';
+import type { HitlQueueItem } from '@/features/queue/api/hitlQueueService';
 import { ErrorBoundary } from '@/components/error-boundary';
 import AgentLogSection from '@/features/inspections/components/AgentLogSection';
+
+export function AgentLogPanel({
+  inspectionId,
+}: {
+  inspectionId: string;
+}) {
+  return (
+    <div className="flex min-h-0 flex-1 flex-col">
+      <div className="flex-1 overflow-y-auto pr-1">
+        <ErrorBoundary
+          key={inspectionId}
+          fallback={
+            <p className="py-8 text-center text-xs text-red-500 dark:text-red-400">
+              Agent 로그를 불러오는데 실패했습니다.
+            </p>
+          }
+        >
+          <Suspense
+            fallback={
+              <p className="py-8 text-center text-xs text-muted-foreground">
+                Agent 로그를 불러오는 중입니다.
+              </p>
+            }
+          >
+            <AgentLogSection inspectionId={inspectionId} />
+          </Suspense>
+        </ErrorBoundary>
+      </div>
+    </div>
+  );
+}
 
 interface AgentConversationModalProps {
   item: HitlQueueItem | null;
@@ -35,8 +66,8 @@ export default function AgentConversationModal({ item, onClose }: AgentConversat
       >
         <div className="flex items-center justify-between px-5 py-4 border-b border-border">
           <div>
-            <h3 className="text-base font-bold text-foreground">{item.title ?? item.id}</h3>
-            <p className="text-xs text-muted-foreground">{item.isbn ?? item.id}</p>
+            <h3 className="text-base font-bold text-foreground">{item.bookTitle}</h3>
+            <p className="text-xs text-muted-foreground">{item.lpnBarcode ?? item.id}</p>
           </div>
           <button
             type="button"
@@ -58,17 +89,8 @@ export default function AgentConversationModal({ item, onClose }: AgentConversat
           </div>
 
           {/* Agent 단계별 실행 로그 */}
-          <div className="p-4 flex flex-col min-h-0">
-            <div className="flex-1 overflow-y-auto pr-1">
-              <ErrorBoundary
-                key={item.id}
-                fallback={<p className="text-xs text-red-500 dark:text-red-400 text-center py-8">Agent 로그를 불러오는데 실패했습니다.</p>}
-              >
-                <Suspense fallback={<p className="text-xs text-muted-foreground text-center py-8">Agent 로그 불러오는 중...</p>}>
-                  <AgentLogSection inspectionId={item.id} />
-                </Suspense>
-              </ErrorBoundary>
-            </div>
+          <div className="p-4 flex min-h-0 flex-col">
+            <AgentLogPanel inspectionId={item.id} />
           </div>
         </div>
       </div>

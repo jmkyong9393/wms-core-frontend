@@ -1,16 +1,20 @@
 'use client';
 
 import { useState } from 'react';
-import { type HitlQueueItem } from '@/features/queue/store/queueAtoms';
+import type { HitlQueueItem } from '@/features/queue/api/hitlQueueService';
 import { useHitlQueueAction } from '@/features/queue/hooks/useHitlQueueAction';
 import HitlDecisionDialog, { type HitlDecisionMode } from './HitlDecisionDialog';
 
 interface HitlDecisionActionsProps {
   item: HitlQueueItem;
+  onCompleted?: () => void;
 }
 
 // 관리자 판정 버튼과 사유 입력창
-export default function HitlDecisionActions({ item }: HitlDecisionActionsProps) {
+export default function HitlDecisionActions({
+  item,
+  onCompleted,
+}: HitlDecisionActionsProps) {
   const { runDecision, isLoading } = useHitlQueueAction();
   // 현재 열린 판정 유형
   const [openMode, setOpenMode] = useState<HitlDecisionMode | null>(null);
@@ -50,7 +54,11 @@ export default function HitlDecisionActions({ item }: HitlDecisionActionsProps) 
           item={item}
           mode={openMode}
           onClose={() => setOpenMode(null)}
-          onSubmit={(payload) => runDecision(item.id, payload)}
+          onSubmit={async (payload) => {
+            await runDecision(item.id, payload);
+            setOpenMode(null);
+            onCompleted?.();
+          }}
         />
       )}
     </>

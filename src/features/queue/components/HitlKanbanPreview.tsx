@@ -1,101 +1,235 @@
 'use client';
 
-import { type HitlQueueItem } from '@/features/queue/store/queueAtoms';
+import {
+  useEffect,
+  useRef,
+} from 'react';
+import type {
+  HitlQueueBucket,
+  HitlQueueItem,
+} from '@/features/queue/api/hitlQueueService';
 import { useHitlQueueAction } from '@/features/queue/hooks/useHitlQueueAction';
+import { getHitlReasonLabel } from '@/features/queue/constants/hitlReasonCodes';
+
+export interface HitlKanbanColumn {
+  bucket: HitlQueueBucket;
+  label: string;
+  items: HitlQueueItem[];
+  total: number;
+  hasMore: boolean;
+  isLoading: boolean;
+  isFetchingNextPage: boolean;
+  onLoadMore: () => void;
+}
 
 interface HitlKanbanPreviewProps {
-  queue: HitlQueueItem[];
-  selectedId: string | null;
-  onSelect: (id: string) => void;
+  columns: HitlKanbanColumn[];
+  onSelect: (item: HitlQueueItem) => void;
 }
 
-interface TicketChipProps {
+interface BoardColumnProps {
+  column: HitlKanbanColumn;
+  onSelect: (item: HitlQueueItem) => void;
+}
+
+function maskName(name: string) {
+  const chars = Array.from(name);
+
+  if (chars.length <= 1) return name;
+  if (chars.length === 2) return `${chars[0]}*`;
+
+  return `${chars[0]}${'*'.repeat(chars.length - 2)}${chars.at(-1)}`;
+}
+
+function TicketCard({
+  item,
+  draggable,
+  onSelect,
+}: {
   item: HitlQueueItem;
-  selected: boolean;
-  onSelect: (id: string) => void;
-}
-
-// HITL 티켓 요약 카드
-function TicketChip({ item, selected, onSelect }: TicketChipProps) {
-  // 대기 상태에서만 드래그 허용
-  const draggable = item.status === 'AWAITING_REVIEW';
-
+  draggable: boolean;
+  onSelect: (item: HitlQueueItem) => void;
+}) {
   return (
     <button
       type="button"
+      onClick={() => onSelect(item)}
       draggable={draggable}
-      onDragStart={(e) => {
+      onDragStart={(event) => {
         if (!draggable) return;
-        e.dataTransfer.setData('text/plain', item.id);
+        event.dataTransfer.setData('text/plain', item.id);
       }}
-      onClick={() => onSelect(item.id)}
-      className={`w-full text-left bg-card rounded-lg border p-3 transition-colors ${
-        selected ? 'border-blue-400 ring-1 ring-blue-300 dark:border-blue-600 dark:ring-blue-700' : 'border-border hover:border-muted-foreground/40'
-      } ${draggable ? 'cursor-grab active:cursor-grabbing' : ''}`}
+      className="w-full rounded-lg border bg-background p-3 text-left shadow-sm transition hover:border-primary/50 hover:bg-muted/40"
     >
-      <p className="text-sm font-semibold text-foreground truncate">{item.title ?? item.id}</p>
-      <p className="text-xs text-muted-foreground truncate">{item.isbn ?? item.id}</p>
-      {item.ubciScore !== undefined && (
-        <p className="text-xs text-muted-foreground mt-1">UBCI {item.ubciScore}점</p>
+      <p className="truncate text-sm font-semibold text-foreground">
+        {item.bookTitle}
+      </p>
+
+      <p className="mt-1 truncate text-xs text-muted-foreground">
+        {item.lpnBarcode ?? 'LPN 미발급'}
+      </p>
+
+      {item.locationBarcode && (
+        <p className="mt-1 text-xs text-muted-foreground">
+          위치 {item.locationBarcode}
+        </p>
       )}
-      {item.status === 'IN_PROGRESS' && item.reviewer && (
-        <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">👤 관리자 {item.reviewer} 심사 중</p>
+
+      {item.ubciScore !== null && (
+        <p className="mt-1 text-xs text-muted-foreground">
+          UBCI {item.ubciScore}점
+        </p>
       )}
-      {item.status === 'PROCESSING' && item.reviewer && (
-        <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">👤 관리자 {item.reviewer} 처리 중</p>
+
+      {item.status === 'HITL_REQUIRED' && item.reviewerName && (
+        <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">
+          👤 관리자 {maskName(item.reviewerName)}님 심사 중
+        </p>
+      )}
+
+      {item.reasonCodes.length > 0 && (
+        <p className="mt-1 truncate text-xs text-red-500">
+          {item.reasonCodes.map(getHitlReasonLabel).join(', ')}
+        </p>
       )}
     </button>
   );
 }
 
-// HITL 처리 현황 3열 보드 (대기/검토중/완료), 카드를 검토중 칸으로 드래그하면 검토 시작
-export default function HitlKanbanPreview({ queue, selectedId, onSelect }: HitlKanbanPreviewProps) {
+function BoardColumn({
+  column,
+  onSelect,
+}: BoardColumnProps) {
   const { startReview } = useHitlQueueAction();
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const sentinelRef = useRef<HTMLDivElement>(null);
 
-  const awaiting = queue.filter((item) => item.status === 'AWAITING_REVIEW');
-  // PROCESSING(판정 제출 후 서버 처리 중)도 관리자가 이미 착수한 건이라 검토중에 포함
-  const inProgress = queue.filter((item) => item.status === 'IN_PROGRESS' || item.status === 'PROCESSING');
-  const resolved = queue.filter((item) => item.status === 'APPROVED' || item.status === 'REJECTED');
-  // RECHECK_REQUIRED(재촬영 대기)는 모바일 작업자의 후속 조치가 필요한 상태라 세 컬럼 어디에도 표시하지 않음
+  const canStartReview =
+    column.bucket === 'PENDING';
 
-  const columns = [
-    { key: 'todo', label: '대기', items: awaiting },
-    { key: 'in_progress', label: '검토중', items: inProgress },
-    { key: 'resolved', label: '완료', items: resolved },
-  ];
+  useEffect(() => {
+    const root = scrollContainerRef.current;
+    const target = sentinelRef.current;
+
+    if (
+      !root ||
+      !target ||
+      !column.hasMore ||
+      column.isFetchingNextPage
+    ) {
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          column.onLoadMore();
+        }
+      },
+      {
+        root,
+        rootMargin: '120px',
+      }
+    );
+
+    observer.observe(target);
+
+    return () => observer.disconnect();
+  }, [
+    column.hasMore,
+    column.isFetchingNextPage,
+    column.onLoadMore,
+  ]);
 
   return (
-    <div className="bg-card rounded-xl border border-border shadow-sm p-4 h-full flex flex-col">
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 flex-1 min-h-0">
-        {columns.map((col) => (
-          <div
-            key={col.key}
-            className="bg-muted rounded-lg p-3 flex flex-col h-full min-h-0"
-            onDragOver={(e) => {
-              if (col.key !== 'in_progress') return;
-              e.preventDefault();
-            }}
-            onDrop={(e) => {
-              if (col.key !== 'in_progress') return;
-              e.preventDefault();
-              const id = e.dataTransfer.getData('text/plain');
-              if (id) startReview(id);
-            }}
-          >
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-semibold text-muted-foreground">{col.label}</span>
-              <span className="text-xs text-muted-foreground">{col.items.length}건</span>
-            </div>
-            <div className="space-y-2 flex-1 min-h-0 overflow-y-auto">
-              {col.items.length === 0 ? (
-                <p className="text-xs text-muted-foreground text-center py-2">항목이 없습니다</p>
-              ) : (
-                col.items.map((item) => (
-                  <TicketChip key={item.id} item={item} selected={item.id === selectedId} onSelect={onSelect} />
-                ))
-              )}
-            </div>
-          </div>
+    <section
+      className="flex min-h-0 flex-col rounded-xl bg-muted p-3"
+      onDragOver={(event) => {
+        if (column.bucket !== 'IN_REVIEW') return;
+        event.preventDefault();
+      }}
+      onDrop={(event) => {
+        if (column.bucket !== 'IN_REVIEW') return;
+
+        event.preventDefault();
+
+        const jobId = event.dataTransfer.getData(
+          'text/plain'
+        );
+
+        if (jobId) {
+          startReview(jobId);
+        }
+      }}
+    >
+      <div className="mb-3 flex items-center justify-between">
+        <h3 className="text-sm font-bold text-foreground">
+          {column.label}
+        </h3>
+        <span className="text-xs text-muted-foreground">
+          {column.total}건
+        </span>
+      </div>
+
+      <div
+        ref={scrollContainerRef}
+        className="min-h-0 flex-1 space-y-2 overflow-y-auto pr-1"
+      >
+        {column.isLoading ? (
+          <p className="py-8 text-center text-xs text-muted-foreground">
+            불러오는 중입니다.
+          </p>
+        ) : column.items.length === 0 ? (
+          <p className="py-8 text-center text-xs text-muted-foreground">
+            항목이 없습니다.
+          </p>
+        ) : (
+          column.items.map((item) => (
+            <TicketCard
+              key={item.id}
+              item={item}
+              draggable={canStartReview}
+              onSelect={onSelect}
+            />
+          ))
+        )}
+
+        <div
+          ref={sentinelRef}
+          className="h-1"
+        />
+
+        {column.isFetchingNextPage && (
+          <p className="py-2 text-center text-xs text-muted-foreground">
+            더 불러오는 중입니다.
+          </p>
+        )}
+
+        {column.bucket !== 'COMPLETED' &&
+          !column.hasMore &&
+          column.items.length > 0 && (
+            <p className="py-2 text-center text-xs text-muted-foreground">
+              모든 항목을 불러왔습니다.
+            </p>
+          )}
+      </div>
+    </section>
+  );
+}
+
+export default function HitlKanbanPreview({
+  columns,
+  onSelect,
+}: HitlKanbanPreviewProps) {
+  return (
+    <div className="overflow-x-auto">
+      <div className="grid h-[580px] min-w-[1180px] grid-cols-4 gap-3">
+        {columns.map((column) => (
+          <BoardColumn
+            key={column.bucket}
+            column={column}
+            onSelect={onSelect}
+          />
         ))}
       </div>
     </div>

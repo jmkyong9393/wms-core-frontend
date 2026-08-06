@@ -20,6 +20,7 @@ import {
   isMockMode 
 } from "@/services/returnService";
 import { currentUserAtom } from "@/features/auth/store/authAtoms";
+import { getLpnScanDetail } from '@/features/lpnScan/api/lpnScanService';
 
 interface BookInfo {
   bookId: string;
@@ -37,6 +38,22 @@ interface InboundInfo {
 }
 
 type PhotoType = "front" | "back" | "inside";
+
+function normalizeScanValue(value: string) {
+  const trimmed = value.trim();
+
+  try {
+    const url = new URL(trimmed);
+    const match = url.pathname.match(/^\/scan\/([^/]+)$/);
+
+    return match
+      ? decodeURIComponent(match[1])
+      : trimmed;
+  } catch {
+    return trimmed;
+  }
+}
+
 
 interface PhotoSlots {
   front: string | null;
@@ -194,6 +211,7 @@ export default function UsedItemReturnsPage() {
 
   // AI Inspection states
   const [jobId, setJobId] = useState<string | null>(null);
+  const [recheckJobId, setRecheckJobId] = useState<string | null>(null);
   const { jobStatus, result, error: jobError, resetJobState } = useJobStatus(jobId);
   const [isInspectionTriggered, setIsInspectionTriggered] = useState(false);
 
@@ -211,8 +229,42 @@ export default function UsedItemReturnsPage() {
     setUploadError(null);
     setBookInfo(null);
     setInboundInfo(null);
+    setRecheckJobId(null);
 
     try {
+
+      const scanValue = normalizeScanValue(targetIsbn);
+
+      const isLpnOrQrToken =
+        scanValue.startsWith('LPN-') || scanValue.length >= 32;
+
+      if (isLpnOrQrToken) {
+        const detail = await getLpnScanDetail(scanValue);
+
+        if (!detail.requiresRetake || !detail.returnJobId) {
+          throw new Error('재촬영 요청 상태인 LPN이 아닙니다.');
+        }
+
+        setBookInfo({
+          bookId: detail.book.id,
+          isbn: detail.book.isbn,
+          title: detail.book.title,
+          originalPrice: '0',
+          publisher: detail.book.publisher ?? '출판사 정보 없음',
+          category: 'NOVEL',
+        });
+
+        setInboundInfo({
+          inboundItemId: '',
+          lpnBarcode: detail.lpnBarcode,
+        });
+
+        setRecheckJobId(detail.returnJobId);
+        setCurrentStep(2);
+        return;
+      }
+
+      setRecheckJobId(null);
       const book = await registerBook(targetIsbn.trim());
       setBookInfo({
         bookId: book.bookId,
@@ -311,6 +363,22 @@ export default function UsedItemReturnsPage() {
         // Simulate a small delay for S3 upload
         await new Promise((resolve) => setTimeout(resolve, 1500));
       }
+      if (recheckJobId) {
+        const recheck = await submitRecheck(recheckJobId, [
+          frontUrl,
+          backUrl,
+          insideUrl,
+        ]);
+
+        setJobId(recheck.jobId);
+        setIsInspectionTriggered(true);
+        setCurrentStep(3);
+        return;
+      }
+
+      if (!inboundInfo.inboundItemId) {
+        throw new Error('입고 항목 정보를 찾을 수 없습니다.');
+      }
 
       // Trigger AI multi-agent inspection
       const inspect = await startInspection({
@@ -374,6 +442,7 @@ export default function UsedItemReturnsPage() {
     setIsInspectionTriggered(false);
     setUploadError(null);
     setCurrentStep(1);
+    setRecheckJobId(null);
   };
 
   const isAllPhotosCaptured = !!(photos.front && photos.back && photos.inside);
@@ -598,7 +667,7 @@ export default function UsedItemReturnsPage() {
               ) : (
                 <>
                   <Sparkles className="w-4 h-4 text-emerald-100" />
-                  AI 에이전트 검수 시작
+                  {recheckJobId ? 'AI 재검수 시작' : 'AI 에이전트 검수 시작'}
                 </>
               )}
             </button>
