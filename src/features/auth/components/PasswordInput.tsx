@@ -12,6 +12,7 @@ interface PasswordInputProps {
   onChange: (value: string) => void;
   autoComplete: "current-password" | "new-password";
   error?: string;
+  hint?: string;
   disabled?: boolean;
   ref?: React.Ref<HTMLInputElement>;
 }
@@ -23,11 +24,13 @@ export function PasswordInput({
   onChange,
   autoComplete,
   error,
+  hint,
   disabled,
   ref,
 }: PasswordInputProps) {
   const [visible, setVisible] = useState(false);
   const errorId = `${id}-error`;
+  const message = error ?? hint;
 
   return (
     <div className="space-y-1.5">
@@ -42,7 +45,7 @@ export function PasswordInput({
           autoComplete={autoComplete}
           disabled={disabled}
           aria-invalid={!!error}
-          aria-describedby={error ? errorId : undefined}
+          aria-describedby={message ? errorId : undefined}
           className="pr-9 [&::-ms-reveal]:hidden [&::-ms-clear]:hidden"
         />
         <button
@@ -56,9 +59,9 @@ export function PasswordInput({
           {visible ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
         </button>
       </div>
-      {error && (
+      {message && (
         <p id={errorId} className="text-xs text-red-600 dark:text-red-400">
-          {error}
+          {message}
         </p>
       )}
     </div>

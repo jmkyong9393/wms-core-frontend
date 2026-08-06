@@ -5,7 +5,12 @@ import { useRouter } from "next/navigation";
 import { useStore } from "jotai";
 import { Button } from "@/components/ui/button";
 import { PasswordInput } from "@/features/auth/components/PasswordInput";
-import { doPasswordsMatch, isRequiredFieldFilled } from "@/features/auth/utils/validation";
+import {
+  doPasswordsMatch,
+  isRequiredFieldFilled,
+  isPasswordRuleSatisfied,
+  PASSWORD_RULE_MESSAGE,
+} from "@/features/auth/utils/validation";
 import { useChangePasswordMutation } from "@/features/auth/hooks/useChangePasswordMutation";
 import { getMe } from "@/features/auth/api/authService";
 import { mapMeResponseToCurrentUser } from "@/features/auth/store/authSessionMapper";
@@ -77,6 +82,8 @@ export function ChangePasswordForm() {
     }
     if (!isRequiredFieldFilled(values.newPassword)) {
       errors.newPassword = "새 비밀번호를 입력해 주세요.";
+    } else if (!isPasswordRuleSatisfied(values.newPassword)) {
+      errors.newPassword = PASSWORD_RULE_MESSAGE;
     }
     if (!isRequiredFieldFilled(values.confirmPassword)) {
       errors.confirmPassword = "새 비밀번호 확인을 입력해 주세요.";
@@ -148,6 +155,7 @@ export function ChangePasswordForm() {
         onChange={(value) => setValues((v) => ({ ...v, newPassword: value }))}
         autoComplete="new-password"
         error={fieldErrors.newPassword}
+        hint={PASSWORD_RULE_MESSAGE}
         disabled={isSubmitting || showRecovery}
       />
 
