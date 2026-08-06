@@ -61,7 +61,7 @@ describe('ScanPage', () => {
   it('GUEST 등 허용되지 않은 역할이면 공개 인증서로 이동한다', async () => {
     mockSession({
       status: 'ready',
-      currentUser: { id: 'u1', employeeId: 'e1', name: '고객', role: 'GUEST', mustChangePassword: false },
+      currentUser: { id: 'u1', employeeId: 'e1', name: '고객', email: null, status: 'ACTIVE', role: 'GUEST', mustChangePassword: false },
     });
 
     render(<ScanPage />);
@@ -73,7 +73,7 @@ describe('ScanPage', () => {
   it.each(['MASTER', 'ADMIN', 'WORKER'] as const)('%s 역할이면 LpnScanSection을 렌더하고 리다이렉트하지 않는다', (role) => {
     mockSession({
       status: 'ready',
-      currentUser: { id: 'u1', employeeId: 'e1', name: '직원', role, mustChangePassword: false },
+      currentUser: { id: 'u1', employeeId: 'e1', name: '직원', email: null, status: 'ACTIVE', role, mustChangePassword: false },
     });
 
     render(<ScanPage />);

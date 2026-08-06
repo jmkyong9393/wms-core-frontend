@@ -47,9 +47,9 @@ export function PickingCompleteScreen({ orderId, items, onConfirmed, onNavigateT
     <div className="w-full max-w-md mx-auto flex flex-col gap-4">
       {/* 완료 안내 */}
       <div className="flex flex-col items-center text-center py-6">
-        <CheckCircle2 className="h-14 w-14 text-green-600 mb-3" />
-        <h1 className="text-xl font-bold text-gray-900">피킹이 모두 완료되었습니다</h1>
-        <p className="text-sm text-gray-500 mt-1">
+        <CheckCircle2 className="h-14 w-14 text-green-600 dark:text-green-400 mb-3" />
+        <h1 className="text-xl font-bold text-gray-900 dark:text-zinc-100">피킹이 모두 완료되었습니다</h1>
+        <p className="text-sm text-gray-500 dark:text-zinc-400 mt-1">
           총 {items.length}개 대상 / {totalPickedUnits}권 처리
         </p>
       </div>
@@ -59,13 +59,13 @@ export function PickingCompleteScreen({ orderId, items, onConfirmed, onNavigateT
         {items.map((item) => (
           <div
             key={item.allocation_id}
-            className="flex items-center justify-between p-3 rounded-xl border border-gray-100 bg-white"
+            className="flex items-center justify-between p-3 rounded-xl border border-gray-100 dark:border-zinc-800 bg-white dark:bg-zinc-900"
           >
             <div className="min-w-0">
-              <p className="font-medium text-gray-900 truncate">
+              <p className="font-medium text-gray-900 dark:text-zinc-100 truncate">
                 {item.isbn ?? item.lpn_barcode ?? item.allocation_id}
               </p>
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-gray-500 dark:text-zinc-400">
                 {item.zone}-{item.rack}-{item.shelf}
               </p>
             </div>
@@ -80,7 +80,7 @@ export function PickingCompleteScreen({ orderId, items, onConfirmed, onNavigateT
                   {getGradeLabel(item.condition_grade)}
                 </span>
               )}
-              <span className="text-sm font-bold text-green-700">
+              <span className="text-sm font-bold text-green-700 dark:text-green-400">
                 {item.picked_quantity}/{item.quantity}
               </span>
             </div>
@@ -89,21 +89,21 @@ export function PickingCompleteScreen({ orderId, items, onConfirmed, onNavigateT
       </div>
 
       {genericErrorMessage && (
-        <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2 text-center">
+        <p className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/30 border border-red-100 dark:border-red-900/50 rounded-lg px-3 py-2 text-center">
           {genericErrorMessage}
         </p>
       )}
 
       {conflict && (
-        <div className="bg-red-50 border border-red-100 rounded-xl p-3 space-y-2">
-          <p className="text-sm text-red-700 font-semibold">{conflict.message}</p>
+        <div className="bg-red-50 dark:bg-red-950/30 border border-red-100 dark:border-red-900/50 rounded-xl p-3 space-y-2">
+          <p className="text-sm text-red-700 dark:text-red-300 font-semibold">{conflict.message}</p>
           <div className="space-y-1.5">
             {conflict.incomplete_new_allocations.map((a) => (
               <button
                 key={a.allocation_id}
                 type="button"
                 onClick={() => onNavigateToAllocation(a.allocation_id)}
-                className="w-full flex items-center justify-between text-xs text-red-700 bg-white border border-red-100 rounded-lg px-3 py-2 hover:bg-red-50"
+                className="w-full flex items-center justify-between text-xs text-red-700 dark:text-red-300 bg-white dark:bg-zinc-900 border border-red-100 dark:border-red-900/50 rounded-lg px-3 py-2 hover:bg-red-50 dark:hover:bg-red-950/40"
               >
                 <span>미완료 항목 ({a.picked_quantity}/{a.expected_quantity})</span>
                 <span className="font-semibold">다시 스캔하기</span>
@@ -114,7 +114,7 @@ export function PickingCompleteScreen({ orderId, items, onConfirmed, onNavigateT
                 key={a.allocation_id}
                 type="button"
                 onClick={() => onNavigateToAllocation(a.allocation_id)}
-                className="w-full flex items-center justify-between text-xs text-red-700 bg-white border border-red-100 rounded-lg px-3 py-2 hover:bg-red-50"
+                className="w-full flex items-center justify-between text-xs text-red-700 dark:text-red-300 bg-white dark:bg-zinc-900 border border-red-100 dark:border-red-900/50 rounded-lg px-3 py-2 hover:bg-red-50 dark:hover:bg-red-950/40"
               >
                 <span>미완료 중고 LPN 항목</span>
                 <span className="font-semibold">다시 스캔하기</span>

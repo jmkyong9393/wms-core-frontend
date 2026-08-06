@@ -119,15 +119,15 @@ export function CreateEmployeeModal({ open, onClose, currentUser }: CreateEmploy
     <>
       <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4" onClick={handleClose}>
         <div
-          className="bg-white rounded-2xl shadow-xl w-full max-w-md flex flex-col overflow-hidden"
+          className="bg-card rounded-2xl shadow-xl w-full max-w-md flex flex-col overflow-hidden"
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-            <h3 className="text-base font-bold text-gray-800">직원 계정 생성</h3>
+          <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+            <h3 className="text-base font-bold text-foreground">직원 계정 생성</h3>
             <button
               type="button"
               onClick={handleClose}
-              className="p-1.5 rounded-full hover:bg-gray-100 text-gray-400"
+              className="p-1.5 rounded-full hover:bg-accent text-muted-foreground"
             >
               <X className="w-4 h-4" />
             </button>
@@ -135,19 +135,19 @@ export function CreateEmployeeModal({ open, onClose, currentUser }: CreateEmploy
 
           <div className="p-5 space-y-4">
             {result ? (
-              <div className="rounded-lg border border-gray-100 p-4 space-y-3">
-                <p className="text-sm font-medium text-gray-700">계정이 생성되었습니다</p>
-                <p className="text-sm text-gray-500">
+              <div className="rounded-lg border border-border p-4 space-y-3">
+                <p className="text-sm font-medium text-foreground">계정이 생성되었습니다</p>
+                <p className="text-sm text-muted-foreground">
                   아래 사번과 임시 비밀번호는 이 화면을 벗어나면 다시 확인할 수 없습니다. 담당 직원에게 전달해주세요.
                 </p>
-                <div className="rounded-md bg-gray-50 p-3 text-sm space-y-1">
+                <div className="rounded-md bg-muted p-3 text-sm space-y-1">
                   <p>
-                    <span className="text-gray-500">사번</span>{" "}
-                    <span className="font-mono font-medium text-gray-800">{result.employee_id}</span>
+                    <span className="text-muted-foreground">사번</span>{" "}
+                    <span className="font-mono font-medium text-foreground">{result.employee_id}</span>
                   </p>
                   <p>
-                    <span className="text-gray-500">임시 비밀번호</span>{" "}
-                    <span className="font-mono font-medium text-gray-800">{result.temporary_password}</span>
+                    <span className="text-muted-foreground">임시 비밀번호</span>{" "}
+                    <span className="font-mono font-medium text-foreground">{result.temporary_password}</span>
                   </p>
                 </div>
                 <Button type="button" variant="outline" size="sm" onClick={handleCopy}>
@@ -206,15 +206,15 @@ export function CreateEmployeeModal({ open, onClose, currentUser }: CreateEmploy
                   </Select>
                 </div>
 
-                {validationError && <p className="text-sm text-red-600">{validationError}</p>}
+                {validationError && <p className="text-sm text-red-600 dark:text-red-400">{validationError}</p>}
                 {mutation.isError && (
-                  <p className="text-sm text-red-600">{getApiErrorMessage(mutation.error)}</p>
+                  <p className="text-sm text-red-600 dark:text-red-400">{getApiErrorMessage(mutation.error)}</p>
                 )}
               </>
             )}
           </div>
 
-          <div className="flex flex-col-reverse gap-2 border-t border-gray-100 bg-gray-50 p-4 sm:flex-row sm:justify-end">
+          <div className="flex flex-col-reverse gap-2 border-t border-border bg-muted p-4 sm:flex-row sm:justify-end">
             <Button type="button" variant="outline" onClick={handleClose}>
               닫기
             </Button>

@@ -25,8 +25,8 @@ export function createRestockProposalColumns({
       header: '도서명',
       cell: ({ row }) => (
         <div>
-          <p className="font-medium text-gray-800">{row.original.book.title}</p>
-          <p className="text-xs text-gray-400">
+          <p className="font-medium text-foreground">{row.original.book.title}</p>
+          <p className="text-xs text-muted-foreground">
             {row.original.book.isbn} · {row.original.book.publisher ?? '-'}
           </p>
         </div>

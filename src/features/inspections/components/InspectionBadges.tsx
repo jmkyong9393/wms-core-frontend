@@ -14,7 +14,7 @@ export default function InspectionBadges({ isFastTrack, finalGrade, className }:
     <div className={cn('flex items-center gap-2', className)}>
       {/* 자동 처리된 항목에만 표시 */}
       {isFastTrack && (
-        <span className="text-xs font-semibold rounded-full px-2 py-0.5 bg-purple-100 text-purple-700">
+        <span className="text-xs font-semibold rounded-full px-2 py-0.5 bg-purple-100 text-purple-700 dark:bg-purple-950/40 dark:text-purple-300">
           Fast-track
         </span>
       )}

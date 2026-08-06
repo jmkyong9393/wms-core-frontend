@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useAtomValue } from "jotai";
 import { User } from "lucide-react";
 import { AuthGuard } from "@/features/auth/components/AuthGuard";
@@ -22,14 +23,19 @@ export default function WorkerLayout({
             NEWZED 현장 작업 포털
           </h1>
           <div className="flex items-center pl-2 border-l border-gray-200 dark:border-zinc-800">
-            <div className="w-8 h-8 bg-indigo-100 dark:bg-indigo-900/40 rounded-full flex items-center justify-center text-indigo-700 dark:text-indigo-300">
-              <User className="w-4 h-4" />
-            </div>
-            {currentUser && (
-              <span className="ml-2 text-sm font-semibold text-gray-700 dark:text-zinc-200">
-                {maskName(currentUser.name)} [현장 작업자]
-              </span>
-            )}
+            <Link
+              href="/mypage"
+              className="flex items-center rounded-full hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors"
+            >
+              <div className="w-8 h-8 bg-indigo-100 dark:bg-indigo-900/40 rounded-full flex items-center justify-center text-indigo-700 dark:text-indigo-300">
+                <User className="w-4 h-4" />
+              </div>
+              {currentUser && (
+                <span className="ml-2 mr-2 text-sm font-semibold text-gray-700 dark:text-zinc-200">
+                  {maskName(currentUser.name)} [현장 작업자]
+                </span>
+              )}
+            </Link>
             <LogoutButton className="ml-3 p-2 text-gray-400 hover:text-gray-600 dark:text-zinc-500 dark:hover:text-zinc-300 transition-colors rounded-full hover:bg-gray-100 dark:hover:bg-zinc-800" />
           </div>
         </header>

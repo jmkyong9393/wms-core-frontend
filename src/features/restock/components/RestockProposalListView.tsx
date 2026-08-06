@@ -76,8 +76,8 @@ export function RestockProposalListView() {
   return (
     <div className="max-w-6xl mx-auto space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-gray-800">발주 추천안</h2>
-        <p className="text-sm text-gray-500 mt-1">
+        <h2 className="text-2xl font-bold text-foreground">발주 추천안</h2>
+        <p className="text-sm text-muted-foreground mt-1">
           Restock Agent가 생성한 대체 발주 추천안을 조회하고 승인 또는 반려합니다.
         </p>
       </div>

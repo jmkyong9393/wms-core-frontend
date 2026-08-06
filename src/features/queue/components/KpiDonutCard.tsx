@@ -74,20 +74,20 @@ export default function KpiDonutCard({
   trend,
 }: KpiDonutCardProps) {
   return (
-    <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex items-center justify-between gap-3">
+    <div className="bg-card p-4 rounded-xl border border-border shadow-sm flex items-center justify-between gap-3">
       <div className="min-w-0">
-        <p className="text-xs font-bold text-gray-700 truncate mb-1">{label}</p>
-        <p className="text-xl font-bold text-gray-800">{centerValue}</p>
+        <p className="text-xs font-bold text-foreground truncate mb-1">{label}</p>
+        <p className="text-xl font-bold text-foreground">{centerValue}</p>
         {trend && (
           <p
             className={`text-[11px] font-semibold mt-1 flex items-center gap-1 ${
-              trend.direction === 'up' ? 'text-green-600' : 'text-red-500'
+              trend.direction === 'up' ? 'text-green-600 dark:text-green-400' : 'text-red-500 dark:text-red-400'
             }`}
           >
             <span>
               {trend.direction === 'up' ? '▲' : '▼'} {trend.label}
             </span>
-            <span className="text-gray-400 font-normal">어제 대비</span>
+            <span className="text-muted-foreground font-normal">어제 대비</span>
           </p>
         )}
       </div>

@@ -301,7 +301,7 @@ export default function LpnScanView({ detail }: LpnScanViewProps) {
                         className={`w-24 h-24 rounded-2xl border-2 border-dashed flex flex-col items-center justify-center relative overflow-hidden transition-all cursor-pointer ${
                           hasPhoto 
                             ? 'border-indigo-500 bg-indigo-50/10' 
-                            : 'border-gray-200 dark:border-zinc-800 hover:border-gray-300'
+                            : 'border-gray-200 dark:border-zinc-800 hover:border-gray-300 dark:hover:border-zinc-700'
                         }`}
                       >
                         {hasPhoto ? (
@@ -312,13 +312,13 @@ export default function LpnScanView({ detail }: LpnScanViewProps) {
                             </div>
                           </>
                         ) : (
-                          <div className="flex flex-col items-center space-y-1 text-gray-400">
+                          <div className="flex flex-col items-center space-y-1 text-gray-400 dark:text-zinc-500">
                             <Camera className="w-5 h-5" />
                             <span className="text-[9px]">{label}</span>
                           </div>
                         )}
                       </button>
-                      <span className="text-[10px] mt-1.5 text-gray-500">{label}</span>
+                      <span className="text-[10px] mt-1.5 text-gray-500 dark:text-zinc-400">{label}</span>
                     </div>
                   );
                 })}

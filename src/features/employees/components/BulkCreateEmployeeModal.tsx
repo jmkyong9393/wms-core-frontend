@@ -105,15 +105,15 @@ export function BulkCreateEmployeeModal({ open, onClose }: BulkCreateEmployeeMod
     <>
       <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4" onClick={handleClose}>
         <div
-          className="bg-white rounded-2xl shadow-xl w-full max-w-md flex flex-col overflow-hidden"
+          className="bg-card rounded-2xl shadow-xl w-full max-w-md flex flex-col overflow-hidden"
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-            <h3 className="text-base font-bold text-gray-800">직원 계정 일괄 생성</h3>
+          <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+            <h3 className="text-base font-bold text-foreground">직원 계정 일괄 생성</h3>
             <button
               type="button"
               onClick={handleClose}
-              className="p-1.5 rounded-full hover:bg-gray-100 text-gray-400"
+              className="p-1.5 rounded-full hover:bg-accent text-muted-foreground"
             >
               <X className="w-4 h-4" />
             </button>
@@ -121,9 +121,9 @@ export function BulkCreateEmployeeModal({ open, onClose }: BulkCreateEmployeeMod
 
           <div className="p-5 space-y-4">
             {success ? (
-              <div className="rounded-lg border border-gray-100 p-4 space-y-2">
-                <p className="text-sm font-medium text-gray-700">계정이 생성되었습니다</p>
-                <div className="space-y-1 text-sm text-gray-500">
+              <div className="rounded-lg border border-border p-4 space-y-2">
+                <p className="text-sm font-medium text-foreground">계정이 생성되었습니다</p>
+                <div className="space-y-1 text-sm text-muted-foreground">
                   <p>사번과 초기 비밀번호가 담긴 결과 파일이 자동으로 다운로드됩니다.</p>
                   <p>파일을 안전하게 보관한 뒤 각 직원에게 개별 전달해주세요.</p>
                   <p>이 파일은 다시 받을 수 없습니다.</p>
@@ -144,8 +144,8 @@ export function BulkCreateEmployeeModal({ open, onClose }: BulkCreateEmployeeMod
                   </Button>
                 </div>
 
-                <div className="rounded-md bg-gray-50 p-3 text-xs text-gray-500 space-y-1">
-                  <p className="font-medium text-gray-600">작성 방법</p>
+                <div className="rounded-md bg-muted p-3 text-xs text-muted-foreground space-y-1">
+                  <p className="font-medium text-foreground">작성 방법</p>
                   <ul className="list-disc space-y-0.5 pl-4">
                     <li>헤더 순서: 이름 | 입사일 | 역할 | 이메일</li>
                     <li>이름: 2~50자 (필수)</li>
@@ -162,20 +162,20 @@ export function BulkCreateEmployeeModal({ open, onClose }: BulkCreateEmployeeMod
                     type="file"
                     accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                     onChange={handleFileChange}
-                    className="block w-full text-sm text-gray-600 file:mr-3 file:rounded-md file:border-0 file:bg-gray-100 file:px-3 file:py-1.5 file:text-sm file:font-medium"
+                    className="block w-full text-sm text-muted-foreground file:mr-3 file:rounded-md file:border-0 file:bg-muted file:px-3 file:py-1.5 file:text-sm file:font-medium"
                   />
-                  {file && <p className="text-xs text-gray-500">선택된 파일: {file.name}</p>}
+                  {file && <p className="text-xs text-muted-foreground">선택된 파일: {file.name}</p>}
                 </div>
 
-                {fileError && <p className="text-sm text-red-600">{fileError}</p>}
+                {fileError && <p className="text-sm text-red-600 dark:text-red-400">{fileError}</p>}
 
                 {bulkError && (
-                  <div className="rounded-md bg-red-50 p-3 space-y-1">
-                    <p className="text-sm font-medium text-red-700">{bulkError.message}</p>
+                  <div className="rounded-md bg-red-50 dark:bg-red-950/40 p-3 space-y-1">
+                    <p className="text-sm font-medium text-red-700 dark:text-red-300">{bulkError.message}</p>
                     {bulkError.errors.length > 0 && (
                       <ul className="list-disc space-y-0.5 pl-5">
                         {bulkError.errors.map((error, index) => (
-                          <li key={index} className="text-sm text-red-600">
+                          <li key={index} className="text-sm text-red-600 dark:text-red-400">
                             {error}
                           </li>
                         ))}
@@ -187,7 +187,7 @@ export function BulkCreateEmployeeModal({ open, onClose }: BulkCreateEmployeeMod
             )}
           </div>
 
-          <div className="flex flex-col-reverse gap-2 border-t border-gray-100 bg-gray-50 p-4 sm:flex-row sm:justify-end">
+          <div className="flex flex-col-reverse gap-2 border-t border-border bg-muted p-4 sm:flex-row sm:justify-end">
             <Button type="button" variant="outline" onClick={handleClose}>
               닫기
             </Button>

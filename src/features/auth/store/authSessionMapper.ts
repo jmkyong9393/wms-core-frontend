@@ -34,6 +34,8 @@ export function mapMeResponseToCurrentUser(
     id: me.id,
     employeeId: me.employee_id,
     name: me.name,
+    email: me.email,
+    status: me.status,
     role: me.role,
     mustChangePassword: me.must_change_password,
     tenantId: session.tenantId,

@@ -8,9 +8,9 @@ interface PickingTargetCardProps {
 
 function LocationBadge({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex-1 flex flex-col items-center justify-center bg-orange-50 border-2 border-orange-200 rounded-xl py-3">
-      <span className="text-[11px] font-medium text-orange-500 uppercase tracking-wide">{label}</span>
-      <span className="text-3xl font-extrabold text-orange-700">{value}</span>
+    <div className="flex-1 flex flex-col items-center justify-center bg-orange-50 dark:bg-orange-950/30 border-2 border-orange-200 dark:border-orange-900/50 rounded-xl py-3">
+      <span className="text-[11px] font-medium text-orange-500 dark:text-orange-400 uppercase tracking-wide">{label}</span>
+      <span className="text-3xl font-extrabold text-orange-700 dark:text-orange-300">{value}</span>
     </div>
   );
 }
@@ -20,7 +20,7 @@ export function PickingTargetCard({ item }: PickingTargetCardProps) {
   const isDone = item.picked_quantity >= item.quantity;
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+    <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 shadow-sm p-4">
       {/* Zone/Rack/Shelf: 화면에서 가장 크게 강조할 위치 정보 */}
       <div className="flex gap-2">
         <LocationBadge label="Zone" value={item.zone} />
@@ -29,11 +29,11 @@ export function PickingTargetCard({ item }: PickingTargetCardProps) {
       </div>
 
       <div className="mt-4 space-y-1.5">
-        <p className="text-lg font-bold text-gray-900">
+        <p className="text-lg font-bold text-gray-900 dark:text-zinc-100">
           {item.allocation_type === 'NEW_STOCK' ? '신품 도서' : '중고 단품 (LPN)'}
         </p>
-        {item.isbn && <p className="text-xs font-mono text-gray-500">ISBN {item.isbn}</p>}
-        {item.lpn_barcode && <p className="text-xs font-mono text-gray-500">LPN {item.lpn_barcode}</p>}
+        {item.isbn && <p className="text-xs font-mono text-gray-500 dark:text-zinc-400">ISBN {item.isbn}</p>}
+        {item.lpn_barcode && <p className="text-xs font-mono text-gray-500 dark:text-zinc-400">LPN {item.lpn_barcode}</p>}
       </div>
 
       <div className="mt-3 flex items-center justify-between">
@@ -45,10 +45,10 @@ export function PickingTargetCard({ item }: PickingTargetCardProps) {
           </span>
         )}
         <div className="flex items-baseline gap-1 ml-auto">
-          <span className={cn('text-2xl font-bold', isDone ? 'text-green-600' : 'text-gray-900')}>
+          <span className={cn('text-2xl font-bold', isDone ? 'text-green-600 dark:text-green-400' : 'text-gray-900 dark:text-zinc-100')}>
             {item.picked_quantity}
           </span>
-          <span className="text-gray-400 text-sm">/ {item.quantity}</span>
+          <span className="text-gray-400 dark:text-zinc-500 text-sm">/ {item.quantity}</span>
         </div>
       </div>
     </div>

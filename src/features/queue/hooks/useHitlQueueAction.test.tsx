@@ -45,6 +45,8 @@ const DEFAULT_CURRENT_USER: CurrentUser = {
   id: 'test-user-id',
   employeeId: 'W0001',
   name: '관리자테스트',
+  email: null,
+  status: 'ACTIVE',
   role: 'ADMIN',
   mustChangePassword: false,
 };
@@ -267,6 +269,8 @@ describe('useHitlQueueAction', () => {
       id: 'test-user-id-2',
       employeeId: 'W0001',
       name: '장문경',
+      email: null,
+      status: 'ACTIVE',
       role: 'ADMIN',
       mustChangePassword: false,
     });

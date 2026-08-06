@@ -84,7 +84,7 @@ export function RestockDecisionConfirmDialog({ proposalId, mode, onClose }: Rest
 
         {resultStatus ? (
           <>
-            <p className="text-sm text-gray-600">{RESULT_MESSAGE[resultStatus]}</p>
+            <p className="text-sm text-muted-foreground">{RESULT_MESSAGE[resultStatus]}</p>
             <DialogFooter>
               <Button type="button" onClick={onClose}>
                 확인

@@ -13,13 +13,13 @@ export default function LpnScanSection({ token }: LpnScanSectionProps) {
   const { data, isLoading, isError, refetch } = useLpnScanQuery(token);
 
   if (isLoading) {
-    return <p className="p-8 text-center text-sm text-gray-400">LPN 정보를 불러오는 중...</p>;
+    return <p className="p-8 text-center text-sm text-muted-foreground">LPN 정보를 불러오는 중...</p>;
   }
 
   if (isError || !data) {
     return (
       <div className="p-8 text-center space-y-3">
-        <p className="text-sm text-red-600">LPN 정보를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.</p>
+        <p className="text-sm text-red-600 dark:text-red-400">LPN 정보를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.</p>
         <Button type="button" onClick={() => refetch()}>
           다시 시도
         </Button>

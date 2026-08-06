@@ -117,8 +117,8 @@ export function InventoryGridView() {
   return (
     <div className="max-w-6xl mx-auto space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-gray-800">재고 조회</h2>
-        <p className="text-sm text-gray-500 mt-1">
+        <h2 className="text-2xl font-bold text-foreground">재고 조회</h2>
+        <p className="text-sm text-muted-foreground mt-1">
           신간 묶음 재고와 중고/반품 단품 재고를 통합 조회합니다.
         </p>
       </div>
@@ -188,7 +188,7 @@ export function InventoryGridView() {
           }}
           className="max-w-[160px]"
         />
-        <span className="text-sm text-gray-400">~</span>
+        <span className="text-sm text-muted-foreground">~</span>
         <Input
           type="date"
           value={dateTo}
@@ -222,11 +222,11 @@ export function InventoryGridView() {
       </div>
 
       {!canExport && !isExporting && (
-        <p className="text-xs text-gray-400">내보낼 데이터가 없습니다.</p>
+        <p className="text-xs text-muted-foreground">내보낼 데이터가 없습니다.</p>
       )}
-      {exportError && <p className="text-xs text-red-600">{exportError}</p>}
+      {exportError && <p className="text-xs text-red-600 dark:text-red-400">{exportError}</p>}
 
-      <p className="text-xs text-gray-400">재고 행을 클릭하면 상세 정보를 볼 수 있습니다.</p>
+      <p className="text-xs text-muted-foreground">재고 행을 클릭하면 상세 정보를 볼 수 있습니다.</p>
       <DataGrid
         table={table}
         isLoading={isLoading}
