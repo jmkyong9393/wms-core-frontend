@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useAtomValue } from "jotai";
-import { Plus, Upload } from "lucide-react";
+import { Download, Plus, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -20,7 +20,13 @@ import { useEmployeesQuery } from "@/features/employees/hooks/useEmployeesQuery"
 import { EmployeeTable } from "@/features/employees/components/EmployeeTable";
 import { CreateEmployeeModal } from "@/features/employees/components/CreateEmployeeModal";
 import { BulkCreateEmployeeModal } from "@/features/employees/components/BulkCreateEmployeeModal";
+import { listEmployees } from "@/features/employees/api/employeeService";
+import { toEmployeeExportRow } from "@/features/employees/utils/toEmployeeExportRow";
+import { fetchAllPages } from "@/lib/api/fetchAllPages";
+import { exportRowsToXlsx } from "@/lib/export/tableExport";
 import type { EmployeeListParams } from "@/features/employees/types/employee";
+
+const EXPORT_FILENAME = "직원_목록";
 
 const PAGE_SIZE = 20;
 const ROLE_FILTER_ALL = "전체 역할" as const;
@@ -38,6 +44,8 @@ export function EmployeeManagementView() {
   const [page, setPage] = useState(1);
   const [isCreateModalOpen, setCreateModalOpen] = useState(false);
   const [isBulkModalOpen, setBulkModalOpen] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
 
   const params: EmployeeListParams = {
     keyword: keyword.trim() || undefined,
@@ -49,6 +57,23 @@ export function EmployeeManagementView() {
 
   const { data, isLoading, isError } = useEmployeesQuery(params);
   const totalPages = data ? Math.max(1, data.total_pages) : 1;
+  const canExport = (data?.total ?? 0) > 0 && !isExporting;
+
+  async function handleExport() {
+    setExportError(null);
+    setIsExporting(true);
+    try {
+      const allEmployees = await fetchAllPages((page, size) =>
+        listEmployees({ ...params, page, size })
+      );
+      const rows = allEmployees.map(toEmployeeExportRow);
+      await exportRowsToXlsx(EXPORT_FILENAME, rows);
+    } catch {
+      setExportError("다운로드에 실패했습니다. 다시 시도해 주세요.");
+    } finally {
+      setIsExporting(false);
+    }
+  }
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
@@ -125,7 +150,13 @@ export function EmployeeManagementView() {
         <>
           <EmployeeTable employees={data.items} currentUser={currentUser} />
           <div className="flex items-center justify-between text-sm text-muted-foreground">
-            <span>총 {data.total}명</span>
+            <div className="flex items-center gap-3">
+              <Button variant="outline" size="sm" onClick={handleExport} disabled={!canExport}>
+                <Download className="w-4 h-4" />
+                {isExporting ? "다운로드 중..." : "직원 다운로드"}
+              </Button>
+              <span>총 {data.total}명</span>
+            </div>
             <div className="flex items-center gap-2">
               <Button
                 type="button"
@@ -150,6 +181,7 @@ export function EmployeeManagementView() {
               </Button>
             </div>
           </div>
+          {exportError && <p className="text-sm text-red-600 dark:text-red-400">{exportError}</p>}
         </>
       )}
 
