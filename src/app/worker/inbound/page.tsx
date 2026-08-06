@@ -286,12 +286,12 @@ export default function WorkerInboundPage() {
                       </span>
                     </div>
 
-                    <div className="flex justify-between items-center pt-1.5 border-t border-dashed border-gray-200 dark:border-zinc-800">
-                      <div className="font-mono text-zinc-500 dark:text-zinc-500 font-medium">
+                    <div className="flex justify-between items-center pt-1.5 border-t border-dashed border-gray-200 dark:border-zinc-800 gap-2">
+                      <div className="font-mono text-zinc-500 dark:text-zinc-500 font-medium min-w-0 flex-1 break-all text-[11px]">
                         {book.lpn || book.isbn}
                       </div>
-                      <div className="flex items-center gap-2">
-                        <span className={`inline-flex px-2 py-0.5 rounded-full font-bold text-[10px] ${
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span className={`inline-flex px-2 py-0.5 rounded-full font-bold text-[10px] whitespace-nowrap shrink-0 ${
                           book.status === "APPROVED"
                             ? "bg-green-50 text-green-600 dark:bg-green-950/20 dark:text-green-400"
                             : book.status === "REJECTED"
@@ -300,7 +300,7 @@ export default function WorkerInboundPage() {
                         }`}>
                           {book.status === "APPROVED" ? "입고 완료" : book.status === "REJECTED" ? "반려" : "검수 중"}
                         </span>
-                        <span className="text-[10px] text-gray-400 dark:text-zinc-500">
+                        <span className="text-[10px] text-gray-400 dark:text-zinc-500 whitespace-nowrap shrink-0">
                           {new Date(book.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </span>
                         <div className="flex items-center gap-1">
