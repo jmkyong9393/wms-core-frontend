@@ -2,9 +2,7 @@ import { apiClient } from '@/lib/api-client';
 import type { BookGrade } from '@/features/inspections/types/inspection';
 import type { HitlDecisionAction } from '@/features/queue/constants/hitlReasonCodes';
 
-// 검토 시작 mock 지연 시간
-const MOCK_DELAY_MS = 400;
-const mockDelay = () => new Promise<void>((resolve) => setTimeout(resolve, MOCK_DELAY_MS));
+
 
 export interface HitlDecisionPayload {
   action: HitlDecisionAction;
@@ -58,9 +56,85 @@ export async function submitHitlDecision(
   };
 }
 
-// 대기 티켓을 검토중 상태로 변경
-// TODO: 검토 시작 API 확정 후 실제 요청으로 교체
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export async function startReviewHitlItem(id: string): Promise<void> {
-  await mockDelay();
+export type HitlQueueBucket =
+  | 'PENDING'
+  | 'IN_REVIEW'
+  | 'RECHECK'
+  | 'COMPLETED';
+
+export interface HitlQueueItem {
+  id: string;
+  bookId: string;
+  bookTitle: string;
+  lpnBarcode: string | null;
+  locationBarcode: string | null;
+  status: 'HITL_REQUIRED' | 'RECHECK_REQUIRED' | 'APPROVED' | 'REJECTED';
+  ubciScore: number | null;
+  finalGrade: 'MINT' | 'EXCELLENT' | 'NORMAL' | 'REJECT' | null;
+  reasonCodes: string[];
+  reviewerId: string | null;
+  reviewerEmployeeId: string | null;
+  // hitlQueueService.ts
+  reviewerName: string | null;
+  reviewStartedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface HitlQueueListResult {
+  items: HitlQueueItem[];
+  total: number;
+  page: number;
+  size: number;
+  totalPages: number;
+  hasMore: boolean;
+}
+
+export interface HitlQueueMetrics {
+  pendingCount: number;
+  todayCompletedCount: number;
+  overdueCount: number;
+}
+
+export async function listHitlQueue(
+  bucket: HitlQueueBucket,
+  page = 1,
+  size = 10
+): Promise<HitlQueueListResult> {
+  const res = await apiClient.get<HitlQueueListResult>(
+    '/api/v1/admin/inspections/hitl-queue',
+    {
+      params: { bucket, page, size },
+    }
+  );
+
+  return res.data;
+}
+
+export async function getHitlQueueMetrics(): Promise<HitlQueueMetrics> {
+  const res = await apiClient.get<HitlQueueMetrics>(
+    '/api/v1/admin/inspections/hitl-queue/metrics'
+  );
+
+  return res.data;
+}
+
+export interface HitlReviewStartResponse {
+  job_id: string;
+  status: 'HITL_REQUIRED';
+  reviewer_id: string;
+  reviewer_employee_id: string;
+  review_started_at: string;
+  already_claimed_by_me: boolean;
+  message: string;
+}
+
+export async function startReviewHitlItem(
+  jobId: string
+): Promise<HitlReviewStartResponse> {
+  const res = await apiClient.post<HitlReviewStartResponse>(
+    `/api/v1/inspections/${jobId}/hitl/start`
+  );
+
+  return res.data;
 }

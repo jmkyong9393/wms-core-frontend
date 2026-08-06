@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { type HitlQueueItem } from '@/features/queue/store/queueAtoms';
+import type { HitlQueueItem } from '@/features/queue/api/hitlQueueService';
 import type { HitlDecisionPayload } from '@/features/queue/api/hitlQueueService';
 import {
   HITL_REASON_CODES_BY_ACTION,
@@ -106,7 +106,7 @@ export default function HitlDecisionDialog({ item, mode, onClose, onSubmit }: Hi
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{MODE_TITLE[mode]}</DialogTitle>
-          <DialogDescription>{item.title ?? item.id} · 사유 코드를 선택해 주세요.</DialogDescription>
+          <DialogDescription>{item.bookTitle} · 사유 코드를 선택해 주세요.</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">

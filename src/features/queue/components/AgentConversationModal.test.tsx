@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import AgentConversationModal from './AgentConversationModal';
-import type { HitlQueueItem } from '@/features/queue/store/queueAtoms';
+import type { HitlQueueItem } from '@/features/queue/api/hitlQueueService';
 import { getAgentLog } from '@/features/inspections/api/agentLogService';
 
 vi.mock('@/features/inspections/api/agentLogService', () => ({
@@ -11,12 +11,24 @@ vi.mock('@/features/inspections/api/agentLogService', () => ({
 
 const mockedGetAgentLog = vi.mocked(getAgentLog);
 
-function buildItem(overrides: Partial<HitlQueueItem> = {}): HitlQueueItem {
+function buildItem(
+  overrides: Partial<HitlQueueItem> = {}
+): HitlQueueItem {
   return {
     id: 'insp_001',
-    title: '코스모스',
-    isbn: '9788966262281',
-    status: 'AWAITING_REVIEW',
+    bookId: 'book_001',
+    bookTitle: '코스모스',
+    lpnBarcode: 'LPN-TEST-001',
+    locationBarcode: 'A-1-1',
+    status: 'HITL_REQUIRED',
+    ubciScore: 85,
+    finalGrade: 'EXCELLENT',
+    reasonCodes: [],
+    reviewerId: null,
+    reviewerEmployeeId: null,
+    reviewStartedAt: null,
+    createdAt: '2026-08-06T00:00:00',
+    updatedAt: '2026-08-06T00:00:00',
     ...overrides,
   };
 }
@@ -60,7 +72,7 @@ describe('AgentConversationModal', () => {
   it('조회에 실패해도 모달의 나머지 영역은 유지되고 실패 안내만 표시된다', async () => {
     mockedGetAgentLog.mockRejectedValueOnce(new Error('Not Found'));
 
-    renderModal(buildItem({ title: '니체의 초월자' }));
+    renderModal(buildItem({ bookTitle: '니체의 초월자' }));
 
     expect(await screen.findByText('Agent 로그를 불러오는데 실패했습니다.')).toBeInTheDocument();
     expect(screen.getByText('니체의 초월자')).toBeInTheDocument();

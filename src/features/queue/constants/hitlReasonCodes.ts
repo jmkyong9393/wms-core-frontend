@@ -74,3 +74,18 @@ export const DOWNGRADE_GRADE_OPTIONS: Extract<BookGrade, 'EXCELLENT' | 'NORMAL'>
 
 // APPROVE_NORMAL의 최종 등급 (요약 표시용, 요청 바디에는 포함하지 않음)
 export const APPROVE_NORMAL_GRADE: BookGrade = 'MINT';
+
+const ALL_HITL_REASON_CODES = [
+  ...FP_REASON_CODES,
+  ...DMG_EXT_REASON_CODES,
+  ...DMG_INT_REASON_CODES,
+  ...SYS_REASON_CODES,
+];
+
+const HITL_REASON_LABEL_MAP = new Map(
+  ALL_HITL_REASON_CODES.map(({ code, label }) => [code, label])
+);
+
+export function getHitlReasonLabel(code: string) {
+  return HITL_REASON_LABEL_MAP.get(code) ?? code;
+}

@@ -76,6 +76,19 @@ export interface HITLHistoryItem {
   taskId: string | null;
 }
 
+export interface VisionDetection {
+  imageIndex: number;
+  imageView: 'FRONT' | 'BACK' | 'INSIDE';
+  imageUrl: string;
+  type: string;
+  defectType: string;
+  ratio: number | null;
+  confidence: number;
+  yoloConfidence: number | null;
+  bbox: [number, number, number, number];
+  coordinateSpace: 'ORIGINAL_IMAGE_NORMALIZED';
+}
+
 export interface InspectionDetailResponse {
   id: string;
   book: InspectionBookDetail;
@@ -88,6 +101,7 @@ export interface InspectionDetailResponse {
   lpnBarcode: string | null;
   labelScanUrl: string | null; // 추가: LPN QR 스캔 대상 공개 URL
   originalImageUrls: string[];
+  visionDetections: VisionDetection[];
   aiResult: InspectionAIResult;
   hitl: Record<string, any>;
   hitlHistory: HITLHistoryItem[];
