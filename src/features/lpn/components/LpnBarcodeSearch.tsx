@@ -22,8 +22,8 @@ export function LpnBarcodeSearch() {
   return (
     <div className="max-w-md mx-auto space-y-4">
       <div>
-        <h2 className="text-2xl font-bold text-gray-800">LPN 단품 조회</h2>
-        <p className="text-sm text-gray-500 mt-1">
+        <h2 className="text-2xl font-bold text-foreground">LPN 단품 조회</h2>
+        <p className="text-sm text-muted-foreground mt-1">
           중고·반품 단품 재고의 LPN 바코드를 스캔하거나 직접 입력해 상세 정보와 가격을 확인합니다.
         </p>
       </div>

@@ -32,6 +32,8 @@ describe("AuthSessionExpiredWatcher", () => {
       id: "test-user-id",
       employeeId: "W0001",
       name: "홍길동",
+      email: null,
+      status: "ACTIVE",
       role: "WORKER",
       mustChangePassword: false,
       tenantId: "wms-local",

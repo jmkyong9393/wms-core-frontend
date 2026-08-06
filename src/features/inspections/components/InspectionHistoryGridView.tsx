@@ -127,8 +127,8 @@ export function InspectionHistoryGridView() {
   return (
     <div className="max-w-6xl mx-auto space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-gray-800">검수 이력</h2>
-        <p className="text-sm text-gray-500 mt-1">
+        <h2 className="text-2xl font-bold text-foreground">검수 이력</h2>
+        <p className="text-sm text-muted-foreground mt-1">
           AI Agent 검수 결과 이력을 조회합니다. 행을 클릭하면 단계별 로그를 확인할 수 있습니다.
         </p>
       </div>
@@ -198,7 +198,7 @@ export function InspectionHistoryGridView() {
           }}
           className="max-w-[160px]"
         />
-        <span className="text-sm text-gray-400">~</span>
+        <span className="text-sm text-muted-foreground">~</span>
         <Input
           type="date"
           value={dateTo}
@@ -231,8 +231,8 @@ export function InspectionHistoryGridView() {
         </div>
       </div>
 
-      {!canExport && !isExporting && <p className="text-xs text-gray-400">내보낼 데이터가 없습니다.</p>}
-      {exportError && <p className="text-xs text-red-600">{exportError}</p>}
+      {!canExport && !isExporting && <p className="text-xs text-muted-foreground">내보낼 데이터가 없습니다.</p>}
+      {exportError && <p className="text-xs text-red-600 dark:text-red-400">{exportError}</p>}
 
       <DataGrid
         table={table}

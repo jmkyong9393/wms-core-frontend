@@ -2,11 +2,12 @@
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { Provider as JotaiProvider, useStore } from "jotai";
+import { Provider as JotaiProvider, useAtomValue, useStore } from "jotai";
 import { useEffect, useState } from "react";
 import { MockProvider } from "@/mocks/MockProvider";
 import { AUTH_SESSION_EXPIRED_EVENT } from "@/lib/api-client";
 import { logoutAtom } from "@/features/auth/store/authAtoms";
+import { themeAtom } from "@/stores/atoms";
 
 // 인증 만료 이벤트를 감지해 로그인 상태 초기화
 export function AuthSessionExpiredWatcher() {
@@ -22,6 +23,17 @@ export function AuthSessionExpiredWatcher() {
     window.addEventListener(AUTH_SESSION_EXPIRED_EVENT, handleAuthSessionExpired);
     return () => window.removeEventListener(AUTH_SESSION_EXPIRED_EVENT, handleAuthSessionExpired);
   }, [store]);
+
+  return null;
+}
+
+// themeAtom(light/dark) 값을 <html>의 .dark 클래스에 반영
+export function ThemeSync() {
+  const theme = useAtomValue(themeAtom);
+
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", theme === "dark");
+  }, [theme]);
 
   return null;
 }
@@ -46,6 +58,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       <QueryClientProvider client={queryClient}>
         <JotaiProvider>
           <AuthSessionExpiredWatcher />
+          <ThemeSync />
           {children}
         </JotaiProvider>
         <ReactQueryDevtools initialIsOpen={false} />

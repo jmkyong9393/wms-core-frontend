@@ -261,8 +261,8 @@ export function BarcodeScanner({ onScan, isActive = true }: BarcodeScannerProps)
 
   if (hasPermission === false) {
     return (
-      <div className="flex flex-col items-center justify-center h-64 bg-gray-100 rounded-xl border-2 border-dashed border-gray-300">
-        <p className="text-red-500 font-medium text-sm text-center px-4">{errorMsg}</p>
+      <div className="flex flex-col items-center justify-center h-64 bg-gray-100 dark:bg-zinc-800 rounded-xl border-2 border-dashed border-gray-300 dark:border-zinc-700">
+        <p className="text-red-500 dark:text-red-400 font-medium text-sm text-center px-4">{errorMsg}</p>
       </div>
     );
   }

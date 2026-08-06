@@ -2,15 +2,15 @@ import type { InspectionStatus } from '../types/inspection';
 
 // 검수 상태별 배지 색상
 export const STATUS_BADGE_STYLE: Record<InspectionStatus, string> = {
-  PENDING: 'bg-gray-100 text-gray-600',
-  PROCESSING: 'bg-blue-100 text-blue-700',
-  HITL_REQUIRED: 'bg-amber-100 text-amber-700',
-  APPROVED: 'bg-green-100 text-green-700',
-  REJECTED: 'bg-red-100 text-red-700',
-  FAILED: 'bg-red-100 text-red-700',
+  PENDING: 'bg-gray-100 text-gray-600 dark:bg-zinc-800 dark:text-zinc-300',
+  PROCESSING: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
+  HITL_REQUIRED: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
+  APPROVED: 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300',
+  REJECTED: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300',
+  FAILED: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300',
 };
 
-const DEFAULT_STATUS_BADGE_STYLE = 'bg-gray-100 text-gray-600';
+const DEFAULT_STATUS_BADGE_STYLE = 'bg-gray-100 text-gray-600 dark:bg-zinc-800 dark:text-zinc-300';
 
 export function getStatusBadgeStyle(status: string): string {
   return STATUS_BADGE_STYLE[status as InspectionStatus] ?? DEFAULT_STATUS_BADGE_STYLE;

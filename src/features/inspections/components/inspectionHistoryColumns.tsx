@@ -26,7 +26,7 @@ export function createInspectionHistoryColumns({
       cell: ({ getValue }) => {
         const grade = getValue<InspectionHistoryRow['finalGrade']>();
         if (!grade) {
-          return <span className="text-xs text-gray-400">판정 전</span>;
+          return <span className="text-xs text-muted-foreground">판정 전</span>;
         }
         return (
           <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${getGradeBadgeStyle(grade)}`}>
@@ -41,11 +41,11 @@ export function createInspectionHistoryColumns({
       accessorKey: 'isFastTrack',
       cell: ({ getValue }) =>
         getValue<boolean>() ? (
-          <span className="rounded-full bg-purple-100 px-2 py-0.5 text-xs font-semibold text-purple-700">
+          <span className="rounded-full bg-purple-100 px-2 py-0.5 text-xs font-semibold text-purple-700 dark:bg-purple-950/40 dark:text-purple-300">
             신속 검수
           </span>
         ) : (
-          <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-600">
+          <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
             표준 검수
           </span>
         ),
@@ -81,7 +81,7 @@ export function createInspectionHistoryColumns({
       cell: ({ getValue }) => {
         const codes = getValue<InspectionHistoryRow['reasonCodes']>();
         if (!codes || codes.length === 0) {
-          return <span className="text-xs text-gray-400">-</span>;
+          return <span className="text-xs text-muted-foreground">-</span>;
         }
         const [first, ...rest] = codes;
         return (

@@ -8,9 +8,9 @@ const PRICING_STATUS_LABEL: Record<PricingStatus, string> = {
 };
 
 const PRICING_STATUS_BADGE_STYLE: Record<PricingStatus, string> = {
-  DEFAULT_POLICY: 'bg-sky-100 text-sky-700',
-  AGENT_PRICED: 'bg-emerald-100 text-emerald-700',
-  PENDING: 'bg-gray-200 text-gray-600',
+  DEFAULT_POLICY: 'bg-sky-100 text-sky-700 dark:bg-sky-900/40 dark:text-sky-300',
+  AGENT_PRICED: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300',
+  PENDING: 'bg-gray-200 text-gray-600 dark:bg-zinc-800 dark:text-zinc-300',
 };
 
 export function getPricingStatusLabel(status: string): string {
@@ -18,5 +18,5 @@ export function getPricingStatusLabel(status: string): string {
 }
 
 export function getPricingStatusBadgeStyle(status: string): string {
-  return PRICING_STATUS_BADGE_STYLE[status as PricingStatus] ?? 'bg-gray-100 text-gray-600';
+  return PRICING_STATUS_BADGE_STYLE[status as PricingStatus] ?? 'bg-gray-100 text-gray-600 dark:bg-zinc-800 dark:text-zinc-300';
 }

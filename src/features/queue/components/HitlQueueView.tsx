@@ -68,8 +68,8 @@ export default function HitlQueueView() {
     <div className="max-w-[1600px] mx-auto space-y-4">
       {/* 페이지 제목과 설명 */}
       <div>
-        <h2 className="text-2xl font-bold text-gray-800">HITL 처리 현황</h2>
-        <p className="text-sm text-gray-500 mt-1">
+        <h2 className="text-2xl font-bold text-foreground">HITL 처리 현황</h2>
+        <p className="text-sm text-muted-foreground mt-1">
           AI 신뢰도가 낮아 관리자의 검토·승인·반려가 필요한 항목입니다.
         </p>
       </div>
@@ -80,30 +80,30 @@ export default function HitlQueueView() {
           label="금일 누적 처리량"
           centerValue={`${processedCount}건`}
           ratio={processedRatio}
-          colorClass="text-indigo-600"
+          colorClass="text-indigo-600 dark:text-indigo-400"
           variant="bar"
           barSegments={[
-            { label: '대기', ratio: 100 - processedRatio, colorClass: 'bg-yellow-400' },
-            { label: '완료', ratio: processedRatio, colorClass: 'bg-indigo-500' },
+            { label: '대기', ratio: 100 - processedRatio, colorClass: 'bg-yellow-400 dark:bg-yellow-500' },
+            { label: '완료', ratio: processedRatio, colorClass: 'bg-indigo-500 dark:bg-indigo-400' },
           ]}
         />
         <KpiDonutCard
           label="실시간 자동 승인율"
           centerValue={`${Math.round(approvalRatio)}%`}
           ratio={approvalRatio}
-          colorClass="text-green-600"
+          colorClass="text-green-600 dark:text-green-400"
         />
         <KpiDonutCard
           label="에이전트 반려율"
           centerValue={`${Math.round(rejectionRatio)}%`}
           ratio={rejectionRatio}
-          colorClass="text-red-500"
+          colorClass="text-red-500 dark:text-red-400"
         />
         <KpiDonutCard
           label="검토 대기건수"
           centerValue={`${hitlRequiredCount}건`}
           ratio={hitlRequiredRatio}
-          colorClass="text-yellow-600"
+          colorClass="text-yellow-600 dark:text-yellow-400"
         />
       </div>
 
@@ -133,7 +133,7 @@ export default function HitlQueueView() {
           >
             이전
           </Button>
-          <span className="text-xs text-gray-500">
+          <span className="text-xs text-muted-foreground">
             페이지 {page} / {totalPages}
           </span>
           <Button

@@ -40,10 +40,10 @@ export function DataGrid<TData>({
   isFetching = false,
 }: DataGridProps<TData>) {
   if (isLoading) {
-    return <p className="text-sm text-gray-400">불러오는 중...</p>;
+    return <p className="text-sm text-muted-foreground">불러오는 중...</p>;
   }
   if (isError) {
-    return <p className="text-sm text-red-600">데이터를 불러오지 못했습니다.</p>;
+    return <p className="text-sm text-red-600 dark:text-red-400">데이터를 불러오지 못했습니다.</p>;
   }
 
   const rows = table.getRowModel().rows;
@@ -54,7 +54,7 @@ export function DataGrid<TData>({
 
   return (
     <div className="space-y-3">
-      <div className="rounded-xl border border-gray-100 bg-white shadow-sm overflow-x-auto">
+      <div className="rounded-xl border border-border bg-card shadow-sm overflow-x-auto">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -82,7 +82,7 @@ export function DataGrid<TData>({
           <TableBody>
             {rows.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={columnCount} className="py-6 text-center text-gray-400">
+                <TableCell colSpan={columnCount} className="py-6 text-center text-muted-foreground">
                   {emptyMessage}
                 </TableCell>
               </TableRow>
@@ -105,7 +105,7 @@ export function DataGrid<TData>({
         </Table>
       </div>
 
-      <div className="flex items-center justify-between text-sm text-gray-500">
+      <div className="flex items-center justify-between text-sm text-muted-foreground">
         <div className="flex items-center gap-2">
           <span>페이지 크기</span>
           <Select

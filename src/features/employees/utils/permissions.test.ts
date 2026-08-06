@@ -4,7 +4,7 @@ import type { CurrentUser } from "@/features/auth/types/authTypes";
 import type { Role } from "@/features/auth/types/authTypes";
 
 function makeUser(role: Role): CurrentUser {
-  return { id: "uuid-test", employeeId: "T0001", name: "테스트", role, mustChangePassword: false };
+  return { id: "uuid-test", employeeId: "T0001", name: "테스트", email: null, status: "ACTIVE", role, mustChangePassword: false };
 }
 
 describe("canManageEmployees", () => {

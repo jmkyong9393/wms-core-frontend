@@ -30,18 +30,18 @@ export default function AgentConversationModal({ item, onClose }: AgentConversat
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-2xl shadow-xl w-full max-w-3xl max-h-[85vh] flex flex-col overflow-hidden"
+        className="bg-card rounded-2xl shadow-xl w-full max-w-3xl max-h-[85vh] flex flex-col overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-border">
           <div>
-            <h3 className="text-base font-bold text-gray-800">{item.title ?? item.id}</h3>
-            <p className="text-xs text-gray-400">{item.isbn ?? item.id}</p>
+            <h3 className="text-base font-bold text-foreground">{item.title ?? item.id}</h3>
+            <p className="text-xs text-muted-foreground">{item.isbn ?? item.id}</p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-full hover:bg-gray-100 text-gray-400"
+            className="p-1.5 rounded-full hover:bg-accent text-muted-foreground"
           >
             <X className="w-4 h-4" />
           </button>
@@ -49,11 +49,11 @@ export default function AgentConversationModal({ item, onClose }: AgentConversat
 
         <div className="grid grid-cols-1 sm:grid-cols-2 flex-1 min-h-0">
           {/* 결함 이미지 자리 (실제 이미지 미연동, 결함 표시 목업 사각형만 표시) */}
-          <div className="p-4 border-b sm:border-b-0 sm:border-r border-gray-100 flex items-center justify-center">
-            <div className="relative w-full aspect-[3/4] bg-gray-50 rounded-xl border border-gray-100 flex flex-col items-center justify-center text-gray-300">
+          <div className="p-4 border-b sm:border-b-0 sm:border-r border-border flex items-center justify-center">
+            <div className="relative w-full aspect-[3/4] bg-muted rounded-xl border border-border flex flex-col items-center justify-center text-muted-foreground">
               <ImageOff className="w-8 h-8 mb-2" />
               <span className="text-xs">원본 이미지 준비 중</span>
-              <div className="absolute left-[22%] top-[35%] w-[45%] h-[20%] border-2 border-red-400 rounded-sm" />
+              <div className="absolute left-[22%] top-[35%] w-[45%] h-[20%] border-2 border-red-400 dark:border-red-500 rounded-sm" />
             </div>
           </div>
 
@@ -62,9 +62,9 @@ export default function AgentConversationModal({ item, onClose }: AgentConversat
             <div className="flex-1 overflow-y-auto pr-1">
               <ErrorBoundary
                 key={item.id}
-                fallback={<p className="text-xs text-red-500 text-center py-8">Agent 로그를 불러오는데 실패했습니다.</p>}
+                fallback={<p className="text-xs text-red-500 dark:text-red-400 text-center py-8">Agent 로그를 불러오는데 실패했습니다.</p>}
               >
-                <Suspense fallback={<p className="text-xs text-gray-400 text-center py-8">Agent 로그 불러오는 중...</p>}>
+                <Suspense fallback={<p className="text-xs text-muted-foreground text-center py-8">Agent 로그 불러오는 중...</p>}>
                   <AgentLogSection inspectionId={item.id} />
                 </Suspense>
               </ErrorBoundary>

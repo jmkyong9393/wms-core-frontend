@@ -1,10 +1,14 @@
 import { atom } from 'jotai';
+import { atomWithStorage } from 'jotai/utils';
 import type {
   NotificationItem,
   NotificationInput,
   NotificationListResult,
 } from '@/features/notifications/types/notification';
 import { MAX_NOTIFICATION_HISTORY } from '@/features/notifications/constants/notificationConfig';
+
+// 알림 팝업(토스트) 음소거 여부. 음소거 중에도 목록/안읽음 개수는 그대로 갱신됨
+export const notificationsMutedAtom = atomWithStorage<boolean>('wms_notifications_muted', false);
 
 // 알림 목록
 export const notificationsAtom = atom<NotificationItem[]>([]);
@@ -34,7 +38,9 @@ export const pushNotificationAtom = atom(null, (get, set, input: NotificationInp
     read: false,
   };
   set(notificationsAtom, (prev) => [item, ...prev].slice(0, MAX_NOTIFICATION_HISTORY));
-  set(activeToastsAtom, (prev) => [...prev, item]);
+  if (!get(notificationsMutedAtom)) {
+    set(activeToastsAtom, (prev) => [...prev, item]);
+  }
   set(unreadNotificationCountAtom, (c) => c + 1);
 });
 
@@ -67,7 +73,9 @@ export const pushRealNotificationAtom = atom(null, (get, set, item: Notification
   }
 
   set(notificationsAtom, (prev) => [item, ...prev].slice(0, MAX_NOTIFICATION_HISTORY));
-  set(activeToastsAtom, (prev) => [...prev, item]);
+  if (!get(notificationsMutedAtom)) {
+    set(activeToastsAtom, (prev) => [...prev, item]);
+  }
   set(unreadNotificationCountAtom, (c) => c + 1);
 });
 

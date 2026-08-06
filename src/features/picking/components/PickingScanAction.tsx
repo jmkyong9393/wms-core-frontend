@@ -53,10 +53,10 @@ export function PickingScanAction({ orderId, item }: PickingScanActionProps) {
       <BarcodeScanner onScan={handleScan} isActive={isScannerActive && !isManualEntryOpen} />
 
       {errorMessage && (
-        <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">{errorMessage}</p>
+        <p className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/30 border border-red-100 dark:border-red-900/50 rounded-lg px-3 py-2">{errorMessage}</p>
       )}
       {infoMessage && (
-        <p className="text-sm text-blue-600 bg-blue-50 border border-blue-100 rounded-lg px-3 py-2">{infoMessage}</p>
+        <p className="text-sm text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/50 rounded-lg px-3 py-2">{infoMessage}</p>
       )}
 
       <div className="flex items-center gap-2">
@@ -102,8 +102,8 @@ export function PickingScanAction({ orderId, item }: PickingScanActionProps) {
       )}
 
       {/* 현재 처리 수량 */}
-      <p className="text-center text-xs text-gray-400">
-        현재까지 처리: <span className="font-semibold text-gray-600">{item.picked_quantity}</span> / {item.quantity}
+      <p className="text-center text-xs text-gray-400 dark:text-zinc-500">
+        현재까지 처리: <span className="font-semibold text-gray-600 dark:text-zinc-300">{item.picked_quantity}</span> / {item.quantity}
       </p>
     </div>
   );
