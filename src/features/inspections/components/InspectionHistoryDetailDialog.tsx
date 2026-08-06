@@ -161,20 +161,29 @@ export function InspectionHistoryDetailDialog({ row, onClose }: InspectionHistor
                       {/* QR 스캔 URL 이동 링크 */}
                       {(detail.labelScanUrl || detail.lpnBarcode) && (
                         <div className="flex flex-col items-center gap-2 w-full mt-1.5">
-                          <a
-                            href={detail.labelScanUrl || (typeof window !== "undefined" ? `${window.location.origin}/scan/${detail.lpnBarcode}` : "#")}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-[9px] text-indigo-500/80 hover:text-indigo-650 hover:underline transition-all tracking-tight break-all max-w-full block select-all text-center"
-                          >
-                            🔗 QR 스캔 URL 접속하기
-                          </a>
+                          {row.status === 'PENDING' ? (
+                            <span className="text-[10px] text-gray-400 mt-2">검수 완료 후 표시됩니다.</span>
+                          ) : (
+                            <a
+                              href={detail.labelScanUrl || (typeof window !== "undefined" ? `${window.location.origin}/scan/${detail.lpnBarcode}` : "#")}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-[9px] text-indigo-500/80 hover:text-indigo-650 hover:underline transition-all tracking-tight break-all max-w-full block select-all text-center"
+                            >
+                              🔗 QR 스캔 URL 접속하기
+                            </a>
+                          )}
                           <button
                             onClick={() => setIsPrintModalOpen(true)}
-                            className="flex items-center justify-center gap-1.5 rounded-xl border border-indigo-200 dark:border-indigo-900 bg-indigo-50 dark:bg-indigo-900/30 px-4 py-2 text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors w-full"
+                            disabled={row.status === 'PENDING'}
+                            className={`flex items-center justify-center gap-1.5 rounded-xl border px-4 py-2 text-xs font-bold w-full transition-colors ${
+                              row.status === 'PENDING'
+                                ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
+                                : 'border-indigo-200 dark:border-indigo-900 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 cursor-pointer'
+                            }`}
                           >
                             <Printer className="w-3.5 h-3.5" />
-                            라벨 출력
+                            {row.status === 'PENDING' ? '검수 중 인쇄 불가' : '라벨 출력'}
                           </button>
                         </div>
                       )}

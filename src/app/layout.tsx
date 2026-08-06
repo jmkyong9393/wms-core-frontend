@@ -5,6 +5,7 @@ import Providers from "@/components/providers";
 import { A2HSBanner } from "@/components/a2hs-banner";
 // import { TestErrorButton } from "@/components/test-error-button";
 import { ServiceWorkerRegistry } from "@/components/service-worker-registry";
+import { Toaster } from "sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -64,6 +65,7 @@ export default function RootLayout({
           {/* [FE-3.7] 에러 바운더리 테스트용 폭탄 버튼 (필요 시 주석 해제하여 사용) */}
           {/* <TestErrorButton /> */}
           <ServiceWorkerRegistry />
+          <Toaster richColors position="top-center" />
         </Providers>
       </body>
     </html>

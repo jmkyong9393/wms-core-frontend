@@ -7,6 +7,7 @@ import { BookOpen, RefreshCw, Trash2, ClipboardList, BookMarked, History, Printe
 import { currentUserAtom } from "@/features/auth/store/authAtoms";
 import { WorkerInboundDetailDialog } from "@/features/inbound/components/WorkerInboundDetailDialog";
 import { LabelPrintModal } from "@/features/inbound/components/LabelPrintModal";
+import { getJobStatus } from "@/services/returnService";
 
 interface ProcessedBook {
   id: string;
@@ -43,6 +44,40 @@ export default function WorkerInboundPage() {
       }
     }
   }, [storageKey]);
+
+  // 주기적으로 PROCESSING 상태인 내역의 최신 상태를 서버에서 확인하여 업데이트 (폴링)
+  useEffect(() => {
+    if (!mounted || !storageKey || processedBooks.length === 0) return;
+
+    const checkPendingJobs = async () => {
+      let hasChanges = false;
+      const updatedBooks = await Promise.all(
+        processedBooks.map(async (book) => {
+          if (book.status === "PROCESSING" && book.jobId) {
+            try {
+              const res = await getJobStatus(book.jobId);
+              // "PENDING" | "PROCESSING" 이 아니면 (APPROVED, REJECTED 등) 상태 변경
+              if (res.status === "APPROVED" || res.status === "REJECTED") {
+                hasChanges = true;
+                return { ...book, status: res.status };
+              }
+            } catch (error) {
+              console.error("Failed to check job status", error);
+            }
+          }
+          return book;
+        })
+      );
+
+      if (hasChanges) {
+        setProcessedBooks(updatedBooks);
+        localStorage.setItem(storageKey, JSON.stringify(updatedBooks));
+      }
+    };
+
+    const interval = setInterval(checkPendingJobs, 5000);
+    return () => clearInterval(interval);
+  }, [mounted, storageKey, processedBooks]);
 
   const handleClearHistory = () => {
     if (!storageKey) return;
@@ -206,10 +241,17 @@ export default function WorkerInboundPage() {
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              setPrintingBook(book);
+                              if (book.status !== "PROCESSING") {
+                                setPrintingBook(book);
+                              }
                             }}
-                            className="p-1.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg transition-colors inline-flex"
-                            title="라벨 출력"
+                            disabled={book.status === "PROCESSING"}
+                            className={`p-1.5 rounded-lg transition-colors inline-flex ${
+                              book.status === "PROCESSING"
+                                ? "text-gray-300 dark:text-zinc-700 cursor-not-allowed"
+                                : "text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30"
+                            }`}
+                            title={book.status === "PROCESSING" ? "검수 진행 중에는 출력할 수 없습니다." : "라벨 출력"}
                           >
                             <Printer className="w-4 h-4" />
                           </button>
@@ -261,15 +303,25 @@ export default function WorkerInboundPage() {
                         <span className="text-[10px] text-gray-400 dark:text-zinc-500">
                           {new Date(book.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </span>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setPrintingBook(book);
-                          }}
-                          className="ml-2 p-1 text-gray-400 hover:text-indigo-600 rounded bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 shadow-sm"
-                        >
-                          <Printer className="w-3.5 h-3.5" />
-                        </button>
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (book.status !== "PROCESSING") {
+                                setPrintingBook(book);
+                              }
+                            }}
+                            disabled={book.status === "PROCESSING"}
+                            className={`p-1.5 rounded-lg transition-colors ${
+                              book.status === "PROCESSING"
+                                ? "text-gray-300 dark:text-zinc-700 cursor-not-allowed"
+                                : "text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30"
+                            }`}
+                            title={book.status === "PROCESSING" ? "검수 진행 중에는 출력할 수 없습니다." : "라벨 출력"}
+                          >
+                            <Printer className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>

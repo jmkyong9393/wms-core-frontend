@@ -23,9 +23,9 @@ export function createInspectionHistoryColumns({
       id: 'finalGrade',
       header: '최종등급',
       accessorKey: 'finalGrade',
-      cell: ({ getValue }) => {
+      cell: ({ getValue, row }) => {
         const grade = getValue<InspectionHistoryRow['finalGrade']>();
-        if (!grade) {
+        if (!grade || row.original.status === 'PENDING') {
           return <span className="text-xs text-gray-400">판정 전</span>;
         }
         return (
@@ -69,7 +69,8 @@ export function createInspectionHistoryColumns({
       id: 'ubciScore',
       header: 'UBCI 점수',
       accessorKey: 'ubciScore',
-      cell: ({ getValue }) => {
+      cell: ({ getValue, row }) => {
+        if (row.original.status === 'PENDING') return <span className="text-gray-400">-</span>;
         const score = getValue<InspectionHistoryRow['ubciScore']>();
         return <span>{score === null || score === undefined ? '-' : score}</span>;
       },
@@ -78,9 +79,9 @@ export function createInspectionHistoryColumns({
       id: 'reasonCodes',
       header: 'AI 판정 사유',
       accessorKey: 'reasonCodes',
-      cell: ({ getValue }) => {
+      cell: ({ getValue, row }) => {
         const codes = getValue<InspectionHistoryRow['reasonCodes']>();
-        if (!codes || codes.length === 0) {
+        if (!codes || codes.length === 0 || row.original.status === 'PENDING') {
           return <span className="text-xs text-gray-400">-</span>;
         }
         const [first, ...rest] = codes;

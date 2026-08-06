@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { useCamera } from "@/features/inbound/hooks/useCamera";
 import { useS3Upload } from "@/features/inbound/hooks/useS3Upload";
+import { toast } from "sonner";
 import { useJobStatus } from "@/hooks/useJobStatus";
 import { BarcodeScanner } from "@/components/ui/barcode-scanner";
 import { 
@@ -319,9 +320,9 @@ export default function UsedItemReturnsPage() {
         imagePaths: [frontUrl, backUrl, insideUrl],
       });
 
-      setJobId(inspect.jobId);
-      setIsInspectionTriggered(true);
-      setCurrentStep(3);
+      // 즉시 PROCESSING 상태로 처리 리스트에 저장하고 다음 책으로 넘기기
+      handleSaveToProcessedList("PROCESSING", inspect.jobId);
+      toast.success("AI 검수 접수가 완료되었습니다. 다음 도서를 스캔해 주세요.");
     } catch (e: any) {
       console.error(e);
       setUploadError(e.message || "이미지 서버 전송 중 오류가 발생했습니다.");
@@ -342,14 +343,14 @@ export default function UsedItemReturnsPage() {
   };
 
   // Final submit handler for processed books
-  const handleSaveToProcessedList = (status: "APPROVED" | "REJECTED") => {
+  const handleSaveToProcessedList = (status: "APPROVED" | "REJECTED" | "PROCESSING", overrideJobId?: string) => {
     if (!bookInfo || !inboundInfo || !currentUser) return;
     const storageKey = `wms_worker_processed_list_${currentUser.employeeId}`;
     const stored = localStorage.getItem(storageKey);
     const list = stored ? JSON.parse(stored) : [];
     list.unshift({
       id: `inbound_${Date.now()}`,
-      jobId: jobId,
+      jobId: overrideJobId || jobId,
       title: bookInfo.title,
       publisher: bookInfo.publisher,
       isbn: bookInfo.isbn,
@@ -401,15 +402,12 @@ export default function UsedItemReturnsPage() {
       </div>
 
       {/* Steps Indicator */}
-      <div className="grid grid-cols-3 gap-2 shrink-0 py-1 text-center text-[10px] font-extrabold text-gray-400">
+      <div className="grid grid-cols-2 gap-2 shrink-0 py-1 text-center text-[10px] font-extrabold text-gray-400">
         <div className={`pb-1.5 border-b-2 transition-colors ${currentStep === 1 ? "border-emerald-500 text-emerald-600 font-black" : "border-gray-200 dark:border-zinc-800"}`}>
           1. 바코드 스캔
         </div>
         <div className={`pb-1.5 border-b-2 transition-colors ${currentStep === 2 ? "border-emerald-500 text-emerald-600 font-black" : "border-gray-200 dark:border-zinc-800"}`}>
-          2. 사진 3장 촬영
-        </div>
-        <div className={`pb-1.5 border-b-2 transition-colors ${currentStep === 3 ? "border-emerald-500 text-emerald-600 font-black" : "border-gray-200 dark:border-zinc-800"}`}>
-          3. AI 검수 및 입고
+          2. 사진 촬영 및 접수
         </div>
       </div>
 
@@ -608,159 +606,7 @@ export default function UsedItemReturnsPage() {
           </div>
         )}
 
-        {currentStep === 3 && bookInfo && inboundInfo && (
-          /* Step 3: AI Inspection & Status Result */
-          <div className="flex-1 flex flex-col justify-between space-y-4">
-            <div className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-3xl p-6 shadow-sm flex-1 flex flex-col justify-center space-y-6">
-              
-              {/* Inspection running loading state */}
-              {isInspectionTriggered && (!jobStatus || ["PENDING", "PROCESSING"].includes(jobStatus)) && (
-                <div className="text-center py-8 space-y-4 max-w-xs mx-auto">
-                  <div className="relative w-16 h-16 mx-auto">
-                    <Loader2 className="w-16 h-16 animate-spin text-emerald-500 absolute inset-0" />
-                    <Sparkles className="w-6 h-6 text-indigo-500 absolute top-5 left-5 animate-pulse" />
-                  </div>
-                  <div className="space-y-1">
-                    <h4 className="text-sm font-bold text-gray-800 dark:text-zinc-200">
-                      AI 멀티에이전트 검수 분석 중
-                    </h4>
-                    <p className="text-[11px] text-gray-400 dark:text-zinc-500">
-                      도서 상태(오염, 훼손) 판독 및 LPN 매핑을 처리하고 있습니다. 잠시만 대기해 주세요.
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {/* RECHECK_REQUIRED (재촬영 필요) State */}
-              {jobStatus === "RECHECK_REQUIRED" && (
-                <div className="text-center py-6 space-y-4 max-w-xs mx-auto animate-fadeIn">
-                  <div className="w-16 h-16 bg-amber-50 dark:bg-amber-950/20 text-amber-500 dark:text-amber-400 rounded-full flex items-center justify-center mx-auto animate-pulse">
-                    <AlertTriangle className="w-10 h-10" />
-                  </div>
-                  <div className="space-y-1.5">
-                    <h4 className="text-sm font-bold text-amber-600 dark:text-amber-400">
-                      ⚠️ 이미지 상태 불안정 - 재촬영 필요
-                    </h4>
-                    <p className="text-xs text-gray-400 dark:text-zinc-500 bg-amber-500/5 border border-amber-200/50 p-2.5 rounded-xl">
-                      책 표지 이미지가 너무 어둡거나 흔들려 판독에 실패했습니다. 앞면을 다시 촬영해 주세요.
-                    </p>
-                  </div>
-                  <button
-                    onClick={handleStartRecheck}
-                    className="w-full inline-flex items-center justify-center gap-1.5 bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 rounded-xl transition-all cursor-pointer text-xs"
-                  >
-                    <RotateCcw className="w-4 h-4" />
-                    재촬영하기 (Retake)
-                  </button>
-                </div>
-              )}
-
-              {/* APPROVED (승인) Result State */}
-              {jobStatus === "APPROVED" && (
-                <div className="text-center py-4 space-y-4 max-w-xs mx-auto animate-fadeIn">
-                  <div className="w-16 h-16 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-500 dark:text-emerald-400 rounded-full flex items-center justify-center mx-auto">
-                    <CheckCircle2 className="w-10 h-10" />
-                  </div>
-                  <div className="space-y-2">
-                    <h4 className="text-base font-bold text-gray-800 dark:text-zinc-100">
-                      AI 검수 최종 승인 완료
-                    </h4>
-                    <p className="text-xs text-gray-400 dark:text-zinc-500">
-                      도서 등급이 산정되어 입고 처리가 승인되었습니다.
-                    </p>
-                    {result && (
-                      <div className="bg-emerald-50/30 dark:bg-emerald-950/10 border border-emerald-100/50 dark:border-emerald-950/20 p-3 rounded-2xl text-left space-y-1 text-xs">
-                        <div className="flex justify-between">
-                          <span className="text-gray-400 font-medium">판정 등급</span>
-                          <span className="font-extrabold text-emerald-600 dark:text-emerald-400">
-                            {result.conditionGrade || "MINT"}
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-400 font-medium">UBCI 점수</span>
-                          <span className="font-extrabold text-emerald-600 dark:text-emerald-400">
-                            {result.ubciScore || 94} 점
-                          </span>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                  
-                  {/* Generated QR/LPN container */}
-                  <div className="bg-gray-50 dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl p-4 flex flex-col items-center space-y-2">
-                    <QrCode className="w-16 h-16 text-zinc-700 dark:text-zinc-300" />
-                    <span className="text-xs font-mono font-extrabold text-indigo-600 dark:text-indigo-400">
-                      {inboundInfo.lpnBarcode}
-                    </span>
-                  </div>
-
-                  <button
-                    onClick={() => handleSaveToProcessedList("APPROVED")}
-                    className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3.5 rounded-2xl shadow-sm shadow-emerald-500/10 transition-all cursor-pointer text-sm"
-                  >
-                    입고 내역 저장하고 마침
-                  </button>
-                </div>
-              )}
-
-              {/* REJECTED (반려) or HITL_REQUIRED (관리자 검토 필요) State */}
-              {["REJECTED", "HITL_REQUIRED"].includes(jobStatus || "") && (
-                <div className="text-center py-4 space-y-4 max-w-xs mx-auto animate-fadeIn">
-                  <div className="w-16 h-16 bg-rose-50 dark:bg-rose-950/20 text-rose-500 dark:text-rose-400 rounded-full flex items-center justify-center mx-auto">
-                    <AlertTriangle className="w-10 h-10" />
-                  </div>
-                  <div className="space-y-2">
-                    <h4 className="text-base font-bold text-gray-800 dark:text-zinc-100">
-                      {jobStatus === "REJECTED" ? "도서 검수 반려 판정" : "관리자 검토 대기 전환 (HITL)"}
-                    </h4>
-                    <p className="text-xs text-gray-400 dark:text-zinc-500">
-                      {jobStatus === "REJECTED" 
-                        ? "도서의 오염/훼손 상태가 입고 불가 기준을 충족하여 반려되었습니다."
-                        : "검수 기준값 경계치에 있어 관리자 최종 승인을 대기합니다."}
-                    </p>
-                    {result && (
-                      <div className="bg-rose-50/30 dark:bg-rose-950/10 border border-rose-100/50 dark:border-rose-950/20 p-3 rounded-2xl text-left space-y-1 text-xs">
-                        <div className="flex justify-between">
-                          <span className="text-gray-400 font-medium">진단 점수</span>
-                          <span className="font-extrabold text-rose-600 dark:text-rose-400">
-                            {result.ubciScore || 45} 점
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-400 font-medium">최종 리포트</span>
-                          <span className="font-extrabold text-rose-600 dark:text-rose-400 max-w-[150px] truncate">
-                            {result.finalReport || "반려 기준 미달"}
-                          </span>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  <button
-                    onClick={() => handleSaveToProcessedList(jobStatus === "REJECTED" ? "REJECTED" : "APPROVED")}
-                    className="w-full bg-rose-500 hover:bg-rose-600 text-white font-bold py-3.5 rounded-2xl shadow-sm shadow-rose-500/10 transition-all cursor-pointer text-sm"
-                  >
-                    처리 완료 리스트 등록 후 마침
-                  </button>
-                </div>
-              )}
-
-              {/* Job Status error */}
-              {jobError && (
-                <div className="flex flex-col items-center justify-center text-center p-4 space-y-3">
-                  <AlertCircle className="w-10 h-10 text-rose-500" />
-                  <p className="text-xs text-gray-500">{jobError}</p>
-                  <button
-                    onClick={handleReset}
-                    className="px-4 py-2 bg-zinc-800 text-white text-xs font-bold rounded-xl"
-                  >
-                    처음으로 돌아가기
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
+        {/* Step 3 (AI 검수 결과 대기) UI 영역은 비동기 개선으로 인해 제거됨 */}
       </div>
 
       {/* Active Camera Overlay Modal */}
