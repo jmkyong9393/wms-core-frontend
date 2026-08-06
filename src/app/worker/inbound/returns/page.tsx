@@ -360,7 +360,7 @@ export default function UsedItemReturnsPage() {
       status: status,
       timestamp: new Date().toISOString(),
     });
-    localStorage.setItem(storageKey, JSON.stringify(list.slice(0, 100)));
+    localStorage.setItem(storageKey, JSON.stringify(list.slice(0, 10)));
     handleReset();
   };
 

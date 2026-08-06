@@ -100,7 +100,7 @@ export default function NewStockInboundPage() {
         status: "APPROVED",
         timestamp: new Date().toISOString(),
       });
-      localStorage.setItem(storageKey, JSON.stringify(list.slice(0, 100))); // Keep last 100
+      localStorage.setItem(storageKey, JSON.stringify(list.slice(0, 10))); // Keep last 10
     } catch (e: any) {
       console.error(e);
       setErrorMsg("입고 처리 중 서버 오류가 발생했습니다.");

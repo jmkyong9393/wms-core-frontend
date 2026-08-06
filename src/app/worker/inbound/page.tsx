@@ -238,23 +238,27 @@ export default function WorkerInboundPage() {
                           {new Date(book.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                         </td>
                         <td className="py-3 px-2 text-center">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (book.status !== "PROCESSING") {
-                                setPrintingBook(book);
-                              }
-                            }}
-                            disabled={book.status === "PROCESSING"}
-                            className={`p-1.5 rounded-lg transition-colors inline-flex ${
-                              book.status === "PROCESSING"
-                                ? "text-gray-300 dark:text-zinc-700 cursor-not-allowed"
-                                : "text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30"
-                            }`}
-                            title={book.status === "PROCESSING" ? "검수 진행 중에는 출력할 수 없습니다." : "라벨 출력"}
-                          >
-                            <Printer className="w-4 h-4" />
-                          </button>
+                          {book.type === "NEW" ? (
+                            <span className="text-gray-300 dark:text-zinc-700">-</span>
+                          ) : (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (book.status !== "PROCESSING") {
+                                  setPrintingBook(book);
+                                }
+                              }}
+                              disabled={book.status === "PROCESSING"}
+                              className={`p-1.5 rounded-lg transition-colors inline-flex ${
+                                book.status === "PROCESSING"
+                                  ? "text-gray-300 dark:text-zinc-700 cursor-not-allowed"
+                                  : "text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30"
+                              }`}
+                              title={book.status === "PROCESSING" ? "검수 진행 중에는 출력할 수 없습니다." : "라벨 출력"}
+                            >
+                              <Printer className="w-4 h-4" />
+                            </button>
+                          )}
                         </td>
                       </tr>
                     ))}
@@ -304,23 +308,25 @@ export default function WorkerInboundPage() {
                           {new Date(book.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </span>
                         <div className="flex items-center gap-1">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (book.status !== "PROCESSING") {
-                                setPrintingBook(book);
-                              }
-                            }}
-                            disabled={book.status === "PROCESSING"}
-                            className={`p-1.5 rounded-lg transition-colors ${
-                              book.status === "PROCESSING"
-                                ? "text-gray-300 dark:text-zinc-700 cursor-not-allowed"
-                                : "text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30"
-                            }`}
-                            title={book.status === "PROCESSING" ? "검수 진행 중에는 출력할 수 없습니다." : "라벨 출력"}
-                          >
-                            <Printer className="w-3.5 h-3.5" />
-                          </button>
+                          {book.type !== "NEW" && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (book.status !== "PROCESSING") {
+                                  setPrintingBook(book);
+                                }
+                              }}
+                              disabled={book.status === "PROCESSING"}
+                              className={`p-1.5 rounded-lg transition-colors ${
+                                book.status === "PROCESSING"
+                                  ? "text-gray-300 dark:text-zinc-700 cursor-not-allowed"
+                                  : "text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30"
+                              }`}
+                              title={book.status === "PROCESSING" ? "검수 진행 중에는 출력할 수 없습니다." : "라벨 출력"}
+                            >
+                              <Printer className="w-3.5 h-3.5" />
+                            </button>
+                          )}
                         </div>
                       </div>
                     </div>
