@@ -90,6 +90,19 @@ export interface HITLHistoryItem {
   taskId: string | null;
 }
 
+export interface VisionDetection {
+  imageIndex: number;
+  imageView: 'FRONT' | 'BACK' | 'INSIDE';
+  imageUrl: string;
+  type: string;
+  defectType: string;
+  ratio: number | null;
+  confidence: number;
+  yoloConfidence: number | null;
+  bbox: [number, number, number, number];
+  coordinateSpace: 'ORIGINAL_IMAGE_NORMALIZED';
+}
+
 export interface InspectionDetailResponse {
   id: string;
   book: InspectionBookDetail;

@@ -40,3 +40,22 @@ export interface FdsPolicy {
   description: string | null;
   updated_at: string;
 }
+
+export interface FlowTrendItem {
+  date: string;
+  inbound_quantity: number;
+  outbound_quantity: number;
+  average_inspection_processing_seconds: number;
+}
+
+export interface FlowTrendResponse {
+  days: number;
+  items: FlowTrendItem[];
+}
+
+export interface ChartTrendItem {
+  date: string;
+  입고건수: number;
+  출고건수: number;
+  평균시간: number;
+}

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import HitlDecisionDialog from './HitlDecisionDialog';
-import type { HitlQueueItem } from '@/features/queue/store/queueAtoms';
+import type { HitlQueueItem } from '@/features/queue/api/hitlQueueService';
 
 // jsdom 테스트용 Select 모킹
 vi.mock('@/components/ui/select', async () => {
@@ -27,8 +27,19 @@ vi.mock('@/components/ui/select', async () => {
 
 const item: HitlQueueItem = {
   id: 'hitl_1',
-  title: '테스트 도서',
-  status: 'IN_PROGRESS',
+  bookId: 'book_001',
+  bookTitle: '테스트 도서',
+  lpnBarcode: 'LPN-TEST-001',
+  locationBarcode: 'A-1-1',
+  status: 'HITL_REQUIRED',
+  ubciScore: 85,
+  finalGrade: 'EXCELLENT',
+  reasonCodes: [],
+  reviewerId: null,
+  reviewerEmployeeId: null,
+  reviewStartedAt: null,
+  createdAt: '2026-08-06T00:00:00',
+  updatedAt: '2026-08-06T00:00:00',
 };
 
 // 사유 코드 선택
