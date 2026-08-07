@@ -33,6 +33,8 @@ function buildDetail(overrides: Partial<InspectionDetailResponse> = {}): Inspect
     labelScanUrl: null,
     originalImageUrls: [],
     visionDetections: [],
+    yoloCandidates: [],
+    confirmedDefects: [],
     aiResult: { decision: null, reasonCode: null, defects: [], revisionCount: 0, repairDirective: null },
     hitl: {},
     hitlHistory: [],
@@ -122,16 +124,14 @@ describe('InspectionHistoryDetailDialog', () => {
     mockedGetInspectionDetail.mockResolvedValue(
       buildDetail({
         originalImageUrls: ['https://example.com/front.jpg', 'https://example.com/back.jpg'],
-        visionDetections: [
+        confirmedDefects: [
           {
+            candidateId: 'cand_001',
             imageIndex: 0,
             imageView: 'FRONT',
             imageUrl: 'https://example.com/front.jpg',
-            type: 'COVER_TEAR',
             defectType: 'COVER_TEAR',
-            ratio: 15,
             confidence: 0.91,
-            yoloConfidence: 0.84,
             bbox: [0.1, 0.1, 0.3, 0.3],
             coordinateSpace: 'ORIGINAL_IMAGE_NORMALIZED',
           },
@@ -153,5 +153,44 @@ describe('InspectionHistoryDetailDialog', () => {
     fireEvent.click(screen.getByTitle('다음 사진'));
 
     expect(screen.queryByText(/COVER_TEAR/)).not.toBeInTheDocument();
+  });
+
+  it('YOLO 후보 레이어는 기본적으로 숨겨져 있고 체크박스를 켜면 표시된다', async () => {
+    mockedGetAgentLog.mockResolvedValue([]);
+    mockedGetInspectionDetail.mockResolvedValue(
+      buildDetail({
+        originalImageUrls: ['https://example.com/front.jpg'],
+        yoloCandidates: [
+          {
+            candidateId: 'cand_yolo_001',
+            imageIndex: 0,
+            imageView: 'FRONT',
+            imageUrl: 'https://example.com/front.jpg',
+            defectType: 'STAIN',
+            confidence: 0.62,
+            bbox: [0.2, 0.2, 0.4, 0.4],
+            coordinateSpace: 'ORIGINAL_IMAGE_NORMALIZED',
+            sourceModel: 'yolo-v8',
+            reviewDecision: 'UNCERTAIN',
+            rejectReason: null,
+          },
+        ],
+      })
+    );
+
+    renderDialog(buildRow());
+
+    const img = await screen.findByAltText('도서 촬영 사진 1');
+    Object.defineProperty(img, 'naturalWidth', { value: 800, configurable: true });
+    Object.defineProperty(img, 'naturalHeight', { value: 600, configurable: true });
+    Object.defineProperty(img, 'offsetWidth', { value: 400, configurable: true });
+    Object.defineProperty(img, 'offsetHeight', { value: 300, configurable: true });
+    fireEvent.load(img);
+
+    expect(screen.queryByText(/STAIN/)).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: /YOLO 후보/ }));
+
+    expect(await screen.findByText(/STAIN/)).toBeInTheDocument();
   });
 });
