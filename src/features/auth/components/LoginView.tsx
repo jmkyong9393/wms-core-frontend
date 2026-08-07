@@ -1,8 +1,9 @@
 import { LoginForm } from "@/features/auth/components/LoginForm";
+import { LegalFooter } from "@/components/legal-footer";
 
 export function LoginView() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 dark:bg-zinc-950">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50 px-4 py-12 dark:bg-zinc-950">
       <div className="w-full max-w-sm rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8 dark:border-zinc-800 dark:bg-zinc-900">
         <div className="mb-6 text-center">
           <span className="text-lg font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
@@ -15,6 +16,8 @@ export function LoginView() {
 
         <LoginForm />
       </div>
+
+      <LegalFooter />
     </div>
   );
 }

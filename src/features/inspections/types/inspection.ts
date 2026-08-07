@@ -90,6 +90,29 @@ export interface VisionDetection {
   coordinateSpace: 'ORIGINAL_IMAGE_NORMALIZED';
 }
 
+// 신규 BBOX 레이어 공통 필드 (YOLO 후보 / 확정 결함)
+// imageView는 'INNER'를 사용한다 - 레거시 VisionDetection의 'INSIDE'와 다른 값이므로 통합하지 않는다.
+export interface DefectBboxBase {
+  candidateId: string;
+  imageIndex: number;
+  imageView: 'FRONT' | 'BACK' | 'INNER';
+  imageUrl: string;
+  defectType: string;
+  confidence: number;
+  bbox: [number, number, number, number];
+  coordinateSpace: 'ORIGINAL_IMAGE_NORMALIZED';
+}
+
+// YOLO가 제안한 전체 결함 후보 (CONFIRMED/REJECTED/UNCERTAIN 모두 포함, 화면 참고용)
+export interface YoloDefectCandidate extends DefectBboxBase {
+  sourceModel: string;
+  reviewDecision: 'CONFIRMED' | 'REJECTED' | 'UNCERTAIN';
+  rejectReason: string | null;
+}
+
+// Vision Agent가 최종 확정한 결함 (UBCI·품질보증서 계산에 사용되는 데이터)
+export type ConfirmedDefect = DefectBboxBase;
+
 export interface InspectionDetailResponse {
   id: string;
   book: InspectionBookDetail;
@@ -102,7 +125,9 @@ export interface InspectionDetailResponse {
   lpnBarcode: string | null;
   labelScanUrl: string | null; // 추가: LPN QR 스캔 대상 공개 URL
   originalImageUrls: string[];
-  visionDetections: VisionDetection[];
+  visionDetections: VisionDetection[]; // 레거시 호환용, 신규 화면은 confirmedDefects 사용
+  yoloCandidates: YoloDefectCandidate[];
+  confirmedDefects: ConfirmedDefect[];
   aiResult: InspectionAIResult;
   hitl: Record<string, any>;
   hitlHistory: HITLHistoryItem[];
