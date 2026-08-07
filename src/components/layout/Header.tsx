@@ -17,7 +17,7 @@ export default function Header() {
 
   const pathname = usePathname();
   let pageTitle = 'Dashboard';
-  if (pathname === '/inbound') pageTitle = '현장 반품 검수';
+  if (pathname === '/worker' || pathname.startsWith('/worker/')) pageTitle = '현장 입/출고 관리';
   if (pathname === '/admin/queue') pageTitle = 'HITL 처리 현황';
   if (pathname === '/admin/inspections') pageTitle = '검수 처리 내역';
   if (pathname === '/admin/inventory') pageTitle = '재고·출고 관리';
