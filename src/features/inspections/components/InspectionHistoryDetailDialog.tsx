@@ -16,7 +16,8 @@ import AgentLogSection from '@/features/inspections/components/AgentLogSection';
 import InspectionBadges from '@/features/inspections/components/InspectionBadges';
 import { getStatusLabel } from '@/features/inspections/utils/statusBadge';
 import { getInspectionDetail } from '@/features/inspections/api/inspectionHistoryService';
-import { VisionDefectOverlay } from '@/features/inspections/components/VisionDefectOverlay';
+import { DefectBboxOverlay } from '@/features/inspections/components/DefectBboxOverlay';
+import { DefectLayerToggle } from '@/features/inspections/components/DefectLayerToggle';
 import type { InspectionHistoryRow } from '@/features/inspections/types/inspectionHistory';
 
 interface InspectionHistoryDetailDialogProps {
@@ -64,6 +65,8 @@ export function parseFinalReport(report: string | null): string {
 export function InspectionHistoryDetailDialog({ row, onClose }: InspectionHistoryDetailDialogProps) {
   const [currentImgIdx, setCurrentImgIdx] = useState(0);
   const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
+  const [showConfirmedDefects, setShowConfirmedDefects] = useState(true);
+  const [showYoloCandidates, setShowYoloCandidates] = useState(false);
   const currentImgRef = useRef<HTMLImageElement | null>(null);
 
   useEffect(() => {
@@ -78,9 +81,6 @@ export function InspectionHistoryDetailDialog({ row, onClose }: InspectionHistor
 
   const images = detail?.originalImageUrls || [];
   const hasImages = images.length > 0;
-  const currentDetections = (detail?.visionDetections || []).filter(
-    (detection) => detection.imageIndex === currentImgIdx
-  );
 
   const handlePrevImg = () => {
     if (!hasImages) return;
@@ -216,7 +216,15 @@ export function InspectionHistoryDetailDialog({ row, onClose }: InspectionHistor
 
                 {/* 촬영 사진 3장 캐러셀 갤러리 */}
                 <section className="space-y-2">
-                  <h4 className="text-xs font-extrabold text-gray-400 dark:text-zinc-500 uppercase tracking-wider">도서 촬영 원본 분석 사진</h4>
+                  <div className="flex items-center justify-between gap-2">
+                    <h4 className="text-xs font-extrabold text-gray-400 dark:text-zinc-500 uppercase tracking-wider">도서 촬영 원본 분석 사진</h4>
+                    <DefectLayerToggle
+                      showConfirmed={showConfirmedDefects}
+                      showYolo={showYoloCandidates}
+                      onToggleConfirmed={() => setShowConfirmedDefects((v) => !v)}
+                      onToggleYolo={() => setShowYoloCandidates((v) => !v)}
+                    />
+                  </div>
                   {hasImages ? (
                     <div className="relative group overflow-hidden rounded-2xl border border-gray-150 dark:border-zinc-800/80 bg-zinc-950 flex items-center justify-center min-h-[300px] max-h-[340px] shadow-inner">
                       <img
@@ -226,7 +234,15 @@ export function InspectionHistoryDetailDialog({ row, onClose }: InspectionHistor
                         className="max-h-[340px] object-contain select-none transition-all duration-300"
                         loading="lazy"
                       />
-                      <VisionDefectOverlay detections={currentDetections} imgRef={currentImgRef} />
+                      <DefectBboxOverlay
+                        confirmedDefects={detail?.confirmedDefects ?? []}
+                        yoloCandidates={detail?.yoloCandidates ?? []}
+                        currentImageIndex={currentImgIdx}
+                        currentImageUrl={images[currentImgIdx]}
+                        imgRef={currentImgRef}
+                        showConfirmed={showConfirmedDefects}
+                        showYolo={showYoloCandidates}
+                      />
 
                       {images.length > 1 && (
                         <>

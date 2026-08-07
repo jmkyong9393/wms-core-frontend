@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -12,6 +12,8 @@ import { AgentLogPanel } from './AgentConversationModal';
 import { getHitlReasonLabel } from '@/features/queue/constants/hitlReasonCodes';
 import { useQuery } from '@tanstack/react-query';
 import { getInspectionDetail } from '@/features/inspections/api/inspectionHistoryService';
+import { DefectBboxOverlay } from '@/features/inspections/components/DefectBboxOverlay';
+import { DefectLayerToggle } from '@/features/inspections/components/DefectLayerToggle';
 
 interface HitlTicketDetailDialogProps {
   item: HitlQueueItem | null;
@@ -44,6 +46,9 @@ export default function HitlTicketDetailDialog({
   });
 
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [showConfirmedDefects, setShowConfirmedDefects] = useState(true);
+  const [showYoloCandidates, setShowYoloCandidates] = useState(false);
+  const currentImgRef = useRef<HTMLImageElement | null>(null);
 
   useEffect(() => {
     setCurrentImageIndex(0);
@@ -51,10 +56,6 @@ export default function HitlTicketDetailDialog({
 
   const images = detail?.originalImageUrls ?? [];
   const currentImageUrl = images[currentImageIndex];
-
-  const currentImageDetections = (detail?.visionDetections ?? []).filter(
-    (detection) => detection.imageIndex === currentImageIndex
-  );
 
   const isInReview =
     item?.status === 'HITL_REQUIRED' && item.reviewerId !== null;
@@ -117,14 +118,22 @@ export default function HitlTicketDetailDialog({
             </div>
             
             <section className="rounded-lg border p-4">
-              <div className="mb-3 flex items-center justify-between">
+              <div className="mb-3 flex items-center justify-between gap-2">
                 <p className="text-sm font-semibold">검수 사진 및 AI 결함 위치</p>
 
-                {images.length > 0 && (
-                  <span className="text-xs text-muted-foreground">
-                    {currentImageIndex + 1} / {images.length}
-                  </span>
-                )}
+                <div className="flex items-center gap-3">
+                  <DefectLayerToggle
+                    showConfirmed={showConfirmedDefects}
+                    showYolo={showYoloCandidates}
+                    onToggleConfirmed={() => setShowConfirmedDefects((v) => !v)}
+                    onToggleYolo={() => setShowYoloCandidates((v) => !v)}
+                  />
+                  {images.length > 0 && (
+                    <span className="text-xs text-muted-foreground">
+                      {currentImageIndex + 1} / {images.length}
+                    </span>
+                  )}
+                </div>
               </div>
 
               {isDetailLoading ? (
@@ -135,39 +144,22 @@ export default function HitlTicketDetailDialog({
                 <>
                   <div className="relative overflow-hidden rounded-lg bg-muted">
                     <img
+                      ref={currentImgRef}
                       src={currentImageUrl}
                       alt="검수 원본 사진"
                       className="block h-auto w-full"
                     />
 
-                    {currentImageDetections.map((detection, index) => {
-                      const [x1, y1, x2, y2] = detection.bbox;
-
-                      return (
-                        <div
-                          key={`${detection.imageIndex}-${index}`}
-                          className="absolute border-2 border-red-500 bg-red-500/10"
-                          style={{
-                            left: `${x1 * 100}%`,
-                            top: `${y1 * 100}%`,
-                            width: `${(x2 - x1) * 100}%`,
-                            height: `${(y2 - y1) * 100}%`,
-                          }}
-                        >
-                          <span className="absolute left-0 top-0 max-w-full -translate-y-full truncate rounded bg-red-600 px-1.5 py-0.5 text-xs font-semibold text-white">
-                            {detection.defectType} ·{' '}
-                            {Math.round(detection.confidence * 100)}%
-                          </span>
-                        </div>
-                      );
-                    })}
+                    <DefectBboxOverlay
+                      confirmedDefects={detail?.confirmedDefects ?? []}
+                      yoloCandidates={detail?.yoloCandidates ?? []}
+                      currentImageIndex={currentImageIndex}
+                      currentImageUrl={currentImageUrl}
+                      imgRef={currentImgRef}
+                      showConfirmed={showConfirmedDefects}
+                      showYolo={showYoloCandidates}
+                    />
                   </div>
-
-                  {currentImageDetections.length === 0 && (
-                    <p className="mt-3 text-xs text-muted-foreground">
-                      이 사진에서 탐지된 결함이 없습니다.
-                    </p>
-                  )}
 
                   {images.length > 1 && (
                     <div className="mt-3 flex justify-end gap-2">
