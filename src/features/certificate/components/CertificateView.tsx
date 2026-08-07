@@ -1,5 +1,6 @@
 import { getGradeBadgeStyle, getGradeLabel } from '@/features/inspections/utils/gradeBadge';
 import type { CertificateRenderModel } from '@/features/certificate/types/certificate';
+import { LegalFooter } from '@/components/legal-footer';
 
 interface CertificateViewProps {
   certificate: CertificateRenderModel;
@@ -77,6 +78,8 @@ export default function CertificateView({ certificate }: CertificateViewProps) {
 
         {/* 인증 완료 안내 */}
         <p className="px-2 text-center text-xs text-gray-400">UBCI 품질 검수가 완료된 도서입니다.</p>
+
+        <LegalFooter />
       </div>
     </main>
   );
