@@ -14,10 +14,10 @@ export default function DashboardView() {
 
   return (
     <div className="mx-auto flex h-full max-w-[1600px] flex-col space-y-4 font-sans">
-      <div className="flex shrink-0 flex-col gap-4 rounded-3xl border border-border bg-card p-4 lg:flex-row lg:items-center lg:justify-between">
+      <div className="flex shrink-0 flex-col gap-4 rounded-xl border border-border bg-card p-4 shadow-sm lg:flex-row lg:items-center lg:justify-between">
         <div className="space-y-1">
           <h2 className="flex items-center gap-2 text-xl font-black text-foreground">
-            <Activity className="h-5 w-5 text-indigo-500" />
+            <Activity className="h-5 w-5 text-primary" />
             물류 센터 통합 대시보드
           </h2>
           <p className="text-xs text-muted-foreground">
@@ -25,10 +25,10 @@ export default function DashboardView() {
           </p>
         </div>
 
-        <div className="flex self-start gap-1.5 rounded-2xl bg-muted p-1.5 lg:self-center">
+        <div className="flex self-start gap-1.5 rounded-xl bg-muted p-1.5 lg:self-center">
           <DashboardTabButton
             active={mainTab === 'inbound'}
-            activeClassName="bg-card text-indigo-600 shadow-sm dark:text-indigo-400"
+            activeClassName="bg-primary text-primary-foreground shadow-sm"
             onClick={() => setMainTab('inbound')}
           >
             입고 현황 (Inbound)
@@ -36,7 +36,7 @@ export default function DashboardView() {
 
           <DashboardTabButton
             active={mainTab === 'outbound'}
-            activeClassName="bg-card text-orange-600 shadow-sm dark:text-orange-400"
+            activeClassName="bg-primary text-primary-foreground shadow-sm"
             onClick={() => setMainTab('outbound')}
           >
             출고 현황 (Outbound)
@@ -44,7 +44,7 @@ export default function DashboardView() {
 
           <DashboardTabButton
             active={mainTab === 'insights'}
-            activeClassName="bg-card text-violet-600 shadow-sm dark:text-violet-400"
+            activeClassName="bg-primary text-primary-foreground shadow-sm"
             onClick={() => setMainTab('insights')}
           >
             운영 인사이트
@@ -88,7 +88,7 @@ function DashboardTabButton({
     <button
       type="button"
       onClick={onClick}
-      className={`cursor-pointer rounded-xl px-5 py-2.5 text-xs font-bold transition-all ${
+      className={`cursor-pointer rounded-lg px-5 py-2.5 text-xs font-bold transition-colors duration-200 ${
         active
           ? activeClassName
           : 'text-muted-foreground hover:text-foreground'

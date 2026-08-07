@@ -48,7 +48,7 @@ export function PickingSessionView({ orderId }: PickingSessionViewProps) {
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center h-64 text-gray-400 dark:text-zinc-500">
-        <Loader2 className="h-8 w-8 animate-spin mb-2" />
+        <Loader2 className="h-8 w-8 animate-spin mb-2 text-primary" />
         <p className="text-sm">피킹 지시서를 불러오는 중...</p>
       </div>
     );
@@ -74,7 +74,7 @@ export function PickingSessionView({ orderId }: PickingSessionViewProps) {
     if (!shipmentResult) {
       return (
         <div className="flex flex-col items-center justify-center h-64 text-gray-400 dark:text-zinc-500">
-          <Loader2 className="h-8 w-8 animate-spin mb-2" />
+          <Loader2 className="h-8 w-8 animate-spin mb-2 text-primary" />
           <p className="text-sm">송장 정보를 불러오는 중...</p>
         </div>
       );

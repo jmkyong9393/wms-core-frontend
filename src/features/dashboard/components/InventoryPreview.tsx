@@ -1,19 +1,20 @@
 import Link from 'next/link';
 import { mockInventoryItems } from '@/features/inventory/mocks/mockInventory';
 import { getGradeBadgeStyle, getGradeLabel } from '@/features/inspections/utils/gradeBadge';
+import { Card } from '@/components/ui/card';
 
 const PREVIEW_LIMIT = 3;
 
-// 대시보드용 재고 현황 미리보기 
+// 대시보드용 재고 현황 미리보기
 export default function InventoryPreview() {
   const items = mockInventoryItems.slice(0, PREVIEW_LIMIT);
 
   return (
-    <div className="bg-card rounded-xl border border-border shadow-sm p-5">
+    <Card className="p-5">
       {/* 제목과 전체 재고 페이지 이동 링크 */}
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-base font-bold text-foreground">재고 현황 미리보기</h3>
-        <Link href="/admin/inventory" className="text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline">
+        <Link href="/admin/inventory" className="text-sm font-medium text-primary hover:underline">
           전체 보기 →
         </Link>
       </div>
@@ -23,7 +24,7 @@ export default function InventoryPreview() {
         {items.map((item) => (
           <div
             key={item.id}
-            className="flex items-center justify-between py-2 px-2 hover:bg-accent rounded-lg transition-colors"
+            className="flex items-center justify-between py-2 px-2 hover:bg-accent rounded-lg transition-colors duration-200"
           >
             <div className="flex items-center gap-2 min-w-0">
 
@@ -41,6 +42,6 @@ export default function InventoryPreview() {
           </div>
         ))}
       </div>
-    </div>
+    </Card>
   );
 }

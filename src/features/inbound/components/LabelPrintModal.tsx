@@ -1,6 +1,6 @@
 "use client";
 
-import { Printer, X, Loader2 } from "lucide-react";
+import { Printer, Loader2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { QRCodeSVG } from "qrcode.react";
 import { usePrintLpnMutation } from "@/features/lpn/hooks/usePrintLpnMutation";
+import { Button } from "@/components/ui/button";
 
 interface ProcessedBook {
   id: string;
@@ -54,22 +55,22 @@ export function LabelPrintModal({ book, workerId, onClose }: LabelPrintModalProp
 
   return (
     <Dialog open={book !== null} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="w-[95vw] max-w-sm rounded-3xl border border-gray-100 bg-white p-6 shadow-xl font-sans">
+      <DialogContent className="w-[95vw] max-w-sm rounded-xl border border-gray-100 bg-white p-6 shadow-xl font-sans">
         {/* Header */}
         <DialogHeader className="flex flex-row items-center justify-between space-y-0 border-b border-gray-100 pb-4">
           <DialogTitle className="text-lg font-black text-gray-800 flex items-center gap-2">
-            <Printer className="w-5 h-5 text-indigo-600" />
+            <Printer className="w-5 h-5 text-primary" />
             50x30mm 열전사 라벨 프린터 출력
           </DialogTitle>
         </DialogHeader>
 
         {/* Content */}
         <div className="py-4 space-y-4">
-          <div className="bg-gray-50/50 border border-gray-100 rounded-2xl p-4 flex flex-col items-center">
+          <div className="bg-gray-50/50 border border-gray-100 rounded-xl p-4 flex flex-col items-center">
             <p className="text-[11px] font-bold text-gray-400 tracking-wide mb-3">
               실물 라벨 규격 (가로 50mm × 세로 30mm)
             </p>
-            
+
             {/* Label Preview Box (Dashed) */}
             <div className="w-[280px] h-[168px] border-2 border-dashed border-gray-300 bg-white rounded flex items-center justify-center p-3 relative overflow-hidden">
               <div className="flex gap-3 w-full h-full items-center">
@@ -107,10 +108,11 @@ export function LabelPrintModal({ book, workerId, onClose }: LabelPrintModalProp
 
         {/* Action Buttons */}
         <div className="flex gap-2 pt-2">
-          <button
+          <Button
             onClick={handlePrint}
             disabled={isPending}
-            className="flex-1 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 disabled:bg-indigo-400 text-white font-bold py-3.5 rounded-2xl flex items-center justify-center gap-2 transition-colors"
+            size="lg"
+            className="flex-1 h-12 rounded-xl font-bold"
           >
             {isPending ? (
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -118,13 +120,15 @@ export function LabelPrintModal({ book, workerId, onClose }: LabelPrintModalProp
               <Printer className="w-4 h-4" />
             )}
             50x30mm 열전사 출력
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={onClose}
-            className="px-6 border border-gray-200 text-gray-700 font-bold py-3.5 rounded-2xl hover:bg-gray-50 active:bg-gray-100 transition-colors"
+            variant="outline"
+            size="lg"
+            className="px-6 h-12 rounded-xl font-bold"
           >
             닫기
-          </button>
+          </Button>
         </div>
       </DialogContent>
     </Dialog>

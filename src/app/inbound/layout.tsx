@@ -22,7 +22,7 @@ export default function InboundLayout({
             현장 반품 검수
           </h1>
           <div className="flex items-center pl-2 border-l border-gray-200 dark:border-zinc-800">
-            <div className="w-8 h-8 bg-indigo-100 dark:bg-indigo-900/40 rounded-full flex items-center justify-center text-indigo-700 dark:text-indigo-300">
+            <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center text-primary">
               <User className="w-4 h-4" />
             </div>
             {currentUser && (
@@ -30,7 +30,7 @@ export default function InboundLayout({
                 {maskName(currentUser.name)}
               </span>
             )}
-            <LogoutButton className="ml-3 p-2 text-gray-400 hover:text-gray-600 dark:text-zinc-500 dark:hover:text-zinc-300 transition-colors rounded-full hover:bg-gray-100 dark:hover:bg-zinc-800" />
+            <LogoutButton className="ml-3 p-2 text-gray-400 hover:text-gray-600 dark:text-zinc-500 dark:hover:text-zinc-300 transition-colors duration-200 rounded-full hover:bg-gray-100 dark:hover:bg-zinc-800" />
           </div>
         </header>
         <main className="flex flex-col items-center p-4">{children}</main>

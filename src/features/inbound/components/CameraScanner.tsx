@@ -108,7 +108,7 @@ export default function CameraScanner() {
   const isWorking = isProcessingLocal || isCompressing || isUploading;
 
   return (
-    <div className="relative w-full max-w-md mx-auto aspect-[3/4] bg-black rounded-3xl overflow-hidden shadow-2xl">
+    <div className="relative w-full max-w-md mx-auto aspect-[3/4] bg-black rounded-xl overflow-hidden shadow-lg">
       {/* 카메라 에러 처리 */}
       {error && (
         <div className="absolute inset-0 flex items-center justify-center bg-zinc-900 text-white p-4 text-center z-20">
@@ -127,7 +127,7 @@ export default function CameraScanner() {
 
       {/* 도서 정렬용 BBox 가이드라인 오버레이 */}
       <div className="absolute inset-0 pointer-events-none flex items-center justify-center p-8 z-10">
-        <div className="w-full h-[70%] border-4 border-dashed border-white/70 rounded-2xl flex flex-col items-center justify-center relative">
+        <div className="w-full h-[70%] border-4 border-dashed border-white/70 rounded-xl flex flex-col items-center justify-center relative">
           <div className="absolute -top-8 text-white/90 text-xs font-semibold bg-black/50 px-3 py-1 rounded-full">
             이 선 안에 책을 맞춰주세요
           </div>
@@ -139,7 +139,7 @@ export default function CameraScanner() {
       {/* 프로세싱 상태 표시 */}
       {isWorking && (
         <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center text-white z-20 p-4">
-          <Loader2 className="w-10 h-10 text-indigo-400 animate-spin mb-3" />
+          <Loader2 className="w-10 h-10 text-primary animate-spin mb-3" />
           <span className="text-sm font-semibold">
             {isProcessingLocal ? "흔들림 감지 연산 중..." : isCompressing ? "이미지 압축 중..." : `업로드 중... (${uploadProgress}%)`}
           </span>
@@ -175,7 +175,7 @@ export default function CameraScanner() {
           type="button"
           onClick={handleCapture}
           disabled={isWorking}
-          className={`w-16 h-16 rounded-full border-4 border-white flex items-center justify-center transition-transform active:scale-95 ${
+          className={`w-16 h-16 rounded-full border-4 border-white flex items-center justify-center transition-transform duration-150 active:scale-95 ${
             isWorking ? "opacity-50 cursor-not-allowed" : "hover:bg-white/20"
           }`}
         >

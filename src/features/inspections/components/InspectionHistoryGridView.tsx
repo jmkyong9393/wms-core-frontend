@@ -125,7 +125,7 @@ export function InspectionHistoryGridView() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
+    <div className="max-w-[1600px] mx-auto space-y-6">
       <div>
         <h2 className="text-2xl font-bold text-foreground">검수 이력</h2>
         <p className="text-sm text-muted-foreground mt-1">

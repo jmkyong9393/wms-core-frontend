@@ -64,7 +64,7 @@ export function NotificationBell() {
       >
         <Bell className="w-5 h-5" />
         {unreadCount > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-semibold text-white border-2 border-card">
+          <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-semibold text-white border-2 border-card">
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         )}
@@ -77,7 +77,7 @@ export function NotificationBell() {
             <button
               type="button"
               onClick={() => markAllReadMutation.mutate()}
-              className="text-xs font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+              className="text-xs font-medium text-primary hover:text-primary/80"
             >
               모두 읽음
             </button>

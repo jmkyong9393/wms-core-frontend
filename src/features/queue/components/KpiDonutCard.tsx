@@ -1,3 +1,5 @@
+import { TrendingUp, TrendingDown } from 'lucide-react';
+
 const RADIUS = 23;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 
@@ -74,7 +76,7 @@ export default function KpiDonutCard({
   trend,
 }: KpiDonutCardProps) {
   return (
-    <div className="bg-card p-4 rounded-xl border border-border shadow-sm flex items-center justify-between gap-3">
+    <div className="bg-card p-4 rounded-xl border border-border shadow-sm transition-shadow duration-200 hover:shadow-md flex items-center justify-between gap-3">
       <div className="min-w-0">
         <p className="text-xs font-bold text-foreground truncate mb-1">{label}</p>
         <p className="text-xl font-bold text-foreground">{centerValue}</p>
@@ -84,8 +86,13 @@ export default function KpiDonutCard({
               trend.direction === 'up' ? 'text-green-600 dark:text-green-400' : 'text-red-500 dark:text-red-400'
             }`}
           >
-            <span>
-              {trend.direction === 'up' ? '▲' : '▼'} {trend.label}
+            <span className="inline-flex items-center gap-0.5">
+              {trend.direction === 'up' ? (
+                <TrendingUp className="size-3" aria-hidden />
+              ) : (
+                <TrendingDown className="size-3" aria-hidden />
+              )}
+              {trend.label}
             </span>
             <span className="text-muted-foreground font-normal">어제 대비</span>
           </p>

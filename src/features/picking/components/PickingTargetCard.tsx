@@ -1,3 +1,4 @@
+import { MapPin, ScanBarcode } from 'lucide-react';
 import { getGradeBadgeStyle, getGradeLabel } from '@/features/inspections/utils/gradeBadge';
 import { cn } from '@/lib/utils';
 import type { FlattenedPickingItem } from '@/features/picking/utils/flattenPickingGroups';
@@ -20,8 +21,12 @@ export function PickingTargetCard({ item }: PickingTargetCardProps) {
   const isDone = item.picked_quantity >= item.quantity;
 
   return (
-    <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 shadow-sm p-4">
+    <div className="bg-card rounded-xl border border-border shadow-sm p-4">
       {/* Zone/Rack/Shelf: 화면에서 가장 크게 강조할 위치 정보 */}
+      <div className="flex items-center gap-1 mb-2 text-[11px] font-semibold text-gray-400 dark:text-zinc-500">
+        <MapPin className="w-3.5 h-3.5" />
+        피킹 로케이션
+      </div>
       <div className="flex gap-2">
         <LocationBadge label="Zone" value={item.zone} />
         <LocationBadge label="Rack" value={item.rack} />
@@ -50,13 +55,15 @@ export function PickingTargetCard({ item }: PickingTargetCardProps) {
           </p>
 
           {item.isbn && (
-            <p className="text-xs font-mono text-gray-500 dark:text-zinc-400">
+            <p className="flex items-center gap-1 text-xs font-mono text-gray-500 dark:text-zinc-400">
+              <ScanBarcode className="w-3 h-3 shrink-0" />
               ISBN {item.isbn}
             </p>
           )}
 
           {item.lpn_barcode && (
-            <p className="break-all text-xs font-mono text-gray-500 dark:text-zinc-400">
+            <p className="flex items-center gap-1 break-all text-xs font-mono text-gray-500 dark:text-zinc-400">
+              <ScanBarcode className="w-3 h-3 shrink-0" />
               LPN {item.lpn_barcode}
             </p>
           )}

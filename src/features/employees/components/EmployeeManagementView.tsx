@@ -76,7 +76,7 @@ export function EmployeeManagementView() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6">
+    <div className="max-w-[1600px] mx-auto space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-foreground">직원 관리</h2>

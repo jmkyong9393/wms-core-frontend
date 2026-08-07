@@ -74,7 +74,7 @@ export function RestockProposalListView() {
   });
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
+    <div className="max-w-[1600px] mx-auto space-y-6">
       <div>
         <h2 className="text-2xl font-bold text-foreground">발주 추천안</h2>
         <p className="text-sm text-muted-foreground mt-1">
@@ -91,7 +91,11 @@ export function RestockProposalListView() {
           }}
         >
           <SelectTrigger>
-            <SelectValue />
+            <SelectValue>
+              {(value: RestockProposalStatus | typeof STATUS_FILTER_ALL) =>
+                value === STATUS_FILTER_ALL ? '전체 상태' : getRestockStatusLabel(value)
+              }
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value={STATUS_FILTER_ALL}>전체 상태</SelectItem>

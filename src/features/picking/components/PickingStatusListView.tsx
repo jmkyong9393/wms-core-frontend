@@ -59,7 +59,7 @@ export function PickingStatusListView() {
   });
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
+    <div className="max-w-[1600px] mx-auto space-y-6">
       <div>
         <h2 className="text-2xl font-bold text-foreground">피킹 현황</h2>
         <p className="text-sm text-muted-foreground mt-1">
@@ -79,7 +79,7 @@ export function PickingStatusListView() {
             className={cn(
               'px-4 py-2 text-sm font-semibold border-b-2 -mb-px transition-colors',
               activeStatus === status
-                ? 'border-blue-600 text-blue-700 dark:border-blue-400 dark:text-blue-300'
+                ? 'border-primary text-primary'
                 : 'border-transparent text-muted-foreground hover:text-foreground'
             )}
           >

@@ -114,7 +114,7 @@ export default function OperationalInsightsTab() {
   if (isLoading) {
     return (
       <div className="flex min-h-[300px] flex-col items-center justify-center gap-3">
-        <RefreshCw className="h-8 w-8 animate-spin text-violet-600" />
+        <RefreshCw className="h-8 w-8 animate-spin text-ai" />
         <p className="text-sm font-medium text-muted-foreground">
           운영 인사이트를 불러오는 중입니다.
         </p>
@@ -132,7 +132,7 @@ export default function OperationalInsightsTab() {
         <button
           type="button"
           onClick={() => void loadData()}
-          className="inline-flex items-center gap-1.5 rounded-lg bg-violet-50 px-3 py-1.5 text-xs font-bold text-violet-600 transition-colors hover:bg-violet-100 dark:bg-violet-950/40 dark:text-violet-300"
+          className="inline-flex items-center gap-1.5 rounded-lg border border-ai-border bg-ai-muted px-3 py-1.5 text-xs font-bold text-ai transition-colors duration-200 hover:bg-ai-muted/70"
         >
           <RefreshCw className="h-3.5 w-3.5" />
           다시 시도
@@ -145,7 +145,8 @@ export default function OperationalInsightsTab() {
     <div className="space-y-4 pb-8">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-            <h3 className="text-base font-bold text-foreground">
+            <h3 className="flex items-center gap-2 text-base font-bold text-foreground">
+            <span className="size-1.5 rounded-full bg-ai" aria-hidden />
             운영 인사이트
             </h3>
             <p className="mt-0.5 text-xs text-muted-foreground">
@@ -156,7 +157,7 @@ export default function OperationalInsightsTab() {
         <button
             type="button"
             onClick={() => setIsPolicyOpen(true)}
-            className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-violet-50 px-3 py-2 text-xs font-bold text-violet-600 transition-colors hover:bg-violet-100 dark:bg-violet-950/40 dark:text-violet-300 dark:hover:bg-violet-950/60"
+            className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-ai-border bg-ai-muted px-3 py-2 text-xs font-bold text-ai transition-colors duration-200 hover:bg-ai-muted/70"
         >
             <Settings className="h-3.5 w-3.5" />
             운영 기준 설정
@@ -187,7 +188,7 @@ export default function OperationalInsightsTab() {
             />
         </div>
 
-      <section className="rounded-3xl border border-border bg-card p-5 shadow-sm">
+      <section className="rounded-xl border border-border bg-card p-5 shadow-sm transition-shadow duration-200 hover:shadow-md">
         <div className="mb-4">
           <h3 className="text-sm font-bold text-foreground">
             확인 필요 거래 고객 목록
@@ -197,14 +198,14 @@ export default function OperationalInsightsTab() {
           </p>
         </div>
 
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto rounded-lg border border-border">
           <table className="w-full border-collapse text-left text-xs">
             <thead>
-              <tr className="border-b border-border font-bold text-muted-foreground">
-                <th className="px-1 py-2">고객</th>
-                <th className="px-1 py-2">확인 사유</th>
-                <th className="px-1 py-2">우선순위</th>
-                <th className="whitespace-nowrap px-1 py-2">탐지 시각</th>
+              <tr className="border-b border-border bg-muted/40 font-semibold uppercase tracking-wide text-muted-foreground">
+                <th className="px-3 py-2.5">고객</th>
+                <th className="px-3 py-2.5">확인 사유</th>
+                <th className="px-3 py-2.5">우선순위</th>
+                <th className="whitespace-nowrap px-3 py-2.5">탐지 시각</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
@@ -213,25 +214,25 @@ export default function OperationalInsightsTab() {
                   const isCritical = report.fraud_score >= 90;
 
                   return (
-                    <tr key={report.id} className="text-muted-foreground">
-                      <td className="px-1 py-3 font-medium text-foreground">
+                    <tr key={report.id} className="text-muted-foreground transition-colors duration-150 hover:bg-muted/50">
+                      <td className="px-3 py-2.5 font-medium text-foreground">
                         {report.customer_name ?? '미확인 고객'}
                       </td>
-                      <td className="max-w-[480px] truncate px-1 py-3">
+                      <td className="max-w-[480px] truncate px-3 py-2.5">
                         {report.fraud_reason ?? '운영 확인이 필요한 거래 패턴'}
                       </td>
-                      <td className="px-1 py-3">
+                      <td className="px-3 py-2.5">
                         <span
-                          className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                          className={`inline-flex rounded-full border px-2 py-0.5 text-[10px] font-bold ${
                             isCritical
-                              ? 'bg-rose-50 text-rose-600 dark:bg-rose-950/20 dark:text-rose-400'
-                              : 'bg-amber-50 text-amber-600 dark:bg-amber-950/20 dark:text-amber-400'
+                              ? 'border-rose-200 bg-rose-50 text-rose-600 dark:border-rose-900 dark:bg-rose-950/20 dark:text-rose-400'
+                              : 'border-amber-200 bg-amber-50 text-amber-600 dark:border-amber-900 dark:bg-amber-950/20 dark:text-amber-400'
                           }`}
                         >
                           {isCritical ? '우선 확인' : '확인 필요'}
                         </span>
                       </td>
-                      <td className="whitespace-nowrap px-1 py-3">
+                      <td className="whitespace-nowrap px-3 py-2.5">
                         {formatKstDateTime(report.detected_at)}
                       </td>
                     </tr>
@@ -256,7 +257,7 @@ export default function OperationalInsightsTab() {
         <InsightChartCard
           title="출판사별 불량 도서 비율"
           description="최근 주간 리포트 기준 상위 출판사 현황"
-          icon={<Building2 className="h-4 w-4 text-violet-500" />}
+          icon={<Building2 className="h-4 w-4 text-ai" />}
         >
           {publisherData.length > 0 ? (
             <ResponsiveContainer width="100%" height="100%">
@@ -357,7 +358,7 @@ export default function OperationalInsightsTab() {
                     </div>
                     <div className="h-2 overflow-hidden rounded-full bg-muted">
                       <div
-                        className="h-full rounded-full bg-violet-500"
+                        className="h-full rounded-full bg-ai"
                         style={{ width: `${ratio}%` }}
                       />
                     </div>
@@ -393,15 +394,14 @@ function InsightKpiCard({
   tone: 'violet' | 'rose' | 'amber';
 }) {
   const toneClassName = {
-    violet:
-      'bg-violet-50 text-violet-600 dark:bg-violet-950/20 dark:text-violet-400',
+    violet: 'bg-ai-muted text-ai',
     rose: 'bg-rose-50 text-rose-600 dark:bg-rose-950/20 dark:text-rose-400',
     amber:
       'bg-amber-50 text-amber-600 dark:bg-amber-950/20 dark:text-amber-400',
   }[tone];
 
   return (
-    <div className="space-y-2 rounded-3xl border border-border bg-card p-4">
+    <div className="space-y-2 rounded-xl border border-border bg-card p-4 shadow-sm transition-shadow duration-200 hover:shadow-md">
       <div className="flex items-center justify-between">
         <span className="text-[11px] font-bold uppercase text-muted-foreground">
           {label}
@@ -426,7 +426,7 @@ function InsightChartCard({
   children: React.ReactNode;
 }) {
   return (
-    <section className="flex h-[290px] flex-col rounded-3xl border border-border bg-card p-5 shadow-sm">
+    <section className="flex h-[290px] flex-col rounded-xl border border-border bg-card p-5 shadow-sm transition-shadow duration-200 hover:shadow-md">
       <div className="mb-4">
         <div className="flex items-center gap-2">
           {icon}

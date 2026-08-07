@@ -14,6 +14,8 @@ import { useQuery } from '@tanstack/react-query';
 import { getInspectionDetail } from '@/features/inspections/api/inspectionHistoryService';
 import { DefectBboxOverlay } from '@/features/inspections/components/DefectBboxOverlay';
 import { DefectLayerToggle } from '@/features/inspections/components/DefectLayerToggle';
+import { Button } from '@/components/ui/button';
+import { Bot, Barcode, MapPin, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface HitlTicketDetailDialogProps {
   item: HitlQueueItem | null;
@@ -79,28 +81,34 @@ export default function HitlTicketDetailDialog({
             </DialogHeader>
 
             <div className="grid gap-3 sm:grid-cols-2">
-              <div className="rounded-lg border p-4 text-sm">
-                <p className="text-muted-foreground">LPN 바코드</p>
+              <div className="rounded-xl border border-border bg-muted/30 p-4 text-sm">
+                <p className="flex items-center gap-1.5 text-muted-foreground">
+                  <Barcode className="size-3.5" aria-hidden />
+                  LPN 바코드
+                </p>
                 <p className="mt-1 break-all font-medium">
                   {item.lpnBarcode ?? '-'}
                 </p>
               </div>
 
-              <div className="rounded-lg border p-4 text-sm">
-                <p className="text-muted-foreground">보관 위치</p>
+              <div className="rounded-xl border border-border bg-muted/30 p-4 text-sm">
+                <p className="flex items-center gap-1.5 text-muted-foreground">
+                  <MapPin className="size-3.5" aria-hidden />
+                  보관 위치
+                </p>
                 <p className="mt-1 font-medium">
                   {item.locationBarcode ?? '-'}
                 </p>
               </div>
 
-              <div className="rounded-lg border p-4 text-sm">
+              <div className="rounded-xl border border-border bg-muted/30 p-4 text-sm">
                 <p className="text-muted-foreground">UBCI 점수 / 최종 등급</p>
                 <p className="mt-1 font-medium">
                   {item.ubciScore ?? '-'}점 / {item.finalGrade ?? '-'}
                 </p>
               </div>
 
-              <div className="rounded-lg border p-4 text-sm">
+              <div className="rounded-xl border border-border bg-muted/30 p-4 text-sm">
                 <p className="text-muted-foreground">{displayedTimeLabel}</p>
                 <p className="mt-1 font-medium">
                   {formatDateTime(displayedTime ?? null)}
@@ -108,7 +116,7 @@ export default function HitlTicketDetailDialog({
               </div>
             </div>
 
-            <div className="rounded-lg border p-4 text-sm">
+            <div className="rounded-xl border border-border bg-muted/30 p-4 text-sm">
               <p className="text-muted-foreground">검토 사유</p>
               <p className="mt-1 font-medium">
                 {item.reasonCodes.length > 0
@@ -117,9 +125,12 @@ export default function HitlTicketDetailDialog({
               </p>
             </div>
             
-            <section className="rounded-lg border p-4">
+            <section className="rounded-xl border border-border p-4">
               <div className="mb-3 flex items-center justify-between gap-2">
-                <p className="text-sm font-semibold">검수 사진 및 AI 결함 위치</p>
+                <p className="flex items-center gap-1.5 text-sm font-semibold">
+                  <span className="size-1.5 rounded-full bg-ai" aria-hidden />
+                  검수 사진 및 AI 결함 위치
+                </p>
 
                 <div className="flex items-center gap-3">
                   <DefectLayerToggle
@@ -163,29 +174,33 @@ export default function HitlTicketDetailDialog({
 
                   {images.length > 1 && (
                     <div className="mt-3 flex justify-end gap-2">
-                      <button
+                      <Button
                         type="button"
+                        variant="outline"
+                        size="sm"
                         onClick={() =>
                           setCurrentImageIndex((index) =>
                             index === 0 ? images.length - 1 : index - 1
                           )
                         }
-                        className="rounded border px-3 py-1 text-xs"
                       >
+                        <ChevronLeft className="size-3.5" aria-hidden />
                         이전 사진
-                      </button>
+                      </Button>
 
-                      <button
+                      <Button
                         type="button"
+                        variant="outline"
+                        size="sm"
                         onClick={() =>
                           setCurrentImageIndex((index) =>
                             index === images.length - 1 ? 0 : index + 1
                           )
                         }
-                        className="rounded border px-3 py-1 text-xs"
                       >
                         다음 사진
-                      </button>
+                        <ChevronRight className="size-3.5" aria-hidden />
+                      </Button>
                     </div>
                   )}
                 </>
@@ -196,15 +211,18 @@ export default function HitlTicketDetailDialog({
               )}
             </section>
 
-            <section className="rounded-lg border p-4">
-            <p className="mb-3 text-sm font-semibold">Agent 실행 로그</p>
+            <section className="rounded-xl border border-ai-border bg-ai-muted/40 p-4">
+            <p className="mb-3 flex items-center gap-1.5 text-sm font-semibold">
+              <Bot className="size-4 text-ai" aria-hidden />
+              Agent 실행 로그
+            </p>
             <div className="max-h-72 overflow-y-auto">
               <AgentLogPanel inspectionId={item.id} />
             </div>
           </section>
 
             {isInReview && (
-              <section className="rounded-lg border border-primary/30 bg-primary/5 p-4">
+              <section className="rounded-xl border border-primary/30 bg-primary/5 p-4">
                 <p className="mb-3 text-sm font-semibold">
                   관리자 검토 결과 처리
                 </p>
@@ -216,14 +234,14 @@ export default function HitlTicketDetailDialog({
             )}
 
             {isRecheck && (
-              <section className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm">
+              <section className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm dark:border-amber-900 dark:bg-amber-950/30">
                 재촬영 요청 상태입니다. 작업자가 해당 LPN을 스캔해 사진을 다시 등록하면
                 재검수가 시작됩니다.
               </section>
             )}
 
             {isCompleted && (
-              <section className="rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-sm">
+              <section className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm dark:border-emerald-900 dark:bg-emerald-950/30">
                 처리 완료된 검수 건입니다.
               </section>
             )}

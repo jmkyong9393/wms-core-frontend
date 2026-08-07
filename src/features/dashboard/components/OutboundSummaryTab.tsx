@@ -6,6 +6,7 @@ import { useOutboundDashboardSummaryQuery } from '@/features/dashboard/hooks/use
 import { getOrderStatusLabel } from '@/features/orders/utils/orderStatusLabel';
 import { formatCurrencyKRW } from '@/lib/format';
 import { formatKstDateTime } from '@/lib/date';
+import { Card, CardContent } from '@/components/ui/card';
 
 // 출고 관리자 대시보드 - 출고 탭 (실 API 연동, Mock 폴백 없음)
 export default function OutboundSummaryTab() {
@@ -43,7 +44,7 @@ export default function OutboundSummaryTab() {
     <div className="flex-1 flex flex-col space-y-4 min-h-0">
       {/* Outbound KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 shrink-0">
-        <div className="bg-card border border-border rounded-3xl p-4 space-y-2">
+        <Card className="p-4">
           <div className="flex justify-between items-center">
             <span className="text-[11px] font-bold text-muted-foreground uppercase">진행 중 피킹 주문</span>
             <span className="p-1.5 bg-orange-50 dark:bg-orange-950/20 text-orange-600 dark:text-orange-400 rounded-lg">
@@ -55,9 +56,9 @@ export default function OutboundSummaryTab() {
               {summary.active_picking_order_count} 건
             </span>
           </div>
-        </div>
+        </Card>
 
-        <div className="bg-card border border-border rounded-3xl p-4 space-y-2">
+        <Card className="p-4">
           <div className="flex justify-between items-center">
             <span className="text-[11px] font-bold text-muted-foreground uppercase">당일 피킹 완료율</span>
             <span className="p-1.5 bg-orange-50 dark:bg-orange-950/20 text-orange-600 dark:text-orange-400 rounded-lg">
@@ -69,9 +70,9 @@ export default function OutboundSummaryTab() {
               {summary.picking_completion_rate.toFixed(1)} %
             </span>
           </div>
-        </div>
+        </Card>
 
-        <div className="bg-card border border-border rounded-3xl p-4 space-y-2">
+        <Card className="p-4">
           <div className="flex justify-between items-center">
             <span className="text-[11px] font-bold text-muted-foreground uppercase">금일 송장 발급 완료</span>
             <span className="p-1.5 bg-orange-50 dark:bg-orange-950/20 text-orange-600 dark:text-orange-400 rounded-lg">
@@ -83,13 +84,14 @@ export default function OutboundSummaryTab() {
               {summary.today_shipping_label_issued_count} 건
             </span>
           </div>
-        </div>
+        </Card>
       </div>
 
       {/* Outbound order table */}
       <div className="flex-1 min-h-0 flex flex-col">
         {/* Table */}
-        <div className="bg-card border border-border rounded-3xl p-4 flex flex-col min-h-0 overflow-y-auto flex-1">
+        <Card className="flex flex-col min-h-0 overflow-y-auto flex-1">
+          <CardContent className="flex flex-1 flex-col min-h-0 p-4">
           <div className="flex items-center justify-between mb-3">
             <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
               실시간 출고 주문 배차 목록
@@ -99,39 +101,39 @@ export default function OutboundSummaryTab() {
           <div className="overflow-x-auto text-xs">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-border text-muted-foreground font-bold">
-                  <th className="py-2 px-1">송장번호</th>
-                  <th className="py-2 px-1">공급처/고객사</th>
-                  <th className="py-2 px-1">주문 유형</th>
-                  <th className="py-2 px-1">총금액</th>
-                  <th className="py-2 px-1">상태</th>
-                  <th className="py-2 px-1">주문 시각</th>
+                <tr className="bg-muted/40 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  <th className="py-2.5 px-3">송장번호</th>
+                  <th className="py-2.5 px-3">공급처/고객사</th>
+                  <th className="py-2.5 px-3">주문 유형</th>
+                  <th className="py-2.5 px-3">총금액</th>
+                  <th className="py-2.5 px-3">상태</th>
+                  <th className="py-2.5 px-3">주문 시각</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
                 {recentOrders.length > 0 ? (
                   recentOrders.map((order) => (
-                    <tr key={order.id} className="text-muted-foreground">
-                      <td className="py-3 px-1 font-mono font-bold">
+                    <tr key={order.id} className="text-muted-foreground transition-colors hover:bg-muted/50">
+                      <td className="py-2.5 px-3 font-mono font-bold">
                         {order.waybill_number ?? '송장 미발급'}
                       </td>
-                      <td className="py-3 px-1 font-medium">{order.customer_name ?? '미지정 고객'}</td>
-                      <td className="py-3 px-1">{order.order_type}</td>
-                      <td className="py-3 px-1 font-semibold">{formatCurrencyKRW(order.total_price)}</td>
-                      <td className="py-3 px-1">
+                      <td className="py-2.5 px-3 font-medium">{order.customer_name ?? '미지정 고객'}</td>
+                      <td className="py-2.5 px-3">{order.order_type}</td>
+                      <td className="py-2.5 px-3 font-semibold">{formatCurrencyKRW(order.total_price)}</td>
+                      <td className="py-2.5 px-3">
                         <span
-                          className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                          className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-bold ${
                             order.status === 'SHIPPED'
-                              ? 'bg-green-50 text-green-600 dark:bg-green-950/20 dark:text-green-400'
+                              ? 'border-green-200 bg-green-50 text-green-600 dark:border-green-900 dark:bg-green-950/20 dark:text-green-400'
                               : order.status === 'PICKING'
-                              ? 'bg-orange-50 text-orange-600 dark:bg-orange-950/20 dark:text-orange-400'
-                              : 'bg-yellow-50 text-yellow-600 dark:bg-yellow-950/20 dark:text-yellow-400'
+                              ? 'border-orange-200 bg-orange-50 text-orange-600 dark:border-orange-900 dark:bg-orange-950/20 dark:text-orange-400'
+                              : 'border-yellow-200 bg-yellow-50 text-yellow-600 dark:border-yellow-900 dark:bg-yellow-950/20 dark:text-yellow-400'
                           }`}
                         >
                           {getOrderStatusLabel(order.status)}
                         </span>
                       </td>
-                      <td className="py-3 px-1 text-muted-foreground whitespace-nowrap">
+                      <td className="py-2.5 px-3 text-muted-foreground whitespace-nowrap">
                         {formatKstDateTime(order.created_at)}
                       </td>
                     </tr>
@@ -146,7 +148,8 @@ export default function OutboundSummaryTab() {
               </tbody>
             </table>
           </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

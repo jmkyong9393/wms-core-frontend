@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Check, RefreshCw, Settings } from 'lucide-react';
+import { Check, RefreshCw, Settings, X } from 'lucide-react';
 
 import {
   getFdsPolicies,
@@ -129,7 +129,7 @@ export default function FdsPolicySettingsDrawer({
         <header className="flex items-center justify-between border-b border-border bg-muted/50 px-5 py-5">
           <div>
             <div className="flex items-center gap-1.5">
-              <Settings className="h-4 w-4 text-violet-500" />
+              <Settings className="h-4 w-4 text-ai" />
               <h2 className="text-base font-bold text-foreground">
                 운영 기준 설정
               </h2>
@@ -142,17 +142,17 @@ export default function FdsPolicySettingsDrawer({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+            className="rounded-lg p-1.5 text-muted-foreground transition-colors duration-200 hover:bg-accent hover:text-accent-foreground"
             aria-label="운영 기준 설정 닫기"
           >
-            ×
+            <X className="h-4 w-4" />
           </button>
         </header>
 
         <div className="flex-1 space-y-4 overflow-y-auto px-5 py-6">
           {isLoading ? (
             <div className="flex min-h-40 items-center justify-center">
-              <RefreshCw className="h-5 w-5 animate-spin text-violet-500" />
+              <RefreshCw className="h-5 w-5 animate-spin text-ai" />
             </div>
           ) : (
             policies.map((policy) => {
@@ -165,7 +165,7 @@ export default function FdsPolicySettingsDrawer({
                   className="space-y-3 rounded-xl border border-border bg-muted/50 p-4"
                 >
                   <div>
-                    <p className="text-xs font-bold text-violet-600 dark:text-violet-400">
+                    <p className="text-xs font-bold text-ai">
                       {POLICY_FRIENDLY_NAMES[policy.policy_key] ??
                         policy.policy_key}
                     </p>
@@ -191,19 +191,19 @@ export default function FdsPolicySettingsDrawer({
                             Number(event.target.value) || 0,
                         }));
                       }}
-                      className="w-full rounded-lg border border-border bg-card px-2.5 py-1.5 text-sm font-semibold text-foreground outline-none ring-violet-500 focus:ring-1"
+                      className="w-full rounded-lg border border-border bg-card px-2.5 py-1.5 text-sm font-semibold text-foreground outline-none transition-colors focus:border-ring focus:ring-3 focus:ring-ring/50"
                     />
 
                     <button
                       type="button"
                       disabled={isUpdating || isSuccess}
                       onClick={() => void handleSubmit(policy.policy_key)}
-                      className={`inline-flex min-w-16 items-center justify-center gap-1 rounded-lg px-3 py-1.5 text-xs font-bold text-white transition-colors ${
+                      className={`inline-flex min-w-16 items-center justify-center gap-1 rounded-lg px-3 py-1.5 text-xs font-bold text-white transition-colors duration-200 ${
                         isSuccess
                           ? 'bg-emerald-500'
                           : isUpdating
                             ? 'cursor-not-allowed bg-muted text-muted-foreground'
-                            : 'bg-violet-600 hover:bg-violet-700'
+                            : 'bg-ai hover:bg-ai/90'
                       }`}
                     >
                       {isSuccess ? (

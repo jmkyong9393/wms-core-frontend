@@ -24,10 +24,10 @@ export default function WorkerPortalPage() {
         {/* Inbound Button Card */}
         <Link
           href="/worker/inbound"
-          className="group block relative overflow-hidden bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 hover:border-indigo-400 dark:hover:border-indigo-500 rounded-3xl p-6 shadow-sm hover:shadow-md transition-all active:scale-[0.98]"
+          className="group block relative overflow-hidden rounded-xl border border-border bg-card p-6 shadow-sm transition-shadow duration-200 hover:border-primary/40 hover:shadow-md active:scale-[0.98]"
         >
           <div className="flex items-center space-x-4">
-            <div className="bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 p-4 rounded-2xl group-hover:scale-110 transition-transform">
+            <div className="rounded-2xl bg-primary/10 p-4 text-primary transition-transform duration-200 group-hover:scale-110">
               <ArrowDownToLine className="w-8 h-8" />
             </div>
             <div className="flex-1 space-y-1">
@@ -39,16 +39,16 @@ export default function WorkerPortalPage() {
               </p>
             </div>
           </div>
-          <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/5 rounded-full -mr-8 -mt-8 group-hover:scale-150 transition-transform" />
+          <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full -mr-8 -mt-8 transition-transform duration-200 group-hover:scale-150" />
         </Link>
 
         {/* Outbound Button Card */}
         <Link
           href="/worker/outbound"
-          className="group block relative overflow-hidden bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 hover:border-orange-400 dark:hover:border-orange-500 rounded-3xl p-6 shadow-sm hover:shadow-md transition-all active:scale-[0.98]"
+          className="group block relative overflow-hidden rounded-xl border border-border bg-card p-6 shadow-sm transition-shadow duration-200 hover:border-orange-400 dark:hover:border-orange-500 active:scale-[0.98]"
         >
           <div className="flex items-center space-x-4">
-            <div className="bg-orange-50 dark:bg-orange-950/40 text-orange-600 dark:text-orange-400 p-4 rounded-2xl group-hover:scale-110 transition-transform">
+            <div className="bg-orange-50 dark:bg-orange-950/40 text-orange-600 dark:text-orange-400 p-4 rounded-2xl transition-transform duration-200 group-hover:scale-110">
               <ArrowUpFromLine className="w-8 h-8" />
             </div>
             <div className="flex-1 space-y-1">
@@ -60,7 +60,7 @@ export default function WorkerPortalPage() {
               </p>
             </div>
           </div>
-          <div className="absolute top-0 right-0 w-24 h-24 bg-orange-500/5 rounded-full -mr-8 -mt-8 group-hover:scale-150 transition-transform" />
+          <div className="absolute top-0 right-0 w-24 h-24 bg-orange-500/5 rounded-full -mr-8 -mt-8 transition-transform duration-200 group-hover:scale-150" />
         </Link>
       </div>
 
@@ -68,7 +68,7 @@ export default function WorkerPortalPage() {
         <div className="pt-4">
           <Link
             href="/admin"
-            className="flex items-center justify-center space-x-2 text-sm text-gray-500 hover:text-gray-800 dark:text-zinc-400 dark:hover:text-zinc-100 transition-colors bg-gray-50 hover:bg-gray-100 dark:bg-zinc-800/50 dark:hover:bg-zinc-800 p-4 rounded-3xl border border-transparent hover:border-gray-200 dark:hover:border-zinc-700"
+            className="flex items-center justify-center space-x-2 text-sm text-gray-500 hover:text-gray-800 dark:text-zinc-400 dark:hover:text-zinc-100 transition-colors duration-200 bg-gray-50 hover:bg-gray-100 dark:bg-zinc-800/50 dark:hover:bg-zinc-800 p-4 rounded-xl border border-transparent hover:border-gray-200 dark:hover:border-zinc-700"
           >
             <Home className="w-5 h-5" />
             <span className="font-medium">관리자 대시보드로 돌아가기</span>

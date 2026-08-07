@@ -16,7 +16,7 @@ export function PickingProgressHeader({
   const currentPosition = Math.min(currentIndex + 1, totalItems);
 
   return (
-    <div className="flex-none p-4 bg-white dark:bg-zinc-900 border-b border-gray-100 dark:border-zinc-800 shadow-sm sticky top-14 z-20">
+    <div className="flex-none p-4 bg-card border-b border-border shadow-sm sticky top-14 z-20">
       <h1 className="text-xl font-bold text-gray-900 dark:text-zinc-100 flex items-center gap-2">
         <ShoppingCart className="h-6 w-6 text-orange-600 dark:text-orange-400" />
         출고 피킹 (Picking)

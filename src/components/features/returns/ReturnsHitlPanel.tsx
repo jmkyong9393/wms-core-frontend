@@ -4,6 +4,7 @@ import React from "react";
 import type { BookGrade } from "@/types/returnTypes";
 import { getGradeLabel } from "@/features/inspections/utils/gradeBadge";
 import { ShieldAlert, Clock } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface ReturnsHitlPanelProps {
   jobId: string;
@@ -27,8 +28,8 @@ export default function ReturnsHitlPanel({
   onBack,
 }: ReturnsHitlPanelProps) {
   return (
-    <div className="w-full max-w-md mx-auto bg-zinc-50 dark:bg-zinc-900 border-2 border-amber-500/80 rounded-3xl p-6 shadow-2xl transition-all relative overflow-hidden">
-      <div className="flex items-start gap-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/30 rounded-2xl p-4 mb-6">
+    <div className="w-full max-w-md mx-auto bg-card border-2 border-amber-500/80 rounded-xl p-6 shadow-sm relative overflow-hidden">
+      <div className="flex items-start gap-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/30 rounded-xl p-4 mb-6">
         <ShieldAlert className="w-6 h-6 text-amber-600 dark:text-amber-500 shrink-0 mt-0.5" />
         <div>
           <h3 className="text-sm font-bold text-amber-900 dark:text-amber-400">
@@ -42,13 +43,13 @@ export default function ReturnsHitlPanel({
       </div>
 
       <div className="grid grid-cols-2 gap-2.5 mb-4">
-        <div className="bg-white dark:bg-zinc-950 border border-zinc-100 dark:border-zinc-900 rounded-2xl p-3 text-center">
+        <div className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-100 dark:border-zinc-900 rounded-xl p-3 text-center">
           <p className="text-[10px] text-zinc-400 mb-0.5">AI 판독 등급</p>
           <p className="text-base font-black text-zinc-900 dark:text-zinc-50">
             {conditionGrade ? getGradeLabel(conditionGrade) : "—"}
           </p>
         </div>
-        <div className="bg-white dark:bg-zinc-950 border border-zinc-100 dark:border-zinc-900 rounded-2xl p-3 text-center">
+        <div className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-100 dark:border-zinc-900 rounded-xl p-3 text-center">
           <p className="text-[10px] text-zinc-400 mb-0.5">UBCI 점수</p>
           <p className="text-base font-black text-zinc-900 dark:text-zinc-50">
             {ubciScore != null ? ubciScore.toFixed(0) : "—"}
@@ -57,7 +58,7 @@ export default function ReturnsHitlPanel({
       </div>
 
       {finalReport && (
-        <div className="mb-4 p-3 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
+        <div className="mb-4 p-3 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
           {finalReport}
         </div>
       )}
@@ -67,13 +68,15 @@ export default function ReturnsHitlPanel({
         검수 건 #{jobId.slice(0, 8)} 관리자 판정 대기
       </div>
 
-      <button
+      <Button
         type="button"
+        variant="outline"
         onClick={onBack}
-        className="w-full rounded-xl py-3 font-semibold text-xs border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors"
+        size="lg"
+        className="w-full h-11 rounded-xl text-xs font-semibold"
       >
         목록으로 돌아가기
-      </button>
+      </Button>
     </div>
   );
 }

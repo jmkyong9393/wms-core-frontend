@@ -47,7 +47,7 @@ export function createRestockProposalColumns({
               <p className="mt-1 text-xs text-muted-foreground">
                 {book.isbn} · {book.publisher ?? '-'}
               </p>
-              <p className="mt-1 text-xs font-medium text-violet-700">
+              <p className="mt-1 text-xs font-medium text-ai">
                 {row.original.proposalSource === 'SAFETY_STOCK'
                   ? '재고 부족 기반 추천'
                   : '반품 대체 검토'}

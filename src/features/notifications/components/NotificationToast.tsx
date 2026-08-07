@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSetAtom } from 'jotai';
 import { X } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import type { NotificationItem } from '@/features/notifications/types/notification';
 import { NOTIFICATION_SEVERITY_STYLE } from '@/features/notifications/constants/notificationDisplay';
 import {
@@ -64,20 +65,16 @@ export function NotificationToast({ item }: NotificationToastProps) {
         <p className="mt-0.5 pr-5 text-xs opacity-90">{item.message}</p>
 
         <div className="mt-2 flex items-center gap-1.5">
-          <span className="rounded-full bg-white/20 px-2 py-0.5 text-[11px] font-semibold">
+          <Badge variant="outline" className="border-white/20 bg-white/20 text-white">
             추천 {item.payload.recommendedOrderQuantity}권
-          </span>
-          <span
-            className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${getRiskBadgeStyle(item.payload.riskLevel)}`}
-          >
+          </Badge>
+          <Badge variant="outline" className={getRiskBadgeStyle(item.payload.riskLevel)}>
             위험도 {getRiskLabel(item.payload.riskLevel)}
-          </span>
+          </Badge>
           {item.payload.proposalSource && (
-            <span
-              className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${getProposalSourceBadgeStyle(item.payload.proposalSource)}`}
-            >
+            <Badge variant="outline" className={getProposalSourceBadgeStyle(item.payload.proposalSource)}>
               {getProposalSourceLabel(item.payload.proposalSource)}
-            </span>
+            </Badge>
           )}
         </div>
 

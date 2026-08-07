@@ -6,6 +6,7 @@ import { ArrowLeft } from "lucide-react";
 import { currentUserAtom } from "@/features/auth/store/authAtoms";
 import { ROLE_HOME_ROUTE } from "@/features/auth/constants/roleRoutes";
 import { PreferencesCard } from "@/features/mypage/components/PreferencesCard";
+import { Card } from "@/components/ui/card";
 
 export function SettingsView() {
   const currentUser = useAtomValue(currentUserAtom);
@@ -16,21 +17,21 @@ export function SettingsView() {
       <div className="mx-auto w-full max-w-lg space-y-4">
         <Link
           href={homeRoute}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-gray-500 hover:text-gray-700 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-lg hover:shadow-xs transition-all cursor-pointer"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-muted-foreground hover:text-foreground bg-card border border-border rounded-lg hover:shadow-xs transition-all cursor-pointer"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
           홈으로 돌아가기
         </Link>
 
-        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8 dark:border-zinc-800 dark:bg-zinc-900">
+        <Card className="p-6 sm:p-8">
           <div className="mb-4 text-center">
-            <span className="text-lg font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+            <span className="text-lg font-bold bg-gradient-to-r from-brand-from to-brand-to bg-clip-text text-transparent">
               NEWZED
             </span>
-            <h1 className="mt-1 text-base font-semibold text-gray-800 dark:text-zinc-100">환경설정</h1>
+            <h1 className="mt-1 text-base font-semibold text-foreground">환경설정</h1>
           </div>
           <PreferencesCard />
-        </div>
+        </Card>
       </div>
     </div>
   );

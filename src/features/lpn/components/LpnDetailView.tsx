@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { ChevronLeft } from 'lucide-react';
+import { Card } from '@/components/ui/card';
 import { useLpnDetailQuery } from '@/features/lpn/hooks/useLpnDetailQuery';
 import { getLpnErrorMessage } from '@/features/lpn/utils/lpnErrorMessage';
 import { getInventoryGradeBadgeStyle, getInventoryGradeLabel } from '@/features/inventory/utils/gradeBadge';
@@ -42,7 +43,7 @@ export function LpnDetailView({ lpnBarcode }: LpnDetailViewProps) {
       {isError && <p className="text-sm text-red-600 dark:text-red-400">{getLpnErrorMessage(error)}</p>}
 
       {lpn && (
-        <div className="bg-card rounded-2xl border border-border shadow-sm p-5 space-y-4">
+        <Card className="p-5 space-y-4">
           <div className="flex items-start justify-between">
             <div>
               <h2 className="text-lg font-bold text-foreground">{lpn.book.title}</h2>
@@ -72,7 +73,7 @@ export function LpnDetailView({ lpnBarcode }: LpnDetailViewProps) {
             <InfoRow label="할인율" value={lpn.discount_rate == null ? '-' : formatDiscountRate(lpn.discount_rate)} />
             <InfoRow label="판매가" value={lpn.sale_price == null ? '-' : formatCurrencyKRW(lpn.sale_price)} />
           </div>
-        </div>
+        </Card>
       )}
     </div>
   );
