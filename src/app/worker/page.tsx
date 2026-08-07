@@ -1,9 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowDownToLine, ArrowUpFromLine } from "lucide-react";
+import { ArrowDownToLine, ArrowUpFromLine, Home } from "lucide-react";
+import { useAuthSession } from "@/features/auth/hooks/useAuthSession";
 
 export default function WorkerPortalPage() {
+  const authSession = useAuthSession();
+  const role = authSession.status === "ready" ? authSession.currentUser?.role : null;
+  const isManager = role === 'MASTER' || role === 'ADMIN';
+
   return (
     <div className="w-full max-w-md mx-auto my-auto flex flex-col justify-center space-y-6 py-8">
       <div className="text-center space-y-1">
@@ -58,6 +63,18 @@ export default function WorkerPortalPage() {
           <div className="absolute top-0 right-0 w-24 h-24 bg-orange-500/5 rounded-full -mr-8 -mt-8 group-hover:scale-150 transition-transform" />
         </Link>
       </div>
+
+      {isManager && (
+        <div className="pt-4">
+          <Link
+            href="/admin"
+            className="flex items-center justify-center space-x-2 text-sm text-gray-500 hover:text-gray-800 dark:text-zinc-400 dark:hover:text-zinc-100 transition-colors bg-gray-50 hover:bg-gray-100 dark:bg-zinc-800/50 dark:hover:bg-zinc-800 p-4 rounded-3xl border border-transparent hover:border-gray-200 dark:hover:border-zinc-700"
+          >
+            <Home className="w-5 h-5" />
+            <span className="font-medium">관리자 대시보드로 돌아가기</span>
+          </Link>
+        </div>
+      )}
     </div>
   );
 }
