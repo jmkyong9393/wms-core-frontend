@@ -10,6 +10,8 @@ export interface PickingInstructionItem {
   order_item_id: string;
   book_id: string;
   isbn: string | null;
+  book_title: string | null;
+  cover_image_url: string | null;
   quantity: number;
   condition_grade: BookGrade | null;
   // 신품은 단품 LPN 없음

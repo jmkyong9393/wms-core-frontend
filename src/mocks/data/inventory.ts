@@ -23,7 +23,10 @@ function buildInventorySeed(): InventoryRow[] {
   const SEED_SIZE = 22;
 
   for (let i = 0; i < SEED_SIZE; i++) {
-    const book = BOOKS[i % BOOKS.length];
+    const book = {
+      ...BOOKS[i % BOOKS.length],
+      cover_image_url: null,
+    };
     const zone = ZONES[i % ZONES.length];
     const day = String((i % 28) + 1).padStart(2, '0');
     const date = `2026-07-${day}T09:00:00.000Z`;

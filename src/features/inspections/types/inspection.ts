@@ -55,6 +55,7 @@ export interface InspectionBookDetail {
   id: string;
   title: string;
   isbn: string | null;
+  coverImageUrl?: string | null;
 }
 
 export interface InspectionAIResult {

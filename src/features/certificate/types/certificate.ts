@@ -5,6 +5,7 @@ export interface CertificateRenderModel {
   bookTitle: string;
   isbn: string | null;
   publisher: string | null;
+  coverImageUrl: string | null;
 
   // 검수 완료 후 확정된 등급/점수 (해당 API는 검수 미완료 시 404를 반환하므로 항상 값이 채워져 있음)
   grade: BookGrade;

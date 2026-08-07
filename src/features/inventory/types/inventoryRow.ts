@@ -3,6 +3,7 @@ import type { InventoryGrade } from '@/features/inventory/constants/grades';
 export interface InventoryBookRef {
   title: string;
   isbn: string | null;
+  cover_image_url: string | null;
 }
 
 export type InventoryStockType = 'NEW_STOCK' | 'USED_ITEM';

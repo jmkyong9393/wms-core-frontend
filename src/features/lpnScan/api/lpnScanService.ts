@@ -18,6 +18,7 @@ interface LpnScanApiResponse {
     isbn: string;
     title: string;
     publisher: string | null;
+    cover_image_url: string | null;
   };
   inbound_type: LpnInboundType;
   inbound_status: LpnInboundStatus;
@@ -40,7 +41,13 @@ interface LpnScanApiResponse {
 function toLpnScanDetail(res: LpnScanApiResponse): LpnScanDetail {
   return {
     lpnBarcode: res.lpn_barcode,
-    book: res.book,
+    book: {
+      id: res.book.id,
+      isbn: res.book.isbn,
+      title: res.book.title,
+      publisher: res.book.publisher,
+      coverImageUrl: res.book.cover_image_url,
+    },
     inboundType: res.inbound_type,
     inboundStatus: res.inbound_status,
     inspectionStatus: res.inspection_status,
@@ -66,6 +73,7 @@ export async function getLpnScanDetail(token: string): Promise<LpnScanDetail> {
         isbn: '9790000000001',
         title: 'Mock AI 검수 도서 (재촬영 시뮬레이션)',
         publisher: 'Mock 출판사',
+        coverImageUrl: null,
       },
       inboundType: 'USED_PURCHASE',
       inboundStatus: 'COMPLETED',

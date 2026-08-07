@@ -15,6 +15,7 @@ export interface LpnScanBook {
   isbn: string;
   title: string;
   publisher: string | null;
+  coverImageUrl: string | null;
 }
 
 export interface LpnScanLocation {

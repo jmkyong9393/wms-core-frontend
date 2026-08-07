@@ -28,12 +28,39 @@ export function PickingTargetCard({ item }: PickingTargetCardProps) {
         <LocationBadge label="Shelf" value={item.shelf} />
       </div>
 
-      <div className="mt-4 space-y-1.5">
-        <p className="text-lg font-bold text-gray-900 dark:text-zinc-100">
-          {item.allocation_type === 'NEW_STOCK' ? '신품 도서' : '중고 단품 (LPN)'}
-        </p>
-        {item.isbn && <p className="text-xs font-mono text-gray-500 dark:text-zinc-400">ISBN {item.isbn}</p>}
-        {item.lpn_barcode && <p className="text-xs font-mono text-gray-500 dark:text-zinc-400">LPN {item.lpn_barcode}</p>}
+      <div className="mt-4 flex items-start gap-4">
+        {item.cover_image_url ? (
+          <img
+            src={item.cover_image_url}
+            alt={`${item.book_title ?? '도서'} 표지`}
+            className="h-32 w-24 shrink-0 rounded-lg border border-border bg-muted object-cover shadow-sm"
+          />
+        ) : (
+          <div className="flex h-32 w-24 shrink-0 items-center justify-center rounded-lg border border-border bg-muted text-xs font-semibold text-muted-foreground">
+            BOOK
+          </div>
+        )}
+
+        <div className="min-w-0 space-y-1.5">
+          <p className="line-clamp-2 text-lg font-bold text-gray-900 dark:text-zinc-100">
+            {item.book_title ??
+              (item.allocation_type === 'NEW_STOCK'
+                ? '신품 도서'
+                : '중고·반품 도서')}
+          </p>
+
+          {item.isbn && (
+            <p className="text-xs font-mono text-gray-500 dark:text-zinc-400">
+              ISBN {item.isbn}
+            </p>
+          )}
+
+          {item.lpn_barcode && (
+            <p className="break-all text-xs font-mono text-gray-500 dark:text-zinc-400">
+              LPN {item.lpn_barcode}
+            </p>
+          )}
+        </div>
       </div>
 
       <div className="mt-3 flex items-center justify-between">

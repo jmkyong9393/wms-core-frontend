@@ -8,6 +8,7 @@ interface CertificateApiResponse {
     isbn: string | null;
     title: string;
     publisher: string | null;
+    cover_image_url: string | null;
   };
   condition_grade: BookGrade;
   ubci_score: number | string;
@@ -20,6 +21,7 @@ function toCertificateRenderModel(res: CertificateApiResponse): CertificateRende
     bookTitle: res.book.title,
     isbn: res.book.isbn,
     publisher: res.book.publisher,
+    coverImageUrl: res.book.cover_image_url,
     grade: res.condition_grade,
     ubciScore: Number(res.ubci_score),
     reportSummary: res.report_summary,
