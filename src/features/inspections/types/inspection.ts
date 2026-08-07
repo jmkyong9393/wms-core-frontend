@@ -65,19 +65,6 @@ export interface InspectionAIResult {
   repairDirective: string | null;
 }
 
-// Vision AI 결함 BBox 탐지 결과 (원본 사진 기준 정규화 좌표)
-export type VisionDetection = {
-  imageIndex: number;
-  imageView: 'FRONT' | 'BACK' | 'INSIDE';
-  imageUrl: string;
-  type: string;
-  defectType: string;
-  ratio: number;
-  confidence: number;
-  yoloConfidence: number;
-  bbox: [number, number, number, number];
-  coordinateSpace: 'ORIGINAL_IMAGE_NORMALIZED';
-};
 
 export interface HITLHistoryItem {
   action: string | null;
