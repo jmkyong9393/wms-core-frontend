@@ -370,9 +370,8 @@ export default function UsedItemReturnsPage() {
           insideUrl,
         ]);
 
-        setJobId(recheck.jobId);
-        setIsInspectionTriggered(true);
-        setCurrentStep(3);
+        handleSaveToProcessedList("PROCESSING", recheck.jobId);
+        toast.success("AI 재검수 접수가 완료되었습니다. 다음 도서를 스캔해 주세요.");
         return;
       }
 
