@@ -2,6 +2,7 @@
 
 import Sidebar from './Sidebar';
 import Header from './Header';
+import { LegalFooter } from '@/components/legal-footer';
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -11,6 +12,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
         <Header />
         <main className="flex-1 overflow-y-auto p-4 lg:p-8">
           {children}
+          <LegalFooter variant="compact" />
         </main>
       </div>
     </div>

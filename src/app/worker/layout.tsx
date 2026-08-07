@@ -7,6 +7,7 @@ import { AuthGuard } from "@/features/auth/components/AuthGuard";
 import { LogoutButton } from "@/features/auth/components/LogoutButton";
 import { currentUserAtom } from "@/features/auth/store/authAtoms";
 import { maskName } from "@/features/auth/utils/maskName";
+import { LegalFooter } from "@/components/legal-footer";
 
 export default function WorkerLayout({
   children,
@@ -41,6 +42,7 @@ export default function WorkerLayout({
         </header>
         <main className="flex-1 flex flex-col p-4 overflow-y-auto">
           {children}
+          <LegalFooter variant="compact" />
         </main>
       </div>
     </AuthGuard>
