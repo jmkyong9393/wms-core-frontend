@@ -7,6 +7,7 @@ export interface RestockProposalBook {
   title: string;
   isbn: string;
   publisher: string | null;
+  coverImageUrl: string | null;
 }
 
 // 발주 추천안 목록의 항목 하나

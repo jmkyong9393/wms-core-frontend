@@ -19,7 +19,13 @@ const mockedGetAgentLog = vi.mocked(getAgentLog);
 function buildDetail(overrides: Partial<RestockProposalDetail> = {}): RestockProposalDetail {
   return {
     id: 'p1',
-    book: { id: 'b1', title: '테스트 도서', isbn: '9790000000999', publisher: null },
+    book: {
+      id: 'b1',
+      title: '테스트 도서',
+      isbn: '9790000000999',
+      publisher: null,
+      coverImageUrl: null,
+    },
     returnJobId: 'r1',
     proposalSource: 'RETURN_REJECTION',
     status: 'PENDING',

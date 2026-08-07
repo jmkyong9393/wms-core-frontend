@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { QRCodeSVG } from "qrcode.react";
-import { ImageOff, ChevronLeft, ChevronRight, Loader2, BookOpen, Tag, Award, Calendar, QrCode } from "lucide-react";
+import { ImageOff, ChevronLeft, ChevronRight, Loader2, BookOpen, Tag,Calendar, QrCode } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -21,7 +21,11 @@ interface ProcessedBook {
   lpn: string;
   labelScanUrl?: string;
   type: "NEW" | "RETURNS";
-  status: "APPROVED" | "REJECTED" | "PROCESSING";
+  status:
+    | "APPROVED"
+    | "REJECTED"
+    | "PROCESSING"
+    | "RECHECK_REQUIRED";
   timestamp: string;
 }
 
@@ -31,41 +35,6 @@ interface WorkerInboundDetailDialogProps {
 }
 
 const PHOTO_LABELS = ["도서 앞면(대표)", "도서 뒷면", "도서 속지(오염/결함)"];
-
-export function parseFinalReport(report: string | null): string {
-  if (!report) return '아직 최종 검수 결과가 산출되지 않았습니다.';
-  try {
-    const parsed = JSON.parse(report);
-    if (parsed && typeof parsed === 'object') {
-      const parts: string[] = [];
-      if (parsed.message) {
-        parts.push(`📢 진단: ${parsed.message}`);
-      }
-      if (parsed.result) {
-        parts.push(`📌 결과: ${parsed.result === 'INSPECTION_COMPLETED' ? '검수 완료' : parsed.result}`);
-      }
-      if (parsed.defects && Array.isArray(parsed.defects) && parsed.defects.length > 0) {
-        const defectsStr = parsed.defects
-          .map((d: any) => `${d.type || '결함'} (감점: ${d.ratio ?? 0}%)`)
-          .join(', ');
-        parts.push(`⚠️ 결함 내역: ${defectsStr}`);
-      }
-      if (parsed.ubci_score !== undefined) {
-        parts.push(`💯 UBCI 계산 점수: ${parsed.ubci_score}점`);
-      }
-      if (parsed.rule_reference) {
-        parts.push(`📜 적용 규정: ${parsed.rule_reference}`);
-      }
-      if (parsed.overall_confidence) {
-        parts.push(`🎯 종합 신뢰도: ${(parsed.overall_confidence * 100).toFixed(0)}%`);
-      }
-      return parts.join('\n');
-    }
-  } catch (e) {
-    return report;
-  }
-  return report;
-}
 
 export function WorkerInboundDetailDialog({ row, onClose }: WorkerInboundDetailDialogProps) {
   const [currentImgIdx, setCurrentImgIdx] = useState(0);
@@ -116,7 +85,13 @@ export function WorkerInboundDetailDialog({ row, onClose }: WorkerInboundDetailD
                 ? "bg-rose-50 text-rose-600 dark:bg-rose-950/20 dark:text-rose-400"
                 : "bg-yellow-50 text-yellow-600 dark:bg-yellow-950/20 dark:text-yellow-400"
             }`}>
-              {row.status === "APPROVED" ? "입고 완료" : row.status === "REJECTED" ? "반려" : "검수 중"}
+              {row.status === "APPROVED"
+                ? "입고 완료"
+                : row.status === "REJECTED"
+                  ? "반려"
+                  : row.status === "RECHECK_REQUIRED"
+                    ? "재촬영 요청"
+                    : "검수 중"}
             </span>
           </div>
           <DialogTitle className="text-base font-bold text-gray-800 dark:text-zinc-50 leading-tight">
@@ -174,18 +149,6 @@ export function WorkerInboundDetailDialog({ row, onClose }: WorkerInboundDetailD
               <div className="space-y-4">
                 {/* 메인 정보 카드 (UBCI & LPN QR 세로 배치로 겹침 완벽 방지) */}
                 <div className="space-y-3">
-                  {/* 1. UBCI 점수 카드 */}
-                  <div className="bg-gradient-to-r from-indigo-50/40 to-indigo-100/10 dark:from-zinc-800/30 dark:to-zinc-800/10 border border-indigo-100/30 dark:border-zinc-850 rounded-2xl p-3 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Award className="w-5 h-5 text-indigo-500" />
-                      <div>
-                        <span className="text-[9px] text-indigo-400 dark:text-indigo-400 font-bold uppercase tracking-wider block">UBCI AI 점수</span>
-                        <span className="text-sm font-black text-gray-800 dark:text-zinc-100">
-                          {detail?.ubciScore !== null ? `${detail?.ubciScore} 점` : "보류"}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
 
                   {/* 2. LPN 바코드 카드 */}
                   <div className="bg-gray-50/50 dark:bg-zinc-800/20 border border-gray-100 dark:border-zinc-800/60 rounded-2xl p-4 flex flex-col items-center justify-center text-center space-y-3 w-full min-w-0">
@@ -230,7 +193,7 @@ export function WorkerInboundDetailDialog({ row, onClose }: WorkerInboundDetailD
                 {/* 촬영 도서 사진 캐러셀 */}
                 <div className="space-y-1.5">
                   <span className="text-[10px] text-gray-400 dark:text-zinc-500 font-bold uppercase tracking-wider block">
-                    촬영된 도서 분석 사진
+                    등록한 검수 사진
                   </span>
                   {hasImages ? (
                     <div className="relative group overflow-hidden rounded-2xl border border-gray-150 dark:border-zinc-800 bg-zinc-950 flex items-center justify-center min-h-[220px] max-h-[240px] shadow-inner">
@@ -272,30 +235,21 @@ export function WorkerInboundDetailDialog({ row, onClose }: WorkerInboundDetailD
                     </div>
                   )}
                 </div>
+                <section className="space-y-2">
+                  <h4 className="text-xs font-extrabold uppercase tracking-wider text-gray-400 dark:text-zinc-500">
+                    처리 결과
+                  </h4>
 
-                {/* AI 최종 진단 리포트 */}
-                {detail?.finalReport && (
-                  <div className="space-y-1.5">
-                    <span className="text-[10px] text-gray-400 dark:text-zinc-500 font-bold uppercase tracking-wider block">
-                      AI 종합 진단 결과
-                    </span>
-                    <p className="text-xs leading-normal text-gray-655 dark:text-zinc-300 bg-gray-50/50 dark:bg-zinc-800/10 p-3 rounded-xl border border-gray-100 dark:border-zinc-800/40 shadow-inner whitespace-pre-line">
-                      {parseFinalReport(detail.finalReport)}
-                    </p>
+                  <div className="rounded-2xl border border-gray-100 bg-gray-50/50 p-3.5 text-sm leading-relaxed text-gray-700 dark:border-zinc-800 dark:bg-zinc-800/20 dark:text-zinc-200">
+                    {row.status === 'APPROVED'
+                      ? '검수가 완료되어 입고 처리되었습니다.'
+                      : row.status === 'REJECTED'
+                        ? '판매 보류로 처리되었습니다. 관리자 안내에 따라 분류해 주세요.'
+                        : row.status === 'RECHECK_REQUIRED'
+                          ? '재촬영이 필요합니다. 동일한 LPN을 스캔한 뒤 사진을 다시 등록해 주세요.'
+                          : '처리 결과를 확인 중입니다.'}
                   </div>
-                )}
-
-                {/* 이력 기본 정보 */}
-                <div className="bg-gray-50/50 dark:bg-zinc-850/10 rounded-2xl p-3 border border-gray-100/50 dark:border-zinc-800/40 space-y-1.5 text-[10px] text-gray-550 dark:text-zinc-400">
-                  <div className="flex justify-between items-center">
-                    <span>검수 상태 코드</span>
-                    <span className="font-semibold text-gray-700 dark:text-zinc-300">{row.status}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span>최종 입고 처리 시각</span>
-                    <span>{new Date(row.timestamp).toLocaleString()}</span>
-                  </div>
-                </div>
+                </section>
               </div>
             )}
           </div>

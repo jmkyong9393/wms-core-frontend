@@ -17,6 +17,7 @@ export interface InspectionHistoryRow {
   id: string;
   bookId: string;
   bookTitle: string;
+  coverImageUrl?: string | null;
   finalGrade: BookGrade | null;
   isFastTrack: boolean;
   status: InspectionStatus;

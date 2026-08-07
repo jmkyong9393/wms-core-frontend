@@ -43,16 +43,40 @@ export function InventoryDetailView({ inventoryId }: InventoryDetailViewProps) {
 
       {inventory && (
         <div className="bg-card rounded-2xl border border-border shadow-sm p-5 space-y-4">
-          <div className="flex items-start justify-between">
-            <div>
-              <h2 className="text-lg font-bold text-foreground">{inventory.book.title}</h2>
-              <p className="text-xs font-mono text-muted-foreground mt-0.5">ISBN {inventory.book.isbn ?? '-'}</p>
+          <div className="flex items-start gap-4">
+            {inventory.book.cover_image_url ? (
+              <img
+                src={inventory.book.cover_image_url}
+                alt={`${inventory.book.title} 표지`}
+                className="h-40 w-28 shrink-0 rounded-lg border border-border bg-muted object-cover shadow-sm"
+              />
+            ) : (
+              <div className="flex h-40 w-28 shrink-0 items-center justify-center rounded-lg border border-border bg-muted text-sm font-semibold text-muted-foreground">
+                BOOK
+              </div>
+            )}
+
+            <div className="min-w-0 flex-1">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <h2 className="line-clamp-2 text-lg font-bold text-foreground">
+                    {inventory.book.title}
+                  </h2>
+                  <p className="mt-1 text-xs font-mono text-muted-foreground">
+                    ISBN {inventory.book.isbn ?? '-'}
+                  </p>
+                </div>
+
+                <span
+                  className={cn(
+                    'shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold',
+                    getInventoryGradeBadgeStyle(inventory.grade),
+                  )}
+                >
+                  {getInventoryGradeLabel(inventory.grade)}
+                </span>
+              </div>
             </div>
-            <span
-              className={cn('rounded-full px-2 py-0.5 text-xs font-semibold', getInventoryGradeBadgeStyle(inventory.grade))}
-            >
-              {getInventoryGradeLabel(inventory.grade)}
-            </span>
           </div>
 
           <div>

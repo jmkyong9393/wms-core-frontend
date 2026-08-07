@@ -18,6 +18,30 @@ export function createInspectionHistoryColumns({
       id: 'bookTitle',
       header: '도서명',
       accessorKey: 'bookTitle',
+      cell: ({ row, getValue }) => {
+        const title = getValue<string>();
+        const coverImageUrl = row.original.coverImageUrl;
+
+        return (
+          <div className="flex min-w-[320px] items-center gap-3">
+            {coverImageUrl ? (
+              <img
+                src={coverImageUrl}
+                alt={`${title} 표지`}
+                className="h-32 w-24 shrink-0 rounded-md border border-border bg-muted object-cover shadow-sm"
+              />
+            ) : (
+              <div className="flex h-32 w-24 shrink-0 items-center justify-center rounded-md border border-border bg-muted text-[10px] font-semibold text-muted-foreground">
+                BOOK
+              </div>
+            )}
+
+            <p className="line-clamp-2 font-medium leading-5 text-foreground">
+              {title}
+            </p>
+          </div>
+        );
+      },
     },
     {
       id: 'finalGrade',
@@ -36,21 +60,6 @@ export function createInspectionHistoryColumns({
       },
     },
     {
-      id: 'isFastTrack',
-      header: '검수 방식',
-      accessorKey: 'isFastTrack',
-      cell: ({ getValue }) =>
-        getValue<boolean>() ? (
-          <span className="rounded-full bg-purple-100 px-2 py-0.5 text-xs font-semibold text-purple-700 dark:bg-purple-950/40 dark:text-purple-300">
-            신속 검수
-          </span>
-        ) : (
-          <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-            표준 검수
-          </span>
-        ),
-    },
-    {
       id: 'status',
       header: '상태',
       accessorKey: 'status',
@@ -61,34 +70,6 @@ export function createInspectionHistoryColumns({
             className={`whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-semibold ${getStatusBadgeStyle(status)}`}
           >
             {getStatusLabel(status)}
-          </span>
-        );
-      },
-    },
-    {
-      id: 'ubciScore',
-      header: 'UBCI 점수',
-      accessorKey: 'ubciScore',
-      cell: ({ getValue, row }) => {
-        if (row.original.status === 'PENDING') return <span className="text-gray-400">-</span>;
-        const score = getValue<InspectionHistoryRow['ubciScore']>();
-        return <span>{score === null || score === undefined ? '-' : score}</span>;
-      },
-    },
-    {
-      id: 'reasonCodes',
-      header: 'AI 판정 사유',
-      accessorKey: 'reasonCodes',
-      cell: ({ getValue, row }) => {
-        const codes = getValue<InspectionHistoryRow['reasonCodes']>();
-        if (!codes || codes.length === 0 || row.original.status === 'PENDING') {
-          return <span className="text-xs text-muted-foreground">-</span>;
-        }
-        const [first, ...rest] = codes;
-        return (
-          <span className="block max-w-[180px] truncate text-xs" title={codes.join(', ')}>
-            {first}
-            {rest.length > 0 && ` +${rest.length}`}
           </span>
         );
       },

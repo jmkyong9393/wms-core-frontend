@@ -23,14 +23,39 @@ export function createRestockProposalColumns({
     {
       id: 'bookTitle',
       header: '도서명',
-      cell: ({ row }) => (
-        <div>
-          <p className="font-medium text-foreground">{row.original.book.title}</p>
-          <p className="text-xs text-muted-foreground">
-            {row.original.book.isbn} · {row.original.book.publisher ?? '-'}
-          </p>
-        </div>
-      ),
+      cell: ({ row }) => {
+        const book = row.original.book;
+
+        return (
+          <div className="flex min-w-[340px] items-center gap-3">
+            {book.coverImageUrl ? (
+              <img
+                src={book.coverImageUrl}
+                alt={`${book.title} 표지`}
+                className="h-32 w-24 shrink-0 rounded-md border border-border bg-muted object-cover shadow-sm"
+              />
+            ) : (
+              <div className="flex h-32 w-24 shrink-0 items-center justify-center rounded-md border border-border bg-muted text-xs font-semibold text-muted-foreground">
+                BOOK
+              </div>
+            )}
+
+            <div className="min-w-0">
+              <p className="line-clamp-2 font-medium leading-5 text-foreground">
+                {book.title}
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {book.isbn} · {book.publisher ?? '-'}
+              </p>
+              <p className="mt-1 text-xs font-medium text-violet-700">
+                {row.original.proposalSource === 'SAFETY_STOCK'
+                  ? '재고 부족 기반 추천'
+                  : '반품 대체 검토'}
+              </p>
+            </div>
+          </div>
+        );
+      },
     },
     {
       id: 'status',
@@ -54,67 +79,9 @@ export function createRestockProposalColumns({
       cell: ({ getValue }) => <span>{getValue<number>()}권</span>,
     },
     {
-      id: 'riskLevel',
-      header: '위험도',
-      accessorKey: 'riskLevel',
-      cell: ({ getValue }) => {
-        const riskLevel = getValue<RestockProposalListItem['riskLevel']>();
-        return (
-          <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${getRiskBadgeStyle(riskLevel)}`}>
-            {getRiskLabel(riskLevel)}
-          </span>
-        );
-      },
-    },
-    {
-      id: 'proposalSource',
-      header: '발생 사유',
-      accessorKey: 'proposalSource',
-      cell: ({ getValue }) => {
-        const proposalSource = getValue<RestockProposalListItem['proposalSource']>();
-        return (
-          <span
-            className={`whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-semibold ${getProposalSourceBadgeStyle(proposalSource)}`}
-          >
-            {getProposalSourceLabel(proposalSource)}
-          </span>
-        );
-      },
-    },
-    {
-      id: 'recentSalesQuantity',
-      header: '최근 판매량',
-      accessorKey: 'recentSalesQuantity',
-    },
-    {
       id: 'currentStock',
       header: '현재 재고',
       accessorKey: 'currentStock',
-    },
-    {
-      id: 'pendingAutoPoQuantity',
-      header: '진행 중인 발주 수량',
-      accessorKey: 'pendingAutoPoQuantity',
-    },
-    {
-      id: 'rejectedQuantity',
-      header: '반려 수량',
-      accessorKey: 'rejectedQuantity',
-    },
-    {
-      id: 'createdAt',
-      header: '생성일시',
-      accessorKey: 'createdAt',
-      cell: ({ getValue }) => <span className="whitespace-nowrap">{formatKstDateTime(getValue<string>())}</span>,
-    },
-    {
-      id: 'reviewedAt',
-      header: '검토일시',
-      accessorKey: 'reviewedAt',
-      cell: ({ getValue }) => {
-        const reviewedAt = getValue<RestockProposalListItem['reviewedAt']>();
-        return <span className="whitespace-nowrap">{reviewedAt ? formatKstDateTime(reviewedAt) : '-'}</span>;
-      },
     },
     {
       id: 'detail',

@@ -1,6 +1,14 @@
 import { useState } from 'react';
-import { Camera, RefreshCw, Loader2, AlertCircle, AlertTriangle, QrCode } from 'lucide-react';
-import { getGradeBadgeStyle, getGradeLabel } from '@/features/inspections/utils/gradeBadge';
+import {
+  Camera,
+  Loader2,
+  AlertCircle,
+  AlertTriangle,
+} from 'lucide-react';
+import {
+  getGradeBadgeStyle,
+  getGradeLabel,
+} from '@/features/inspections/utils/gradeBadge';
 import {
   INBOUND_STATUS_LABEL_KO,
   INBOUND_TYPE_LABEL_KO,
@@ -149,13 +157,10 @@ export default function LpnScanView({ detail }: LpnScanViewProps) {
   const {
     lpnBarcode,
     book,
-    inboundType,
     inboundStatus,
     inspectionStatus,
     finalGrade,
-    ubciScore,
     inventoryStatus,
-    rejectedItemStatus,
     location,
     requiresRetake,
     returnJobId, // 추가: 재촬영용 검수 ID
@@ -270,6 +275,45 @@ export default function LpnScanView({ detail }: LpnScanViewProps) {
   };
 
   const isAllPhotosTaken = !!photos.front && !!photos.back && !!photos.inside;
+  const currentState = requiresRetake
+    ? '재촬영 요청됨'
+    : inboundStatus === 'CHECKING'
+      ? '검수 진행 중'
+      : inventoryStatus === 'AVAILABLE'
+        ? '입고 완료'
+        : '처리 상태 확인 필요';
+
+  const nextAction = requiresRetake
+    ? {
+        title: '사진을 다시 촬영해 주세요',
+        description:
+          '도서 상태를 다시 확인해야 합니다. 앞면, 뒷면, 속지 사진을 각각 촬영해 제출해 주세요.',
+        tone: 'amber',
+      }
+    : inboundStatus === 'CHECKING'
+      ? {
+          title: '검수 결과를 기다려 주세요',
+          description: '사진 검수가 진행 중입니다. 완료 후 입고 상태가 자동으로 갱신됩니다.',
+          tone: 'blue',
+        }
+      : location
+        ? {
+            title: '보관 위치를 확인해 주세요',
+            description: `${location.barcode} 위치에 보관된 도서입니다.`,
+            tone: 'emerald',
+          }
+        : {
+            title: '처리 상태를 확인해 주세요',
+            description: '현재 보관 위치 또는 입고 처리 상태를 확인할 수 없습니다.',
+            tone: 'gray',
+          };
+
+  const actionStyle = {
+    amber: 'border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-950/60 dark:bg-amber-950/20 dark:text-amber-300',
+    blue: 'border-blue-200 bg-blue-50 text-blue-800 dark:border-blue-950/60 dark:bg-blue-950/20 dark:text-blue-300',
+    emerald: 'border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-950/60 dark:bg-emerald-950/20 dark:text-emerald-300',
+    gray: 'border-gray-200 bg-gray-50 text-gray-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300',
+  }[nextAction.tone];
 
   // 사진 촬영 마법사가 활성화되었을 때의 렌더링 분기
   if (isPhotoWizardOpen) {
@@ -369,124 +413,116 @@ export default function LpnScanView({ detail }: LpnScanViewProps) {
   }
 
   return (
-    <main className="min-h-screen bg-gray-50 dark:bg-zinc-950 p-4 font-sans text-gray-800 dark:text-zinc-100">
+    <main className="min-h-screen bg-gray-50 p-4 font-sans text-gray-800 dark:bg-zinc-950 dark:text-zinc-100">
       <div className="mx-auto max-w-sm space-y-4">
-        <div className="rounded-2xl border border-gray-100 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 text-center shadow-sm">
-          <p className="text-xs font-semibold text-gray-400 dark:text-zinc-500">LPN 스캔 상세</p>
-          <h1 className="mt-1 text-lg font-bold text-gray-900 dark:text-zinc-100">{book.title}</h1>
-          <p className="mt-1 text-xs text-gray-400 dark:text-zinc-500">{lpnBarcode}</p>
-
-          {/* 재촬영 상태 카드 및 버튼 트리거 */}
-          {requiresRetake ? (
-            <div className="mt-5 p-4 bg-amber-50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-950/50 rounded-2xl space-y-3">
-              <div className="flex items-center gap-1.5 justify-center">
-                <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-                <span className="text-xs font-bold text-amber-700 dark:text-amber-400">품질 재확인(재촬영) 필요</span>
+        <section className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+          <div className="flex items-start gap-4">
+            {book.coverImageUrl ? (
+              <img
+                src={book.coverImageUrl}
+                alt={`${book.title} 표지`}
+                className="h-32 w-20 shrink-0 rounded-lg border border-gray-100 object-cover"
+              />
+            ) : (
+              <div className="flex h-32 w-20 shrink-0 items-center justify-center rounded-lg border border-gray-100 bg-gray-50 text-xs font-semibold text-gray-400">
+                BOOK
               </div>
-              <p className="text-[10px] leading-relaxed text-amber-650/80 dark:text-amber-400/80">
-                도서의 상태가 불분명하거나 판독 오류로 인해 다시 촬영해야 합니다. 아래 버튼을 눌러 촬영을 새로 진행해 주세요.
-              </p>
-              <button
-                onClick={() => setIsPhotoWizardOpen(true)}
-                className="w-full py-2.5 text-xs font-bold bg-amber-500 hover:bg-amber-600 text-white rounded-xl shadow-sm transition-colors cursor-pointer"
-              >
-                재촬영 시작
-              </button>
-            </div>
-          ) : (
-            inspectionStatus === 'RECHECK_REQUIRED' && (
-              <p className="mt-3 inline-block rounded-full bg-amber-100 dark:bg-amber-950/30 px-3 py-1 text-xs font-semibold text-amber-700 dark:text-amber-400">
-                재촬영 필요
-              </p>
-            )
-          )}
+            )}
 
-          {finalGrade && ubciScore !== null && !requiresRetake && (
-            <div className="mt-6 space-y-4">
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-semibold text-gray-400 dark:text-zinc-500">
+                LPN 스캔 결과
+              </p>
+
+              <h1 className="mt-2 break-keep text-lg font-bold text-gray-900 dark:text-zinc-100">
+                {book.title}
+              </h1>
+            </div>
+          </div>
+
+          <div className="mt-4 flex items-center justify-between rounded-xl bg-gray-50 px-4 py-3 dark:bg-zinc-800">
+            <div>
+              <p className="text-xs text-gray-400 dark:text-zinc-500">현재 상태</p>
+              <p className="mt-1 text-sm font-bold text-gray-800 dark:text-zinc-100">
+                {currentState}
+              </p>
+            </div>
+
+            {finalGrade && !requiresRetake && (
               <span
-                className={`inline-block rounded-full px-3 py-1 text-sm font-semibold ${getGradeBadgeStyle(finalGrade)}`}
+                className={`rounded-full px-3 py-1 text-sm font-semibold ${getGradeBadgeStyle(finalGrade)}`}
               >
                 {getGradeLabel(finalGrade)}
               </span>
-              <div>
-                <p className="text-xs text-gray-400 dark:text-zinc-500">UBCI 점수</p>
-                <p className="text-3xl font-bold text-gray-900 dark:text-zinc-100">{ubciScore}</p>
-              </div>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        </section>
 
-        <section className="rounded-2xl border border-gray-100 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5 shadow-sm">
-          <h2 className="text-sm font-semibold text-gray-800 dark:text-zinc-200">도서 정보</h2>
-          <dl className="mt-3 space-y-2">
+        <section className={`rounded-2xl border p-5 shadow-sm ${actionStyle}`}>
+          <p className="text-xs font-semibold opacity-70">다음 작업</p>
+          <h2 className="mt-1 text-base font-bold">{nextAction.title}</h2>
+          <p className="mt-2 text-sm leading-relaxed opacity-90">
+            {nextAction.description}
+          </p>
+
+          {requiresRetake && (
+            <button
+              type="button"
+              onClick={() => setIsPhotoWizardOpen(true)}
+              className="mt-4 w-full rounded-xl bg-amber-500 py-2.5 text-xs font-bold text-white shadow-sm transition-colors hover:bg-amber-600"
+            >
+              재촬영 시작
+            </button>
+          )}
+        </section>
+
+        <section className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+          <h2 className="text-sm font-semibold text-gray-800 dark:text-zinc-200">
+            현장 정보
+          </h2>
+
+          <dl className="mt-3 space-y-3">
+            <div>
+              <dt className="text-xs text-gray-400 dark:text-zinc-500">LPN 바코드</dt>
+              <dd className="mt-1 break-all text-sm font-medium text-gray-700 dark:text-zinc-300">
+                {lpnBarcode}
+              </dd>
+            </div>
+
+            <div>
+              <dt className="text-xs text-gray-400 dark:text-zinc-500">보관 위치</dt>
+              <dd className="mt-1 text-sm font-medium text-gray-700 dark:text-zinc-300">
+                {location
+                  ? location.barcode
+                  : '아직 보관 위치가 지정되지 않았습니다.'}
+              </dd>
+            </div>
+          </dl>
+        </section>
+
+        <section className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+          <h2 className="text-sm font-semibold text-gray-800 dark:text-zinc-200">
+            도서 정보
+          </h2>
+
+          <dl className="mt-3 space-y-3">
             <div>
               <dt className="text-xs text-gray-400 dark:text-zinc-500">ISBN</dt>
-              <dd className="text-sm text-gray-700 dark:text-zinc-300">{book.isbn}</dd>
+              <dd className="mt-1 text-sm text-gray-700 dark:text-zinc-300">
+                {book.isbn || '-'}
+              </dd>
             </div>
+
             {book.publisher && (
               <div>
                 <dt className="text-xs text-gray-400 dark:text-zinc-500">출판사</dt>
-                <dd className="text-sm text-gray-700 dark:text-zinc-300">{book.publisher}</dd>
-              </div>
-            )}
-          </dl>
-        </section>
-
-        <section className="rounded-2xl border border-gray-100 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5 shadow-sm">
-          <h2 className="text-sm font-semibold text-gray-800 dark:text-zinc-200">입고 · 검수 상태</h2>
-          <dl className="mt-3 space-y-2">
-            <div>
-              <dt className="text-xs text-gray-400 dark:text-zinc-500">입고 유형</dt>
-              <dd className="text-sm text-gray-700 dark:text-zinc-300">{INBOUND_TYPE_LABEL_KO[inboundType]}</dd>
-            </div>
-            <div>
-              <dt className="text-xs text-gray-400 dark:text-zinc-500">입고 상태</dt>
-              <dd className="text-sm text-gray-700 dark:text-zinc-300">{INBOUND_STATUS_LABEL_KO[inboundStatus]}</dd>
-            </div>
-            {inspectionStatus && (
-              <div>
-                <dt className="text-xs text-gray-400 dark:text-zinc-500">검수 상태</dt>
-                <dd className="text-sm text-gray-700 dark:text-zinc-300">
-                  {INSPECTION_STATUS_LABEL_KO[inspectionStatus]}
-                </dd>
-              </div>
-            )}
-            {inventoryStatus && (
-              <div>
-                <dt className="text-xs text-gray-400 dark:text-zinc-500">재고 상태</dt>
-                <dd className="text-sm text-gray-700 dark:text-zinc-300">
-                  {INVENTORY_STATUS_LABEL_KO[inventoryStatus]}
-                </dd>
-              </div>
-            )}
-            {rejectedItemStatus && (
-              <div>
-                <dt className="text-xs text-gray-400 dark:text-zinc-500">반려 상태</dt>
-                <dd className="text-sm text-gray-700 dark:text-zinc-300">
-                  {REJECTED_ITEM_STATUS_LABEL_KO[rejectedItemStatus]}
+                <dd className="mt-1 text-sm text-gray-700 dark:text-zinc-300">
+                  {book.publisher}
                 </dd>
               </div>
             )}
           </dl>
         </section>
-
-        {location && (
-          <section className="rounded-2xl border border-gray-100 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5 shadow-sm">
-            <h2 className="text-sm font-semibold text-gray-800 dark:text-zinc-200">보관 로케이션</h2>
-            <dl className="mt-3 space-y-2">
-              <div>
-                <dt className="text-xs text-gray-400 dark:text-zinc-500">위치 바코드</dt>
-                <dd className="text-sm text-gray-700 dark:text-zinc-300">{location.barcode}</dd>
-              </div>
-              <div>
-                <dt className="text-xs text-gray-400 dark:text-zinc-500">구역 · 랙 · 선반</dt>
-                <dd className="text-sm text-gray-700 dark:text-zinc-300">
-                  {location.zone} · {location.rack} · {location.shelf}
-                </dd>
-              </div>
-            </dl>
-          </section>
-        )}
       </div>
     </main>
   );

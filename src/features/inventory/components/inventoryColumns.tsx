@@ -33,20 +33,29 @@ export const inventoryColumns: ColumnDef<InventoryRow>[] = [
     id: 'title',
     header: '도서명',
     accessorFn: (row) => row.book.title,
-  },
-  {
-    id: 'isbn',
-    header: 'ISBN',
-    accessorFn: (row) => row.book.isbn,
-    cell: ({ getValue }) => getValue<string | null>() ?? '-',
-  },
-  {
-    id: 'lpnBarcode',
-    header: 'LPN',
-    accessorKey: 'lpn_barcode',
-    cell: ({ getValue }) => {
-      const lpnBarcode = getValue<string | null>();
-      return lpnBarcode ? <span className="font-mono text-xs">{lpnBarcode}</span> : '-';
+    cell: ({ row, getValue }) => {
+      const title = getValue<string>();
+      const coverImageUrl = row.original.book.cover_image_url;
+
+      return (
+        <div className="flex min-w-[260px] items-center gap-3">
+          {coverImageUrl ? (
+            <img
+              src={coverImageUrl}
+              alt={`${title} 표지`}
+              className="h-24 w-18 shrink-0 rounded-md border border-border bg-muted object-cover shadow-sm"
+            />
+          ) : (
+            <div className="flex h-24 w-18 shrink-0 items-center justify-center rounded-md border border-border bg-muted text-xs font-semibold text-muted-foreground">
+              BOOK
+            </div>
+          )}
+
+          <span className="line-clamp-2 font-medium leading-5">
+            {title}
+          </span>
+        </div>
+      );
     },
   },
   {
@@ -74,21 +83,6 @@ export const inventoryColumns: ColumnDef<InventoryRow>[] = [
     cell: ({ getValue }) => `${getValue<number>()}권`,
   },
   {
-    id: 'basePrice',
-    header: '정가',
-    accessorKey: 'base_price',
-    cell: ({ getValue }) => formatCurrencyKRW(getValue<number>()),
-  },
-  {
-    id: 'discountRate',
-    header: '할인율',
-    accessorKey: 'discount_rate',
-    cell: ({ getValue }) => {
-      const rate = getValue<number | null>();
-      return rate == null ? '-' : formatDiscountRate(rate);
-    },
-  },
-  {
     id: 'salePrice',
     header: '판매가',
     accessorKey: 'sale_price',
@@ -109,11 +103,5 @@ export const inventoryColumns: ColumnDef<InventoryRow>[] = [
         </span>
       );
     },
-  },
-  {
-    id: 'date',
-    header: '일자',
-    accessorKey: 'date',
-    cell: ({ getValue }) => formatKstDate(getValue<string>()),
   },
 ];
