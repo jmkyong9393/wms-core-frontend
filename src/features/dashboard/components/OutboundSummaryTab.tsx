@@ -1,6 +1,6 @@
 'use client';
 
-import { ShoppingCart, Truck, ExternalLink, AlertTriangle, RefreshCw } from 'lucide-react';
+import { ShoppingCart, Truck, AlertTriangle, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
 import { useOutboundDashboardSummaryQuery } from '@/features/dashboard/hooks/useOutboundDashboardSummaryQuery';
 import { getOrderStatusLabel } from '@/features/orders/utils/orderStatusLabel';
@@ -86,10 +86,10 @@ export default function OutboundSummaryTab() {
         </div>
       </div>
 
-      {/* Quick links & Outbound order table */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 flex-1 min-h-0">
+      {/* Outbound order table */}
+      <div className="flex-1 min-h-0 flex flex-col">
         {/* Table */}
-        <div className="lg:col-span-2 bg-card border border-border rounded-3xl p-4 flex flex-col min-h-0 overflow-y-auto">
+        <div className="bg-card border border-border rounded-3xl p-4 flex flex-col min-h-0 overflow-y-auto flex-1">
           <div className="flex items-center justify-between mb-3">
             <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
               실시간 출고 주문 배차 목록
@@ -146,24 +146,6 @@ export default function OutboundSummaryTab() {
               </tbody>
             </table>
           </div>
-        </div>
-
-        {/* Quick Action links */}
-        <div className="lg:col-span-1 bg-card border border-border rounded-3xl p-4 flex flex-col space-y-3 justify-center">
-          <h4 className="text-xs font-bold text-muted-foreground mb-1 uppercase tracking-wider">
-            출고 바로가기 링크
-          </h4>
-
-          <Link
-            href="/outbound/picking"
-            className="group flex items-center justify-between p-3.5 bg-orange-50/50 hover:bg-orange-50 dark:bg-orange-950/20 dark:hover:bg-orange-950/30 border border-orange-100 dark:border-orange-900 rounded-2xl transition-all"
-          >
-            <div>
-              <h5 className="text-xs font-bold text-foreground">출고 피킹 작업 지시</h5>
-              <p className="text-[10px] text-muted-foreground mt-0.5">할당 주문 도서 선별 피킹 진행</p>
-            </div>
-            <ExternalLink className="w-4 h-4 text-orange-500" />
-          </Link>
         </div>
       </div>
     </div>
