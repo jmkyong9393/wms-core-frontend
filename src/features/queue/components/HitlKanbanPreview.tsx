@@ -4,6 +4,7 @@ import {
   useEffect,
   useRef,
 } from 'react';
+import { User } from 'lucide-react';
 import type {
   HitlQueueBucket,
   HitlQueueItem,
@@ -59,7 +60,7 @@ function TicketCard({
         if (!draggable) return;
         event.dataTransfer.setData('text/plain', item.id);
       }}
-      className="w-full rounded-lg border bg-background p-3 text-left shadow-sm transition hover:border-primary/50 hover:bg-muted/40"
+      className="w-full rounded-xl border border-border bg-card p-3 text-left shadow-sm transition-all duration-200 hover:border-primary/50 hover:bg-muted/40 hover:shadow-md"
     >
       <p className="truncate text-sm font-semibold text-foreground">
         {item.bookTitle}
@@ -82,8 +83,9 @@ function TicketCard({
       )}
 
       {item.status === 'HITL_REQUIRED' && item.reviewerName && (
-        <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">
-          👤 관리자 {maskName(item.reviewerName)}님 심사 중
+        <p className="mt-1 flex items-center gap-1 text-xs text-amber-600 dark:text-amber-400">
+          <User className="size-3" aria-hidden />
+          관리자 {maskName(item.reviewerName)}님 심사 중
         </p>
       )}
 
@@ -166,7 +168,7 @@ function BoardColumn({
         <h3 className="text-sm font-bold text-foreground">
           {column.label}
         </h3>
-        <span className="text-xs text-muted-foreground">
+        <span className="rounded-full bg-background px-2 py-0.5 text-xs font-semibold text-muted-foreground">
           {column.total}건
         </span>
       </div>

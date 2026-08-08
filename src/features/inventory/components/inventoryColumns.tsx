@@ -11,8 +11,8 @@ const STOCK_TYPE_LABEL: Record<InventoryStockType, string> = {
 };
 
 const STOCK_TYPE_BADGE_STYLE: Record<InventoryStockType, string> = {
-  NEW_STOCK: 'bg-sky-100 text-sky-700 dark:bg-sky-900/40 dark:text-sky-300',
-  USED_ITEM: 'bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300',
+  NEW_STOCK: 'bg-sky-100 text-sky-700 border border-sky-200 dark:bg-sky-900/40 dark:text-sky-300 dark:border-sky-900',
+  USED_ITEM: 'bg-orange-100 text-orange-700 border border-orange-200 dark:bg-orange-900/40 dark:text-orange-300 dark:border-orange-900',
 };
 
 export const inventoryColumns: ColumnDef<InventoryRow>[] = [

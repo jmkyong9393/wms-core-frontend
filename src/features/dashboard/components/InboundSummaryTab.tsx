@@ -24,6 +24,8 @@ import {
 
 import { formatKstDateTime } from '@/lib/date';
 import { useInboundDashboardSummaryQuery } from '@/features/dashboard/hooks/useInboundDashboardSummaryQuery';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 
 const GRADE_LABELS = {
   MINT: 'S등급',
@@ -63,7 +65,7 @@ export default function InboundSummaryTab() {
   if (isLoading) {
     return (
       <div className="flex min-h-[300px] flex-col items-center justify-center gap-3">
-        <RefreshCw className="h-8 w-8 animate-spin text-indigo-600" />
+        <RefreshCw className="h-8 w-8 animate-spin text-primary" />
         <p className="text-sm font-medium text-muted-foreground">
           입고 현황을 불러오는 중입니다.
         </p>
@@ -81,7 +83,7 @@ export default function InboundSummaryTab() {
         <button
           type="button"
           onClick={() => refetch()}
-          className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-50 px-3 py-1.5 text-xs font-bold text-indigo-600 transition-colors hover:bg-indigo-100 dark:bg-indigo-950/40 dark:text-indigo-300 dark:hover:bg-indigo-950/60"
+          className="inline-flex items-center gap-1.5 rounded-lg bg-primary/10 px-3 py-1.5 text-xs font-bold text-primary transition-colors hover:bg-primary/20"
         >
           <RefreshCw className="h-3.5 w-3.5" />
           다시 시도
@@ -134,7 +136,8 @@ export default function InboundSummaryTab() {
       </div>
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-5">
-        <section className="rounded-3xl border border-border bg-card p-5 shadow-sm xl:col-span-3">
+        <Card className="xl:col-span-3">
+          <CardContent className="p-5">
           <div className="mb-5 flex items-center justify-between">
             <div>
               <h3 className="text-sm font-bold text-foreground">
@@ -197,9 +200,11 @@ export default function InboundSummaryTab() {
               </BarChart>
             </ResponsiveContainer>
           </div>
-        </section>
+          </CardContent>
+        </Card>
 
-        <section className="rounded-3xl border border-border bg-card p-5 shadow-sm xl:col-span-2">
+        <Card className="xl:col-span-2">
+          <CardContent className="p-5">
           <div className="mb-2">
             <h3 className="text-sm font-bold text-foreground">
               중고·반품 검수 등급 분포
@@ -247,11 +252,13 @@ export default function InboundSummaryTab() {
               </div>
             )}
           </div>
-        </section>
+          </CardContent>
+        </Card>
       </div>
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-5">
-        <section className="rounded-3xl border border-border bg-card p-5 shadow-sm xl:col-span-2">
+        <Card className="xl:col-span-2">
+          <CardContent className="p-5">
           <div className="mb-5">
             <h3 className="text-sm font-bold text-foreground">
               구역별 가용 재고
@@ -266,7 +273,7 @@ export default function InboundSummaryTab() {
               <div key={zone.zone} className="space-y-1.5">
                 <div className="flex items-center justify-between text-xs">
                   <span className="inline-flex items-center gap-1.5 font-bold text-foreground">
-                    <MapPin className="h-3.5 w-3.5 text-indigo-500" />
+                    <MapPin className="h-3.5 w-3.5 text-primary" />
                     Zone {zone.zone}
                   </span>
                   <span className="font-semibold text-muted-foreground">
@@ -311,9 +318,11 @@ export default function InboundSummaryTab() {
               </div>
             )}
           </div>
-        </section>
+          </CardContent>
+        </Card>
 
-        <section className="flex min-h-0 flex-col rounded-3xl border border-border bg-card p-5 shadow-sm xl:col-span-3">
+        <Card className="flex min-h-0 flex-col xl:col-span-3">
+          <CardContent className="flex min-h-0 flex-1 flex-col p-5">
           <div className="mb-3 flex items-center justify-between">
             <div>
               <h3 className="text-sm font-bold text-foreground">
@@ -328,33 +337,36 @@ export default function InboundSummaryTab() {
           <div className="overflow-x-auto">
             <table className="w-full border-collapse text-left text-xs">
               <thead>
-                <tr className="border-b border-border font-bold text-muted-foreground">
-                  <th className="px-1 py-2">도서명</th>
-                  <th className="px-1 py-2">입고 유형</th>
-                  <th className="px-1 py-2">수량</th>
-                  <th className="px-1 py-2">상태</th>
-                  <th className="px-1 py-2">위치</th>
-                  <th className="whitespace-nowrap px-1 py-2">접수 시각</th>
+                <tr className="bg-muted/40 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  <th className="px-3 py-2.5">도서명</th>
+                  <th className="px-3 py-2.5">입고 유형</th>
+                  <th className="px-3 py-2.5">수량</th>
+                  <th className="px-3 py-2.5">상태</th>
+                  <th className="px-3 py-2.5">위치</th>
+                  <th className="whitespace-nowrap px-3 py-2.5">접수 시각</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
                 {summary.recent_activities.length > 0 ? (
                   summary.recent_activities.map((item) => (
-                    <tr key={item.inbound_item_id} className="text-muted-foreground">
-                      <td className="max-w-[180px] truncate px-1 py-3 font-medium text-foreground">
+                    <tr
+                      key={item.inbound_item_id}
+                      className="text-muted-foreground transition-colors hover:bg-muted/50"
+                    >
+                      <td className="max-w-[180px] truncate px-3 py-2.5 font-medium text-foreground">
                         {item.book_title}
                       </td>
-                      <td className="px-1 py-3">
+                      <td className="px-3 py-2.5">
                         {INBOUND_TYPE_LABELS[item.inbound_type]}
                       </td>
-                      <td className="px-1 py-3">{item.quantity}권</td>
-                      <td className="px-1 py-3">
+                      <td className="px-3 py-2.5">{item.quantity}권</td>
+                      <td className="px-3 py-2.5">
                         <InboundStatusBadge status={item.inbound_status} />
                       </td>
-                      <td className="px-1 py-3 font-mono">
+                      <td className="px-3 py-2.5 font-mono">
                         {item.location_barcode ?? '-'}
                       </td>
-                      <td className="whitespace-nowrap px-1 py-3">
+                      <td className="whitespace-nowrap px-3 py-2.5">
                         {formatKstDateTime(item.occurred_at)}
                       </td>
                     </tr>
@@ -372,7 +384,8 @@ export default function InboundSummaryTab() {
               </tbody>
             </table>
           </div>
-        </section>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
@@ -390,14 +403,14 @@ function KpiCard({
   tone: 'indigo' | 'emerald' | 'amber' | 'rose';
 }) {
   const toneClassName = {
-    indigo: 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950/20 dark:text-indigo-400',
+    indigo: 'bg-primary/10 text-primary',
     emerald: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/20 dark:text-emerald-400',
     amber: 'bg-amber-50 text-amber-600 dark:bg-amber-950/20 dark:text-amber-400',
     rose: 'bg-rose-50 text-rose-600 dark:bg-rose-950/20 dark:text-rose-400',
   }[tone];
 
   return (
-    <div className="space-y-2 rounded-3xl border border-border bg-card p-4">
+    <Card className="p-4">
       <div className="flex items-center justify-between">
         <span className="text-[11px] font-bold uppercase text-muted-foreground">
           {label}
@@ -407,7 +420,7 @@ function KpiCard({
         </span>
       </div>
       <span className="text-xl font-black text-foreground">{value}</span>
-    </div>
+    </Card>
   );
 }
 
@@ -416,18 +429,15 @@ function InboundStatusBadge({
 }: {
   status: 'RECEIVED' | 'CHECKING' | 'COMPLETED';
 }) {
-  const className = {
-    RECEIVED:
-      'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300',
-    CHECKING:
-      'bg-amber-50 text-amber-600 dark:bg-amber-950/20 dark:text-amber-400',
-    COMPLETED:
-      'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/20 dark:text-emerald-400',
-  }[status];
+  const variant = {
+    RECEIVED: 'secondary',
+    CHECKING: 'warning',
+    COMPLETED: 'success',
+  }[status] as 'secondary' | 'warning' | 'success';
 
   return (
-    <span className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-bold ${className}`}>
+    <Badge variant={variant} className="rounded-full">
       {INBOUND_STATUS_LABELS[status]}
-    </span>
+    </Badge>
   );
 }

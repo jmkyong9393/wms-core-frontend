@@ -1,6 +1,7 @@
 'use client';
 
 import { flexRender, type Table as TanstackTable } from '@tanstack/react-table';
+import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -54,22 +55,22 @@ export function DataGrid<TData>({
 
   return (
     <div className="space-y-3">
-      <div className="rounded-xl border border-border bg-card shadow-sm overflow-x-auto">
+      <div className="rounded-xl border border-border bg-card shadow-sm overflow-x-auto transition-shadow duration-200 hover:shadow-md">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
+              <TableRow key={headerGroup.id} className="bg-muted/40 hover:bg-muted/40">
                 {headerGroup.headers.map((header) => (
-                  <TableHead key={header.id}>
+                  <TableHead key={header.id} className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                     {header.isPlaceholder ? null : header.column.getCanSort() ? (
                       <button
                         type="button"
-                        className="inline-flex items-center gap-1 border-0 bg-transparent p-0 font-medium text-inherit"
+                        className="inline-flex items-center gap-1 border-0 bg-transparent p-0 font-semibold text-inherit transition-colors hover:text-foreground"
                         onClick={header.column.getToggleSortingHandler()}
                       >
                         {flexRender(header.column.columnDef.header, header.getContext())}
-                        {header.column.getIsSorted() === 'asc' && <span aria-hidden>▲</span>}
-                        {header.column.getIsSorted() === 'desc' && <span aria-hidden>▼</span>}
+                        {header.column.getIsSorted() === 'asc' && <ChevronUp className="size-3.5" aria-hidden />}
+                        {header.column.getIsSorted() === 'desc' && <ChevronDown className="size-3.5" aria-hidden />}
                       </button>
                     ) : (
                       flexRender(header.column.columnDef.header, header.getContext())
@@ -136,9 +137,10 @@ export function DataGrid<TData>({
             disabled={!table.getCanPreviousPage() || isFetching}
             onClick={() => table.previousPage()}
           >
+            <ChevronLeft className="size-3.5" aria-hidden />
             이전
           </Button>
-          <span>
+          <span className="rounded-md bg-muted px-2.5 py-1 text-xs font-medium text-foreground">
             {pageIndex + 1} / {Math.max(1, pageCount)}
           </span>
           <Button
@@ -149,6 +151,7 @@ export function DataGrid<TData>({
             onClick={() => table.nextPage()}
           >
             다음
+            <ChevronRight className="size-3.5" aria-hidden />
           </Button>
         </div>
       </div>

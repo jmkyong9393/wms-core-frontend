@@ -37,7 +37,7 @@ export default function Header() {
       <div className="flex items-center space-x-4">
 
         {/* Network & Queue Status */}
-        <div className="hidden sm:flex items-center px-3 py-1.5 rounded-full bg-muted border border-border">
+        <div className="hidden sm:flex items-center px-3 py-1.5 rounded-full bg-muted border border-border transition-colors">
           {isOnline ? (
             <CloudUpload className="w-4 h-4 text-green-500 dark:text-green-400 mr-2" />
           ) : (
@@ -48,7 +48,7 @@ export default function Header() {
           </span>
           <div className="w-px h-4 bg-border mx-3"></div>
           <span className="text-xs font-medium text-muted-foreground">
-            대기열: <span className={pendingCount > 0 ? "text-blue-600 dark:text-blue-400 font-bold" : ""}>{pendingCount}건</span>
+            대기열: <span className={pendingCount > 0 ? "text-primary font-bold" : ""}>{pendingCount}건</span>
           </span>
         </div>
 
@@ -59,16 +59,16 @@ export default function Header() {
         <div className="flex items-center pl-2 border-l border-border">
           <Link
             href="/mypage"
-            className="flex items-center rounded-full hover:bg-accent transition-colors"
+            className="flex items-center rounded-full hover:bg-accent transition-colors duration-200"
           >
-            <div className="w-8 h-8 bg-indigo-100 dark:bg-indigo-900/40 rounded-full flex items-center justify-center text-indigo-700 dark:text-indigo-300">
+            <div className="w-8 h-8 bg-muted rounded-full flex items-center justify-center text-foreground/70">
               <User className="w-4 h-4" />
             </div>
             <span className="ml-2 mr-2 text-sm font-medium text-foreground hidden md:block">
               {currentUser ? maskName(currentUser.name) : '현장 관리자'}
             </span>
           </Link>
-          <LogoutButton className="ml-3 p-2 text-muted-foreground hover:text-foreground transition-colors rounded-full hover:bg-accent" />
+          <LogoutButton className="ml-3 p-2 text-muted-foreground hover:text-foreground transition-colors duration-200 rounded-full hover:bg-accent" />
         </div>
       </div>
     </header>

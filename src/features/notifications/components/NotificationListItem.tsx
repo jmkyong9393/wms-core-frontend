@@ -1,5 +1,6 @@
 'use client';
 
+import { Badge } from '@/components/ui/badge';
 import type { NotificationItem } from '@/features/notifications/types/notification';
 import {
   NOTIFICATION_CATEGORY_LABEL,
@@ -26,15 +27,13 @@ export function NotificationListItem({ item, onClick }: NotificationListItemProp
     >
       <div className="flex items-center justify-between gap-2">
         <span className="flex items-center gap-1.5">
-          <span className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${style.badgeClass}`}>
+          <Badge variant="outline" className={style.badgeClass}>
             {NOTIFICATION_CATEGORY_LABEL[item.category]}
-          </span>
+          </Badge>
           {item.category === 'RESTOCK_ALERT' && item.payload?.proposalSource && (
-            <span
-              className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${getProposalSourceBadgeStyle(item.payload.proposalSource)}`}
-            >
+            <Badge variant="outline" className={getProposalSourceBadgeStyle(item.payload.proposalSource)}>
               {getProposalSourceLabel(item.payload.proposalSource)}
-            </span>
+            </Badge>
           )}
         </span>
         <span className="flex items-center gap-1.5 text-[11px] text-muted-foreground">

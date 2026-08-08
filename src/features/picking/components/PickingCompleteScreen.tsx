@@ -59,7 +59,7 @@ export function PickingCompleteScreen({ orderId, items, onConfirmed, onNavigateT
         {items.map((item) => (
           <div
             key={item.allocation_id}
-            className="flex items-center justify-between p-3 rounded-xl border border-gray-100 dark:border-zinc-800 bg-white dark:bg-zinc-900"
+            className="flex items-center justify-between p-3 rounded-xl border border-border bg-card"
           >
             <div className="min-w-0">
               <p className="font-medium text-gray-900 dark:text-zinc-100 truncate">
@@ -103,7 +103,7 @@ export function PickingCompleteScreen({ orderId, items, onConfirmed, onNavigateT
                 key={a.allocation_id}
                 type="button"
                 onClick={() => onNavigateToAllocation(a.allocation_id)}
-                className="w-full flex items-center justify-between text-xs text-red-700 dark:text-red-300 bg-white dark:bg-zinc-900 border border-red-100 dark:border-red-900/50 rounded-lg px-3 py-2 hover:bg-red-50 dark:hover:bg-red-950/40"
+                className="w-full flex items-center justify-between text-xs text-red-700 dark:text-red-300 bg-white dark:bg-zinc-900 border border-red-100 dark:border-red-900/50 rounded-lg px-3 py-2 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors duration-200"
               >
                 <span>미완료 항목 ({a.picked_quantity}/{a.expected_quantity})</span>
                 <span className="font-semibold">다시 스캔하기</span>
@@ -114,7 +114,7 @@ export function PickingCompleteScreen({ orderId, items, onConfirmed, onNavigateT
                 key={a.allocation_id}
                 type="button"
                 onClick={() => onNavigateToAllocation(a.allocation_id)}
-                className="w-full flex items-center justify-between text-xs text-red-700 dark:text-red-300 bg-white dark:bg-zinc-900 border border-red-100 dark:border-red-900/50 rounded-lg px-3 py-2 hover:bg-red-50 dark:hover:bg-red-950/40"
+                className="w-full flex items-center justify-between text-xs text-red-700 dark:text-red-300 bg-white dark:bg-zinc-900 border border-red-100 dark:border-red-900/50 rounded-lg px-3 py-2 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors duration-200"
               >
                 <span>미완료 중고 LPN 항목</span>
                 <span className="font-semibold">다시 스캔하기</span>

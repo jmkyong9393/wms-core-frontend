@@ -100,7 +100,7 @@ function CameraModal({ photoType, onCapture, onClose }: CameraModalProps) {
         </button>
       </header>
 
-      <div className="flex-1 flex items-center justify-center relative bg-zinc-950 rounded-2xl overflow-hidden border border-zinc-800 my-4">
+      <div className="flex-1 flex items-center justify-center relative bg-zinc-950 rounded-xl overflow-hidden border border-zinc-800 my-4">
         {cameraError ? (
           <div className="text-center p-6 space-y-4 max-w-xs">
             <AlertTriangle className="w-10 h-10 text-amber-500 mx-auto" />
@@ -138,7 +138,7 @@ function CameraModal({ photoType, onCapture, onClose }: CameraModalProps) {
             disabled={isCapturing}
             className="w-16 h-16 rounded-full bg-white border-4 border-zinc-300 flex items-center justify-center hover:bg-zinc-150 transition-colors cursor-pointer"
           >
-            <div className="w-12 h-12 rounded-full bg-indigo-600 flex items-center justify-center">
+            <div className="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center">
               <Camera className="w-6 h-6 text-white" />
             </div>
           </button>
@@ -320,7 +320,7 @@ export default function LpnScanView({ detail }: LpnScanViewProps) {
     return (
       <main className="min-h-screen bg-gray-50 dark:bg-zinc-950 p-4 font-sans text-gray-800 dark:text-zinc-100">
         <div className="mx-auto max-w-sm space-y-4">
-          <div className="rounded-2xl border border-gray-100 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 shadow-sm">
+          <div className="rounded-xl border border-gray-100 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 shadow-sm">
             <h1 className="text-base font-bold text-gray-900 dark:text-zinc-100">재촬영 진행 ({book.title})</h1>
             <p className="mt-1 text-xs text-gray-400 dark:text-zinc-500">기존 스캔 LPN: {lpnBarcode}</p>
 
@@ -342,9 +342,9 @@ export default function LpnScanView({ detail }: LpnScanViewProps) {
                       <button
                         onClick={() => setActiveCameraType(type)}
                         disabled={isUploading}
-                        className={`w-24 h-24 rounded-2xl border-2 border-dashed flex flex-col items-center justify-center relative overflow-hidden transition-all cursor-pointer ${
-                          hasPhoto 
-                            ? 'border-indigo-500 bg-indigo-50/10' 
+                        className={`w-24 h-24 rounded-xl border-2 border-dashed flex flex-col items-center justify-center relative overflow-hidden transition-all cursor-pointer ${
+                          hasPhoto
+                            ? 'border-blue-500 bg-blue-50/10'
                             : 'border-gray-200 dark:border-zinc-800 hover:border-gray-300 dark:hover:border-zinc-700'
                         }`}
                       >
@@ -381,7 +381,7 @@ export default function LpnScanView({ detail }: LpnScanViewProps) {
                   disabled={!isAllPhotosTaken || isUploading}
                   className={`flex-1 py-3 text-xs font-bold rounded-xl text-white flex items-center justify-center gap-1.5 cursor-pointer ${
                     isAllPhotosTaken && !isUploading
-                      ? 'bg-indigo-600 hover:bg-indigo-700 shadow-md'
+                      ? 'bg-blue-600 hover:bg-blue-700 shadow-md'
                       : 'bg-gray-300 dark:bg-zinc-800 text-gray-400 dark:text-zinc-600 cursor-not-allowed'
                   }`}
                 >
@@ -415,7 +415,7 @@ export default function LpnScanView({ detail }: LpnScanViewProps) {
   return (
     <main className="min-h-screen bg-gray-50 p-4 font-sans text-gray-800 dark:bg-zinc-950 dark:text-zinc-100">
       <div className="mx-auto max-w-sm space-y-4">
-        <section className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+        <section className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
           <div className="flex items-start gap-4">
             {book.coverImageUrl ? (
               <img
@@ -458,7 +458,7 @@ export default function LpnScanView({ detail }: LpnScanViewProps) {
           </div>
         </section>
 
-        <section className={`rounded-2xl border p-5 shadow-sm ${actionStyle}`}>
+        <section className={`rounded-xl border p-5 shadow-sm ${actionStyle}`}>
           <p className="text-xs font-semibold opacity-70">다음 작업</p>
           <h2 className="mt-1 text-base font-bold">{nextAction.title}</h2>
           <p className="mt-2 text-sm leading-relaxed opacity-90">
@@ -476,7 +476,7 @@ export default function LpnScanView({ detail }: LpnScanViewProps) {
           )}
         </section>
 
-        <section className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+        <section className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
           <h2 className="text-sm font-semibold text-gray-800 dark:text-zinc-200">
             현장 정보
           </h2>
@@ -500,7 +500,7 @@ export default function LpnScanView({ detail }: LpnScanViewProps) {
           </dl>
         </section>
 
-        <section className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+        <section className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
           <h2 className="text-sm font-semibold text-gray-800 dark:text-zinc-200">
             도서 정보
           </h2>

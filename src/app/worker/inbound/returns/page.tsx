@@ -12,15 +12,16 @@ import { useS3Upload } from "@/features/inbound/hooks/useS3Upload";
 import { toast } from "sonner";
 import { useJobStatus } from "@/hooks/useJobStatus";
 import { BarcodeScanner } from "@/components/ui/barcode-scanner";
-import { 
-  registerBook, 
-  createUsedItemInbound, 
-  startInspection, 
+import {
+  registerBook,
+  createUsedItemInbound,
+  startInspection,
   submitRecheck,
-  isMockMode 
+  isMockMode
 } from "@/services/returnService";
 import { currentUserAtom } from "@/features/auth/store/authAtoms";
 import { getLpnScanDetail } from '@/features/lpnScan/api/lpnScanService';
+import { Button } from "@/components/ui/button";
 
 interface BookInfo {
   bookId: string;
@@ -128,34 +129,35 @@ function CameraModal({ photoType, onCapture, onClose }: CameraModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/80 flex flex-col justify-between p-4 font-sans">
+    <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex flex-col justify-between p-4 font-sans">
       <header className="flex justify-between items-center text-white py-2">
         <h4 className="text-sm font-bold">{labelMap[photoType]} 촬영</h4>
-        <button 
+        <button
           onClick={() => {
             stopCamera();
             onClose();
           }}
-          className="text-xs font-semibold px-3 py-1.5 bg-zinc-800 rounded-lg hover:bg-zinc-700"
+          className="text-xs font-semibold px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-lg transition-colors duration-200"
         >
           닫기
         </button>
       </header>
 
       {/* Camera Viewport */}
-      <div className="flex-1 flex items-center justify-center relative bg-zinc-950 rounded-2xl overflow-hidden border border-zinc-800 my-4">
+      <div className="flex-1 flex items-center justify-center relative bg-zinc-950 rounded-xl overflow-hidden border border-zinc-800 my-4">
         {cameraError ? (
           <div className="text-center p-6 space-y-4 max-w-xs">
             <AlertTriangle className="w-10 h-10 text-amber-500 mx-auto" />
             <p className="text-xs text-gray-400">
               실제 웹캠 장치가 감지되지 않습니다. 모의 테스트 데이터를 생성해 진행하시겠습니까?
             </p>
-            <button
+            <Button
               onClick={handleSimulateCapture}
-              className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs rounded-xl shadow-md transition-colors cursor-pointer"
+              size="lg"
+              className="bg-amber-500 hover:bg-amber-600 text-white shadow-md"
             >
               모의 사진 생성하기
-            </button>
+            </Button>
           </div>
         ) : (
           <>
@@ -166,8 +168,8 @@ function CameraModal({ photoType, onCapture, onClose }: CameraModalProps) {
               className="w-full h-full object-cover"
             />
             {/* Guide overlay */}
-            <div className="absolute inset-4 border-2 border-dashed border-white/30 rounded-xl pointer-events-none flex items-center justify-center">
-              <span className="text-[10px] text-white/50 bg-black/40 px-2 py-0.5 rounded font-medium">
+            <div className="absolute inset-4 border-2 border-dashed border-white/40 rounded-xl pointer-events-none flex items-center justify-center">
+              <span className="text-[10px] text-white/70 bg-black/40 px-2 py-0.5 rounded font-medium">
                 영역 안에 책을 맞춰주세요
               </span>
             </div>
@@ -181,10 +183,10 @@ function CameraModal({ photoType, onCapture, onClose }: CameraModalProps) {
           <button
             onClick={handleCaptureClick}
             disabled={isCapturing}
-            className="w-16 h-16 bg-white active:bg-zinc-200 rounded-full border-4 border-zinc-700 flex items-center justify-center shadow-lg transition-transform active:scale-95 cursor-pointer"
+            className="w-16 h-16 bg-white active:bg-zinc-200 rounded-full border-4 border-zinc-700 flex items-center justify-center shadow-lg transition-transform duration-150 active:scale-95 cursor-pointer disabled:opacity-60"
             title="촬영"
           >
-            <div className="w-12 h-12 bg-red-600 rounded-full flex items-center justify-center text-white">
+            <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center text-primary-foreground">
               <Camera className="w-6 h-6" />
             </div>
           </button>
@@ -452,7 +454,7 @@ export default function UsedItemReturnsPage() {
       <div className="flex items-center shrink-0">
         <Link
           href="/worker/inbound"
-          className="inline-flex items-center gap-1 text-xs font-bold text-gray-500 hover:text-gray-700"
+          className="inline-flex items-center gap-1 text-xs font-bold text-gray-500 hover:text-gray-700 dark:hover:text-zinc-200 transition-colors duration-200"
         >
           <ChevronLeft className="w-4 h-4" />
           입고 선택으로 돌아가기
@@ -471,10 +473,10 @@ export default function UsedItemReturnsPage() {
 
       {/* Steps Indicator */}
       <div className="grid grid-cols-2 gap-2 shrink-0 py-1 text-center text-[10px] font-extrabold text-gray-400">
-        <div className={`pb-1.5 border-b-2 transition-colors ${currentStep === 1 ? "border-emerald-500 text-emerald-600 font-black" : "border-gray-200 dark:border-zinc-800"}`}>
+        <div className={`pb-1.5 border-b-2 transition-colors duration-200 ${currentStep === 1 ? "border-emerald-500 text-emerald-600 font-black" : "border-gray-200 dark:border-zinc-800"}`}>
           1. 바코드 스캔
         </div>
-        <div className={`pb-1.5 border-b-2 transition-colors ${currentStep === 2 ? "border-emerald-500 text-emerald-600 font-black" : "border-gray-200 dark:border-zinc-800"}`}>
+        <div className={`pb-1.5 border-b-2 transition-colors duration-200 ${currentStep === 2 ? "border-emerald-500 text-emerald-600 font-black" : "border-gray-200 dark:border-zinc-800"}`}>
           2. 사진 촬영 및 접수
         </div>
       </div>
@@ -483,7 +485,7 @@ export default function UsedItemReturnsPage() {
       <div className="flex-1 flex flex-col justify-between space-y-4">
         {currentStep === 1 && (
           /* Step 1: Barcode Scan */
-          <div className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-3xl p-5 shadow-sm space-y-4 flex-1">
+          <div className="bg-card border border-border rounded-xl p-5 shadow-sm space-y-4 flex-1">
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-gray-500 dark:text-zinc-400">
                 도서 바코드 스캔 (ISBN 또는 재촬영용 LPN/QR)
@@ -496,16 +498,16 @@ export default function UsedItemReturnsPage() {
                     value={isbn}
                     onChange={(e) => setIsbn(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && fetchBook(isbn)}
-                    className="w-full pl-9 pr-3 py-2.5 text-sm bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-800 rounded-xl focus:border-emerald-400 focus:outline-none dark:text-zinc-100"
+                    className="w-full pl-9 pr-3 py-2.5 text-sm font-mono bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-800 rounded-xl focus:border-emerald-400 focus:outline-none dark:text-zinc-100 transition-colors duration-200"
                   />
                   <Barcode className="w-4 h-4 text-gray-400 absolute left-3 top-3.5" />
                 </div>
                 <button
                   onClick={() => setIsScannerActive(!isScannerActive)}
-                  className={`px-3.5 py-2.5 rounded-xl border font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer ${
+                  className={`px-3.5 py-2.5 rounded-xl border font-bold text-xs flex items-center gap-1.5 transition-colors duration-200 cursor-pointer ${
                     isScannerActive
-                      ? "bg-emerald-50 border-emerald-200 text-emerald-600"
-                      : "bg-white dark:bg-zinc-900 border-gray-200 dark:border-zinc-800 text-gray-600 dark:text-zinc-400 hover:bg-gray-50"
+                      ? "bg-emerald-50 border-emerald-200 text-emerald-600 dark:bg-emerald-950/30 dark:border-emerald-900 dark:text-emerald-400"
+                      : "bg-card border-border text-gray-600 dark:text-zinc-400 hover:bg-gray-50 dark:hover:bg-zinc-800"
                   }`}
                 >
                   <Camera className="w-4 h-4" />
@@ -529,7 +531,7 @@ export default function UsedItemReturnsPage() {
             )}
 
             {uploadError && (
-              <div className="flex items-start gap-2 bg-rose-50 dark:bg-rose-950/20 text-rose-600 dark:text-rose-400 border border-rose-100 dark:border-rose-950/20 p-3 rounded-2xl text-xs font-medium">
+              <div className="flex items-start gap-2 bg-rose-50 dark:bg-rose-950/20 text-rose-600 dark:text-rose-400 border border-rose-100 dark:border-rose-950/20 p-3 rounded-xl text-xs font-medium">
                 <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
                 <span>{uploadError}</span>
               </div>
@@ -540,17 +542,18 @@ export default function UsedItemReturnsPage() {
         {currentStep === 2 && bookInfo && inboundInfo && (
           /* Step 2: 3 Photos Capture */
           <div className="flex-1 flex flex-col justify-between space-y-4">
-            <div className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-3xl p-5 shadow-sm space-y-4">
-              <div className="bg-emerald-50/40 dark:bg-emerald-950/10 border border-emerald-100/50 dark:border-emerald-950/20 rounded-2xl p-3 flex items-center justify-between text-xs">
+            <div className="bg-card border border-border rounded-xl p-5 shadow-sm space-y-4">
+              <div className="bg-emerald-50/40 dark:bg-emerald-950/10 border border-emerald-100/50 dark:border-emerald-950/20 rounded-xl p-3 flex items-center justify-between text-xs">
                 <div>
                   <h4 className="font-extrabold text-gray-800 dark:text-zinc-200">{bookInfo.title}</h4>
-                  <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-bold font-mono">
+                  <span className="inline-flex items-center gap-1 text-[10px] text-zinc-500 dark:text-zinc-400 font-bold font-mono mt-0.5">
+                    <Barcode className="w-3 h-3 shrink-0" />
                     LPN: {inboundInfo.lpnBarcode}
                   </span>
                 </div>
                 <button
                   onClick={handleReset}
-                  className="px-2 py-1 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-lg text-[10px] text-gray-500 hover:text-gray-800 cursor-pointer font-bold"
+                  className="px-2 py-1 bg-card border border-border rounded-lg text-[10px] text-gray-500 hover:text-gray-800 dark:hover:text-zinc-200 transition-colors duration-200 cursor-pointer font-bold"
                 >
                   초기화
                 </button>
@@ -566,9 +569,9 @@ export default function UsedItemReturnsPage() {
                   {/* Front Photo Slot */}
                   <button
                     onClick={() => setActiveCameraType("front")}
-                    className={`relative aspect-square border-2 border-dashed rounded-2xl flex flex-col items-center justify-center p-2 text-center transition-all cursor-pointer overflow-hidden ${
-                      photos.front 
-                        ? "border-emerald-500 bg-emerald-50/20" 
+                    className={`relative aspect-square border-2 border-dashed rounded-xl flex flex-col items-center justify-center p-2 text-center transition-colors duration-200 cursor-pointer overflow-hidden ${
+                      photos.front
+                        ? "border-emerald-500 bg-emerald-50/20 dark:bg-emerald-950/10"
                         : "border-gray-200 dark:border-zinc-800 hover:border-emerald-400"
                     }`}
                   >
@@ -591,9 +594,9 @@ export default function UsedItemReturnsPage() {
                   {/* Back Photo Slot */}
                   <button
                     onClick={() => setActiveCameraType("back")}
-                    className={`relative aspect-square border-2 border-dashed rounded-2xl flex flex-col items-center justify-center p-2 text-center transition-all cursor-pointer overflow-hidden ${
-                      photos.back 
-                        ? "border-emerald-500 bg-emerald-50/20" 
+                    className={`relative aspect-square border-2 border-dashed rounded-xl flex flex-col items-center justify-center p-2 text-center transition-colors duration-200 cursor-pointer overflow-hidden ${
+                      photos.back
+                        ? "border-emerald-500 bg-emerald-50/20 dark:bg-emerald-950/10"
                         : "border-gray-200 dark:border-zinc-800 hover:border-emerald-400"
                     }`}
                   >
@@ -616,9 +619,9 @@ export default function UsedItemReturnsPage() {
                   {/* Inside Photo Slot */}
                   <button
                     onClick={() => setActiveCameraType("inside")}
-                    className={`relative aspect-square border-2 border-dashed rounded-2xl flex flex-col items-center justify-center p-2 text-center transition-all cursor-pointer overflow-hidden ${
-                      photos.inside 
-                        ? "border-emerald-500 bg-emerald-50/20" 
+                    className={`relative aspect-square border-2 border-dashed rounded-xl flex flex-col items-center justify-center p-2 text-center transition-colors duration-200 cursor-pointer overflow-hidden ${
+                      photos.inside
+                        ? "border-emerald-500 bg-emerald-50/20 dark:bg-emerald-950/10"
                         : "border-gray-200 dark:border-zinc-800 hover:border-emerald-400"
                     }`}
                   >
@@ -641,7 +644,7 @@ export default function UsedItemReturnsPage() {
               </div>
 
               {uploadError && (
-                <div className="flex items-start gap-2 bg-rose-50 dark:bg-rose-950/20 text-rose-600 dark:text-rose-400 border border-rose-100 dark:border-rose-950/20 p-3 rounded-2xl text-xs font-medium">
+                <div className="flex items-start gap-2 bg-rose-50 dark:bg-rose-950/20 text-rose-600 dark:text-rose-400 border border-rose-100 dark:border-rose-950/20 p-3 rounded-xl text-xs font-medium">
                   <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
                   <span>{uploadError}</span>
                 </div>
@@ -649,14 +652,11 @@ export default function UsedItemReturnsPage() {
             </div>
 
             {/* Submit button (sticky bottom bar) */}
-            <button
+            <Button
               onClick={handleStartInspection}
               disabled={!isAllPhotosCaptured || isUploading}
-              className={`w-full font-bold py-3.5 rounded-2xl shadow-sm text-sm shrink-0 flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-                isAllPhotosCaptured
-                  ? "bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/15"
-                  : "bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200 dark:bg-zinc-800 dark:border-zinc-800"
-              }`}
+              size="lg"
+              className="w-full h-12 rounded-xl text-sm shrink-0 bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm"
             >
               {isUploading ? (
                 <>
@@ -665,11 +665,11 @@ export default function UsedItemReturnsPage() {
                 </>
               ) : (
                 <>
-                  <Sparkles className="w-4 h-4 text-emerald-100" />
+                  <Sparkles className="w-4 h-4" />
                   {recheckJobId ? 'AI 재검수 시작' : 'AI 에이전트 검수 시작'}
                 </>
               )}
-            </button>
+            </Button>
           </div>
         )}
 

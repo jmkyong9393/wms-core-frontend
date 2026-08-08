@@ -58,13 +58,13 @@ export default function Sidebar() {
         key={item.name}
         href={item.href}
         onClick={() => setIsOpen(false)}
-        className={`flex items-center px-3 py-2 rounded-lg text-xs font-semibold transition-colors ${
+        className={`flex items-center px-3.5 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 ${
           isActive
-            ? 'bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300'
+            ? 'bg-primary/10 text-primary dark:bg-primary/15'
             : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
         }`}
       >
-        <item.icon className={`w-4 h-4 mr-2.5 ${isActive ? 'text-blue-700 dark:text-blue-300' : 'text-sidebar-foreground/50'}`} />
+        <item.icon className={`w-[18px] h-[18px] mr-3 shrink-0 transition-colors ${isActive ? 'text-primary' : 'text-sidebar-foreground/50'}`} />
         {item.name}
       </Link>
     );
@@ -75,7 +75,7 @@ export default function Sidebar() {
       {/* Mobile Menu Toggle */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-card rounded-md shadow-sm border border-border"
+        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-card rounded-lg shadow-sm border border-border transition-colors hover:bg-muted"
       >
         {isOpen ? <X className="w-5 h-5 text-foreground" /> : <Menu className="w-5 h-5 text-foreground" />}
       </button>
@@ -91,15 +91,15 @@ export default function Sidebar() {
       {/* Sidebar Container */}
       <aside className={`
         fixed lg:static inset-y-0 left-0 z-40
-        w-64 bg-sidebar border-r border-sidebar-border flex flex-col transition-transform duration-300 ease-in-out
+        w-72 bg-sidebar border-r border-sidebar-border flex flex-col transition-transform duration-300 ease-in-out
         ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
         {/* Logo Area */}
-        <div className="h-16 flex items-center px-6 border-b border-sidebar-border">
+        <div className="h-16 flex items-center px-7 border-b border-sidebar-border">
           <Link
             href="/admin"
             onClick={() => setIsOpen(false)}
-            className="text-lg font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent cursor-pointer hover:opacity-80 transition-opacity"
+            className="text-xl font-bold bg-gradient-to-r from-brand-from to-brand-to bg-clip-text text-transparent cursor-pointer hover:opacity-80 transition-opacity"
           >
             NEWZED
           </Link>
@@ -108,21 +108,21 @@ export default function Sidebar() {
         {/* Main Menu */}
         <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-4">
           <div className="space-y-1">
-            <div className="text-[10px] font-bold text-sidebar-foreground/50 uppercase tracking-wider mb-1.5 px-3">
+            <div className="text-xs font-bold text-sidebar-foreground/50 uppercase tracking-wider mb-2 px-3.5">
               공통 현황
             </div>
             {COMMON_MENU_ITEMS.map(renderMenuItem)}
           </div>
 
           <div className="space-y-1">
-            <div className="text-[10px] font-bold text-sidebar-foreground/50 uppercase tracking-wider mb-1.5 px-3">
+            <div className="text-xs font-bold text-sidebar-foreground/50 uppercase tracking-wider mb-2 px-3.5">
               입고 업무 (Inbound)
             </div>
             {INBOUND_MENU_ITEMS.map(renderMenuItem)}
           </div>
 
           <div className="space-y-1">
-            <div className="text-[10px] font-bold text-sidebar-foreground/50 uppercase tracking-wider mb-1.5 px-3">
+            <div className="text-xs font-bold text-sidebar-foreground/50 uppercase tracking-wider mb-2 px-3.5">
               출고 업무 (Outbound)
             </div>
             {OUTBOUND_MENU_ITEMS.map(renderMenuItem)}
@@ -140,9 +140,9 @@ export default function Sidebar() {
             <Link
               key={item.name}
               href={item.href}
-              className="flex items-center px-3 py-2.5 rounded-lg text-sm font-medium text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"
+              className="flex items-center px-3.5 py-2.5 rounded-lg text-sm font-medium text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors duration-200"
             >
-              <item.icon className="w-5 h-5 mr-3 text-sidebar-foreground/50" />
+              <item.icon className="w-[18px] h-[18px] mr-3 shrink-0 text-sidebar-foreground/50" />
               {item.name}
             </Link>
           ))}

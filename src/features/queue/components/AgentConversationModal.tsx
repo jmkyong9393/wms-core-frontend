@@ -1,7 +1,7 @@
 'use client';
 
 import { Suspense, useEffect } from 'react';
-import { X, ImageOff } from 'lucide-react';
+import { X, ImageOff, Bot } from 'lucide-react';
 import type { HitlQueueItem } from '@/features/queue/api/hitlQueueService';
 import { ErrorBoundary } from '@/components/error-boundary';
 import AgentLogSection from '@/features/inspections/components/AgentLogSection';
@@ -57,22 +57,27 @@ export default function AgentConversationModal({ item, onClose }: AgentConversat
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4 transition-opacity duration-200"
       onClick={onClose}
     >
       <div
-        className="bg-card rounded-2xl shadow-xl w-full max-w-3xl max-h-[85vh] flex flex-col overflow-hidden"
+        className="bg-card rounded-xl border border-border shadow-xl w-full max-w-3xl max-h-[85vh] flex flex-col overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between px-5 py-4 border-b border-border">
-          <div>
-            <h3 className="text-base font-bold text-foreground">{item.bookTitle}</h3>
-            <p className="text-xs text-muted-foreground">{item.lpnBarcode ?? item.id}</p>
+        <div className="flex items-center justify-between px-5 py-4 border-b border-ai-border bg-ai-muted/40">
+          <div className="flex items-center gap-2.5">
+            <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-ai-muted text-ai">
+              <Bot className="size-4" aria-hidden />
+            </span>
+            <div>
+              <h3 className="text-base font-bold text-foreground">{item.bookTitle}</h3>
+              <p className="text-xs text-muted-foreground">{item.lpnBarcode ?? item.id}</p>
+            </div>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-full hover:bg-accent text-muted-foreground"
+            className="p-1.5 rounded-full hover:bg-accent text-muted-foreground transition-colors duration-200"
           >
             <X className="w-4 h-4" />
           </button>

@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { ChevronLeft } from 'lucide-react';
+import { Card } from '@/components/ui/card';
 import { useInventoryDetailQuery } from '@/features/inventory/hooks/useInventoryDetailQuery';
 import { getInventoryGradeBadgeStyle, getInventoryGradeLabel } from '@/features/inventory/utils/gradeBadge';
 import { getPricingStatusBadgeStyle, getPricingStatusLabel } from '@/features/inventory/utils/pricingStatusBadge';
@@ -42,7 +43,7 @@ export function InventoryDetailView({ inventoryId }: InventoryDetailViewProps) {
       {isError && <p className="text-sm text-red-600 dark:text-red-400">재고 상세 정보를 불러오지 못했습니다.</p>}
 
       {inventory && (
-        <div className="bg-card rounded-2xl border border-border shadow-sm p-5 space-y-4">
+        <Card className="p-5 space-y-4">
           <div className="flex items-start gap-4">
             {inventory.book.cover_image_url ? (
               <img
@@ -107,7 +108,7 @@ export function InventoryDetailView({ inventoryId }: InventoryDetailViewProps) {
           </div>
 
           <p className="text-xs text-muted-foreground pt-1">마지막 변경: {formatKstDate(inventory.date)}</p>
-        </div>
+        </Card>
       )}
     </div>
   );

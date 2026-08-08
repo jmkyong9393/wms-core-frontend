@@ -13,7 +13,7 @@ export default function WorkerInboundLayout({
       <div className="shrink-0 flex items-center">
         <Link
           href="/worker"
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-gray-500 hover:text-gray-700 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-lg hover:shadow-xs transition-all cursor-pointer"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-gray-500 hover:text-gray-700 dark:hover:text-zinc-200 bg-card border border-border rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
           작업 선택으로 돌아가기

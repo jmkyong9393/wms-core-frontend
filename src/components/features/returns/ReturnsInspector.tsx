@@ -42,6 +42,8 @@ import {
 import { useS3Upload } from "@/features/inbound/hooks/useS3Upload";
 import { useCamera } from "@/features/inbound/hooks/useCamera";
 import { processImage } from "@/features/inbound/utils/image-processor";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 type WizardStep = "select_mode" | "register" | "capture" | "analyzing" | "result";
 
@@ -262,7 +264,7 @@ export default function ReturnsInspector() {
   return (
     <div className="w-full max-w-md mx-auto space-y-4">
       {/* Mock 모드 설정 */}
-      <div className="flex items-center justify-between bg-zinc-100 dark:bg-zinc-800/50 rounded-2xl px-4 py-2.5">
+      <div className="flex items-center justify-between bg-zinc-100 dark:bg-zinc-800/50 rounded-xl px-4 py-2.5">
         <span className="text-xs font-semibold text-zinc-600 dark:text-zinc-400">
           Local Mock API 모사
         </span>
@@ -290,16 +292,16 @@ export default function ReturnsInspector() {
       {step === "select_mode" && (
         <div className="space-y-3">
           <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-50 flex items-center gap-2">
-            <ClipboardList className="w-5 h-5 text-indigo-500" />
+            <ClipboardList className="w-5 h-5 text-primary" />
             검수 유형 선택
           </h2>
           <div className="grid grid-cols-2 gap-3">
             <button
               type="button"
               onClick={() => handleSelectMode("NEW_RETURN")}
-              className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 text-center hover:border-indigo-500 dark:hover:border-indigo-400 transition-all hover:shadow-md group"
+              className="bg-card border border-border rounded-xl p-5 text-center shadow-sm hover:border-primary/50 hover:shadow-md transition-shadow duration-200 group"
             >
-              <BookOpen className="w-8 h-8 text-indigo-500 mx-auto mb-2 group-hover:scale-110 transition-transform" />
+              <BookOpen className="w-8 h-8 text-primary mx-auto mb-2 transition-transform duration-200 group-hover:scale-110" />
               <span className="text-sm font-bold text-zinc-800 dark:text-zinc-200 block">
                 신간 반품
               </span>
@@ -310,9 +312,9 @@ export default function ReturnsInspector() {
             <button
               type="button"
               onClick={() => handleSelectMode("USED_PURCHASE")}
-              className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 text-center hover:border-indigo-500 dark:hover:border-indigo-400 transition-all hover:shadow-md group"
+              className="bg-card border border-border rounded-xl p-5 text-center shadow-sm hover:border-primary/50 hover:shadow-md transition-shadow duration-200 group"
             >
-              <TrendingDown className="w-8 h-8 text-amber-500 mx-auto mb-2 group-hover:scale-110 transition-transform" />
+              <TrendingDown className="w-8 h-8 text-amber-500 mx-auto mb-2 transition-transform duration-200 group-hover:scale-110" />
               <span className="text-sm font-bold text-zinc-800 dark:text-zinc-200 block">
                 중고 매입
               </span>
@@ -327,11 +329,11 @@ export default function ReturnsInspector() {
       {step === "register" && (
         <div className="space-y-4">
           <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-50 flex items-center gap-2">
-            <ScanBarcode className="w-5 h-5 text-indigo-500" />
+            <ScanBarcode className="w-5 h-5 text-primary" />
             도서 등록 및 입고 접수
           </h2>
 
-          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-5 space-y-4">
+          <div className="bg-card border border-border rounded-xl p-5 shadow-sm space-y-4">
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-zinc-700 dark:text-zinc-300 block">
                 ISBN
@@ -343,7 +345,7 @@ export default function ReturnsInspector() {
                 onChange={(e) => setIsbn(e.target.value)}
                 disabled={!!bookInfo}
                 placeholder="ISBN-10 또는 ISBN-13 입력"
-                className="w-full text-sm rounded-xl border border-zinc-200 dark:border-zinc-800 px-3 py-2.5 bg-white dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 disabled:opacity-60"
+                className="w-full text-sm font-mono rounded-xl border border-zinc-200 dark:border-zinc-800 px-3 py-2.5 bg-white dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary disabled:opacity-60 transition-colors duration-200"
               />
             </div>
 
@@ -358,26 +360,26 @@ export default function ReturnsInspector() {
                   onChange={(e) => setSupplierName(e.target.value)}
                   disabled={!!inboundInfo}
                   placeholder="매입처명을 입력하세요"
-                  className="w-full text-sm rounded-xl border border-zinc-200 dark:border-zinc-800 px-3 py-2.5 bg-white dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 disabled:opacity-60"
+                  className="w-full text-sm rounded-xl border border-zinc-200 dark:border-zinc-800 px-3 py-2.5 bg-white dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary disabled:opacity-60 transition-colors duration-200"
                 />
               </div>
             )}
 
             {bookInfo && (
-              <div className="p-3 bg-indigo-50 dark:bg-indigo-950/20 border border-indigo-100 dark:border-indigo-900/30 rounded-2xl text-xs text-indigo-700 dark:text-indigo-400">
+              <div className="p-3 bg-primary/5 border border-primary/15 rounded-xl text-xs text-primary">
                 {bookInfo.title} · {bookInfo.publisher ?? "출판사 미상"}
               </div>
             )}
 
             {inboundInfo && (
-              <div className="p-3 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/30 rounded-2xl text-xs text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5">
+              <div className="p-3 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/30 rounded-xl text-xs text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5">
                 <Tag className="w-3.5 h-3.5" />
                 LPN 발급 완료: {inboundInfo.lpnBarcode}
               </div>
             )}
 
             {inboundInfo?.labelPrintStatus === "SKIPPED" && (
-              <div className="p-3 bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl text-xs text-gray-600 dark:text-zinc-400 flex items-center justify-between gap-2">
+              <div className="p-3 bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl text-xs text-gray-600 dark:text-zinc-400 flex items-center justify-between gap-2">
                 <span className="flex items-center gap-1.5">
                   <Printer className="w-3.5 h-3.5 shrink-0" />
                   프린터 미설정 등으로 라벨 출력이 생략되었습니다.
@@ -386,7 +388,7 @@ export default function ReturnsInspector() {
                   type="button"
                   onClick={handleReprintLabel}
                   disabled={isReprinting}
-                  className="shrink-0 rounded-full border border-gray-300 dark:border-zinc-700 px-2.5 py-1 text-xs font-semibold text-gray-700 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-800 disabled:opacity-60"
+                  className="shrink-0 rounded-full border border-gray-300 dark:border-zinc-700 px-2.5 py-1 text-xs font-semibold text-gray-700 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-800 disabled:opacity-60 transition-colors duration-200"
                 >
                   {isReprinting ? "재출력 중..." : "라벨 재출력"}
                 </button>
@@ -394,7 +396,7 @@ export default function ReturnsInspector() {
             )}
 
             {inboundInfo?.labelPrintStatus === "FAILED" && (
-              <div className="p-3 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/30 rounded-2xl text-xs text-red-600 dark:text-red-400 space-y-2">
+              <div className="p-3 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/30 rounded-xl text-xs text-red-600 dark:text-red-400 space-y-2">
                 <p className="flex items-center gap-1.5">
                   <AlertCircle className="w-3.5 h-3.5 shrink-0" />
                   {inboundInfo.labelPrintError ?? "라벨 출력에 실패했습니다."}
@@ -403,7 +405,7 @@ export default function ReturnsInspector() {
                   type="button"
                   onClick={handleReprintLabel}
                   disabled={isReprinting}
-                  className="flex items-center gap-1.5 rounded-full border border-red-300 dark:border-red-900/50 px-2.5 py-1 text-xs font-semibold text-red-700 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-950/30 disabled:opacity-60"
+                  className="flex items-center gap-1.5 rounded-full border border-red-300 dark:border-red-900/50 px-2.5 py-1 text-xs font-semibold text-red-700 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-950/30 disabled:opacity-60 transition-colors duration-200"
                 >
                   <Printer className="w-3.5 h-3.5" />
                   {isReprinting ? "재출력 중..." : "라벨 재출력"}
@@ -427,19 +429,22 @@ export default function ReturnsInspector() {
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <button
+            <Button
               type="button"
+              variant="outline"
               onClick={handleReset}
-              className="py-3 rounded-2xl border border-zinc-200 dark:border-zinc-800 text-xs font-semibold text-zinc-600 hover:bg-zinc-50 transition-colors"
+              size="lg"
+              className="h-11 rounded-xl text-xs font-semibold"
             >
               뒤로 가기
-            </button>
+            </Button>
             {!inboundInfo ? (
-              <button
+              <Button
                 type="button"
                 onClick={handleRegister}
                 disabled={!isbn.trim() || isRegistering}
-                className="py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-lg shadow-indigo-600/10 flex items-center justify-center gap-2 disabled:opacity-50"
+                size="lg"
+                className="h-11 rounded-xl text-xs font-bold shadow-sm"
               >
                 {isRegistering ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -447,16 +452,17 @@ export default function ReturnsInspector() {
                   <ScanBarcode className="w-4 h-4" />
                 )}
                 등록 및 입고 접수
-              </button>
+              </Button>
             ) : (
-              <button
+              <Button
                 type="button"
                 onClick={() => setStep("capture")}
-                className="py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-lg shadow-indigo-600/10 flex items-center justify-center gap-2"
+                size="lg"
+                className="h-11 rounded-xl text-xs font-bold shadow-sm"
               >
                 <Camera className="w-4 h-4" />
                 촬영 시작하기
-              </button>
+              </Button>
             )}
           </div>
         </div>
@@ -465,11 +471,11 @@ export default function ReturnsInspector() {
       {step === "capture" && (
         <div className="space-y-4">
           <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-50 flex items-center gap-2">
-            <Camera className="w-5 h-5 text-indigo-500" />
+            <Camera className="w-5 h-5 text-primary" />
             {isRecheck ? "재촬영하기" : mode === "NEW_RETURN" ? "신간 반품 촬영" : "중고 매입 촬영"}
           </h2>
 
-          <div className="relative w-full aspect-[4/3] bg-black rounded-3xl overflow-hidden shadow-md">
+          <div className="relative w-full aspect-[4/3] bg-black rounded-xl overflow-hidden shadow-md">
             {cameraError && (
               <div className="absolute inset-0 bg-zinc-950 text-white flex items-center justify-center p-4 text-center text-xs z-20">
                 {cameraError}
@@ -496,7 +502,7 @@ export default function ReturnsInspector() {
 
             {isProcessingLocal && (
               <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center text-white text-xs z-20">
-                <Loader2 className="w-8 h-8 text-indigo-400 animate-spin mb-2" />
+                <Loader2 className="w-8 h-8 text-primary animate-spin mb-2" />
                 <span>흔들림 감지 판독 중...</span>
               </div>
             )}
@@ -510,34 +516,37 @@ export default function ReturnsInspector() {
           )}
 
           <div className="grid grid-cols-2 gap-3">
-            <button
+            <Button
               type="button"
+              variant="outline"
               onClick={isRecheck ? () => setStep("result") : handleReset}
-              className="py-3 rounded-2xl border border-zinc-200 dark:border-zinc-800 text-xs font-semibold text-zinc-600 hover:bg-zinc-50 transition-colors"
+              size="lg"
+              className="h-11 rounded-xl text-xs font-semibold"
             >
               뒤로 가기
-            </button>
-            <button
+            </Button>
+            <Button
               id="capture-btn"
               type="button"
               onClick={handleCapture}
               disabled={isWorking}
-              className="py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-lg shadow-indigo-600/10 flex items-center justify-center gap-2 disabled:opacity-50"
+              size="lg"
+              className="h-11 rounded-xl text-xs font-bold shadow-sm"
             >
               <Camera className="w-4 h-4" />
               촬영하기
-            </button>
+            </Button>
           </div>
         </div>
       )}
 
       {step === "analyzing" && (
-        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-8 text-center">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-indigo-50 dark:bg-indigo-950/30 flex items-center justify-center">
+        <div className="bg-card border border-border rounded-xl p-8 text-center shadow-sm">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-ai-muted flex items-center justify-center">
             {isWorking ? (
-              <Loader2 className="w-8 h-8 text-indigo-500 animate-spin" />
+              <Loader2 className="w-8 h-8 text-ai animate-spin" />
             ) : (
-              <Sparkles className="w-8 h-8 text-indigo-500 animate-pulse" />
+              <Sparkles className="w-8 h-8 text-ai animate-pulse" />
             )}
           </div>
           <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-50 mb-1">
@@ -552,6 +561,14 @@ export default function ReturnsInspector() {
                 ? "검수 대기열에서 가용한 LangGraph 에이전트를 매칭하는 중입니다."
                 : "OpenCV를 통한 픽셀 BBox 피팅 및 UBCI 상태 수치를 취합하고 있습니다."}
           </p>
+
+          {/* AI 검수 진행률 바 */}
+          <div className="h-1.5 w-full rounded-full bg-ai-muted overflow-hidden mb-4">
+            <div
+              className="h-full rounded-full bg-ai transition-all duration-300"
+              style={{ width: `${isWorking ? uploadProgress : result?.progress ?? 0}%` }}
+            />
+          </div>
 
           {(jobError || localError) && (
             <div className="p-2.5 bg-red-50 dark:bg-red-950/20 rounded-xl text-xs text-red-600 mb-4">
@@ -582,7 +599,7 @@ export default function ReturnsInspector() {
 
           {/* 재촬영 필요 안내 */}
           {jobStatus === "RECHECK_REQUIRED" && (
-            <div className="bg-white dark:bg-zinc-900 border-2 border-amber-500/80 rounded-3xl p-6 text-center space-y-4">
+            <div className="bg-card border-2 border-amber-500/80 rounded-xl p-6 text-center space-y-4 shadow-sm">
               <AlertCircle className="w-10 h-10 text-amber-500 mx-auto" />
               <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-50">
                 재촬영이 필요합니다
@@ -590,43 +607,38 @@ export default function ReturnsInspector() {
               {result.finalReport && (
                 <p className="text-xs text-zinc-500 dark:text-zinc-400">{result.finalReport}</p>
               )}
-              <button
+              <Button
                 type="button"
                 onClick={handleStartRecheck}
-                className="w-full rounded-2xl py-4 bg-amber-500 hover:bg-amber-600 text-white font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-amber-500/10"
+                size="lg"
+                className="w-full h-12 rounded-xl bg-amber-500 text-white hover:bg-amber-600 shadow-sm"
               >
                 <Camera className="w-4 h-4" />
                 재촬영하기
-              </button>
+              </Button>
             </div>
           )}
 
           {(jobStatus === "APPROVED" || jobStatus === "REJECTED" || jobStatus === "FAILED") && (
-            <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6">
+            <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-50 flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-indigo-500" />
+                  <Sparkles className="w-4 h-4 text-ai" />
                   AI 품질 판독 명세서
                 </h3>
-                <span
-                  className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                    jobStatus === "APPROVED"
-                      ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400"
-                      : "bg-red-100 text-red-700 dark:bg-red-950/30 dark:text-red-400"
-                  }`}
-                >
+                <Badge variant={jobStatus === "APPROVED" ? "success" : "destructive"}>
                   {jobStatus === "APPROVED" ? "승인 완료" : jobStatus === "REJECTED" ? "반려 확정" : "처리 실패"}
-                </span>
+                </Badge>
               </div>
 
               <div className="grid grid-cols-2 gap-2.5 mb-4">
-                <div className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-100 dark:border-zinc-900 rounded-2xl p-3 text-center">
+                <div className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-100 dark:border-zinc-900 rounded-xl p-3 text-center">
                   <p className="text-[10px] text-zinc-400 mb-0.5">판독 등급</p>
                   <p className="text-base font-black text-zinc-900 dark:text-zinc-50">
                     {result.conditionGrade ? getGradeLabel(result.conditionGrade) : "—"}
                   </p>
                 </div>
-                <div className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-100 dark:border-zinc-900 rounded-2xl p-3 text-center">
+                <div className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-100 dark:border-zinc-900 rounded-xl p-3 text-center">
                   <p className="text-[10px] text-zinc-400 mb-0.5">UBCI 점수</p>
                   <p className="text-base font-black text-zinc-900 dark:text-zinc-50">
                     {result.ubciScore != null ? result.ubciScore.toFixed(0) : "—"}
@@ -637,10 +649,10 @@ export default function ReturnsInspector() {
               {result.finalReport && (
                 <div className="space-y-2 mb-4">
                   <h4 className="text-xs font-bold text-zinc-700 dark:text-zinc-300 flex items-center gap-1">
-                    <ExternalLink className="w-3 h-3 text-indigo-500" />
+                    <ExternalLink className="w-3 h-3 text-ai" />
                     AI 최종 리포트
                   </h4>
-                  <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 p-3 text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                  <div className="rounded-xl border border-ai-border bg-ai-muted p-3 text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
                     {result.finalReport}
                   </div>
                 </div>
@@ -655,14 +667,15 @@ export default function ReturnsInspector() {
                 검수 건 #{result.jobId.slice(0, 8)}
               </div>
 
-              <button
+              <Button
                 type="button"
                 onClick={handleReset}
-                className="w-full rounded-2xl py-4 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/10"
+                size="lg"
+                className="w-full h-12 rounded-xl shadow-sm"
               >
                 <RotateCcw className="w-4 h-4" />
                 검수 마감 및 신규 검수 시작
-              </button>
+              </Button>
             </div>
           )}
         </div>

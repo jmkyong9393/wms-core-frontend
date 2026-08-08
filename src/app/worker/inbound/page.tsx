@@ -3,11 +3,12 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAtomValue } from "jotai";
-import { BookOpen, RefreshCw, Trash2, ClipboardList, BookMarked, History, Printer } from "lucide-react";
+import { BookOpen, RefreshCw, Trash2, ClipboardList, BookMarked, History, Printer, ScanBarcode } from "lucide-react";
 import { currentUserAtom } from "@/features/auth/store/authAtoms";
 import { WorkerInboundDetailDialog } from "@/features/inbound/components/WorkerInboundDetailDialog";
 import { LabelPrintModal } from "@/features/inbound/components/LabelPrintModal";
 import { getJobStatus } from "@/services/returnService";
+import { Badge } from "@/components/ui/badge";
 
 interface ProcessedBook {
   id: string;
@@ -92,7 +93,7 @@ export default function WorkerInboundPage() {
       {/* Header */}
       <div className="space-y-1">
         <h2 className="text-xl font-extrabold text-gray-800 dark:text-zinc-50 flex items-center gap-2">
-          <BookMarked className="w-5 h-5 text-indigo-500" />
+          <BookMarked className="w-5 h-5 text-primary" />
           입고 프로세스 선택
         </h2>
         <p className="text-xs text-gray-400 dark:text-zinc-500">
@@ -105,10 +106,10 @@ export default function WorkerInboundPage() {
         {/* New Stock Card */}
         <Link
           href="/worker/inbound/new"
-          className="group block relative overflow-hidden bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 hover:border-indigo-400 dark:hover:border-indigo-500 rounded-3xl p-5 hover:shadow-md transition-all active:scale-[0.98]"
+          className="group block relative overflow-hidden rounded-xl border border-border bg-card p-5 shadow-sm transition-shadow duration-200 hover:border-primary/40 hover:shadow-md active:scale-[0.98]"
         >
           <div className="flex flex-col items-center text-center space-y-3">
-            <div className="bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 p-4 rounded-full group-hover:scale-110 transition-transform">
+            <div className="bg-primary/10 text-primary p-4 rounded-full transition-transform duration-200 group-hover:scale-110">
               <BookOpen className="w-7 h-7" />
             </div>
             <div className="space-y-1">
@@ -120,16 +121,16 @@ export default function WorkerInboundPage() {
               </p>
             </div>
           </div>
-          <div className="absolute top-0 right-0 w-16 h-16 bg-indigo-500/5 rounded-full -mr-6 -mt-6" />
+          <div className="absolute top-0 right-0 w-16 h-16 bg-primary/5 rounded-full -mr-6 -mt-6" />
         </Link>
 
         {/* Used & Returns Card */}
         <Link
           href="/worker/inbound/returns"
-          className="group block relative overflow-hidden bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 hover:border-emerald-400 dark:hover:border-emerald-500 rounded-3xl p-5 hover:shadow-md transition-all active:scale-[0.98]"
+          className="group block relative overflow-hidden rounded-xl border border-border bg-card p-5 shadow-sm transition-shadow duration-200 hover:border-emerald-400 dark:hover:border-emerald-500 active:scale-[0.98]"
         >
           <div className="flex flex-col items-center text-center space-y-3">
-            <div className="bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 p-4 rounded-full group-hover:scale-110 transition-transform">
+            <div className="bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 p-4 rounded-full transition-transform duration-200 group-hover:scale-110">
               <RefreshCw className="w-7 h-7" />
             </div>
             <div className="space-y-1">
@@ -146,7 +147,7 @@ export default function WorkerInboundPage() {
       </div>
 
       {/* Worker Processed History List */}
-      <div className="bg-white dark:bg-zinc-900 rounded-3xl border border-gray-200 dark:border-zinc-800 p-4 flex-1 flex flex-col min-h-[300px]">
+      <div className="bg-card rounded-xl border border-border shadow-sm p-4 flex-1 flex flex-col min-h-[300px]">
         <div className="flex items-center justify-between mb-4 shrink-0">
           <div className="flex items-center gap-1.5">
             <History className="w-4 h-4 text-gray-500" />
@@ -154,15 +155,13 @@ export default function WorkerInboundPage() {
               오늘 내가 처리한 입고 내역
             </h3>
             {mounted && (
-              <span className="text-xs bg-indigo-50 dark:bg-indigo-950/30 text-indigo-700 dark:text-indigo-400 py-0.5 px-2 rounded-full font-bold">
-                {processedBooks.length}건
-              </span>
+              <Badge variant="default">{processedBooks.length}건</Badge>
             )}
           </div>
           {mounted && processedBooks.length > 0 && (
             <button
               onClick={handleClearHistory}
-              className="inline-flex items-center gap-1 text-xs font-semibold text-red-500 hover:text-red-700 transition-colors"
+              className="inline-flex items-center gap-1 text-xs font-semibold text-red-500 hover:text-red-700 transition-colors duration-200"
             >
               <Trash2 className="w-3.5 h-3.5" />
               내역 비우기
@@ -203,7 +202,7 @@ export default function WorkerInboundPage() {
                       <tr
                         key={book.id}
                         onClick={() => setSelectedBook(book)}
-                        className="hover:bg-gray-100/50 dark:hover:bg-zinc-800/30 transition-colors cursor-pointer"
+                        className="hover:bg-gray-100/50 dark:hover:bg-zinc-800/30 transition-colors duration-200 cursor-pointer"
                       >
                         <td className="py-3 px-2 font-semibold text-gray-700 dark:text-zinc-200">
                           {book.title}
@@ -211,28 +210,36 @@ export default function WorkerInboundPage() {
                             {book.publisher} | ISBN: {book.isbn}
                           </span>
                         </td>
-                        <td className="py-3 px-2 font-mono text-zinc-600 dark:text-zinc-400 font-bold">
-                          {book.lpn || book.isbn}
-                        </td>
                         <td className="py-3 px-2">
-                          <span className={`inline-flex px-2 py-0.5 rounded-full font-bold text-[10px] ${
-                            book.type === "NEW"
-                              ? "bg-blue-50 text-blue-600 dark:bg-blue-950/20 dark:text-blue-400"
-                              : "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/20 dark:text-emerald-400"
-                          }`}>
-                            {book.type === "NEW" ? "신품" : "중고/반품"}
+                          <span className="inline-flex items-center gap-1 font-mono text-zinc-600 dark:text-zinc-400 font-bold">
+                            <ScanBarcode className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                            {book.lpn || book.isbn}
                           </span>
                         </td>
                         <td className="py-3 px-2">
-                          <span className={`inline-flex px-2 py-0.5 rounded-full font-bold text-[10px] ${
-                            book.status === "APPROVED"
-                              ? "bg-green-50 text-green-600 dark:bg-green-950/20 dark:text-green-400"
-                              : book.status === "REJECTED"
-                              ? "bg-rose-50 text-rose-600 dark:bg-rose-950/20 dark:text-rose-400"
-                              : "bg-yellow-50 text-yellow-600 dark:bg-yellow-950/20 dark:text-yellow-400"
-                          }`}>
+                          {book.type === "NEW" ? (
+                            <Badge variant="default">신품</Badge>
+                          ) : (
+                            <Badge
+                              variant="outline"
+                              className="border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900 dark:bg-emerald-900/30 dark:text-emerald-400"
+                            >
+                              중고/반품
+                            </Badge>
+                          )}
+                        </td>
+                        <td className="py-3 px-2">
+                          <Badge
+                            variant={
+                              book.status === "APPROVED"
+                                ? "success"
+                                : book.status === "REJECTED"
+                                ? "destructive"
+                                : "warning"
+                            }
+                          >
                             {book.status === "APPROVED" ? "입고 완료" : book.status === "REJECTED" ? "반려" : "검수 중"}
-                          </span>
+                          </Badge>
                         </td>
                         <td className="py-3 px-2 text-right text-gray-400 dark:text-zinc-500 font-medium">
                           {new Date(book.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
@@ -249,10 +256,10 @@ export default function WorkerInboundPage() {
                                 }
                               }}
                               disabled={book.status === "PROCESSING"}
-                              className={`p-1.5 rounded-lg transition-colors inline-flex ${
+                              className={`p-1.5 rounded-lg transition-colors duration-200 inline-flex ${
                                 book.status === "PROCESSING"
                                   ? "text-gray-300 dark:text-zinc-700 cursor-not-allowed"
-                                  : "text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30"
+                                  : "text-gray-400 hover:text-primary hover:bg-primary/10"
                               }`}
                               title={book.status === "PROCESSING" ? "검수 진행 중에는 출력할 수 없습니다." : "라벨 출력"}
                             >
@@ -272,38 +279,44 @@ export default function WorkerInboundPage() {
                   <div
                     key={book.id}
                     onClick={() => setSelectedBook(book)}
-                    className="p-3 bg-gray-50/50 dark:bg-zinc-800/10 border border-gray-100 dark:border-zinc-800/40 rounded-2xl space-y-2 text-xs cursor-pointer active:scale-[0.99] hover:bg-gray-100/20 dark:hover:bg-zinc-800/30 transition-all"
+                    className="p-3 bg-card border border-border rounded-xl space-y-2 text-xs cursor-pointer active:scale-[0.99] hover:bg-gray-100/40 dark:hover:bg-zinc-800/30 transition-colors duration-200"
                   >
-                    <div className="flex justify-between items-start">
+                    <div className="flex justify-between items-start gap-2">
                       <div className="font-semibold text-gray-700 dark:text-zinc-200">
                         {book.title}
                         <span className="text-[10px] text-gray-400 block font-normal mt-0.5">
                           {book.publisher} | ISBN: {book.isbn}
                         </span>
                       </div>
-                      <span className={`inline-flex px-2 py-0.5 rounded-full font-bold text-[10px] shrink-0 ${
-                        book.type === "NEW"
-                          ? "bg-blue-50 text-blue-600 dark:bg-blue-950/20 dark:text-blue-400"
-                          : "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/20 dark:text-emerald-400"
-                      }`}>
-                        {book.type === "NEW" ? "신품" : "중고/반품"}
-                      </span>
+                      {book.type === "NEW" ? (
+                        <Badge variant="default" className="shrink-0">신품</Badge>
+                      ) : (
+                        <Badge
+                          variant="outline"
+                          className="shrink-0 border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900 dark:bg-emerald-900/30 dark:text-emerald-400"
+                        >
+                          중고/반품
+                        </Badge>
+                      )}
                     </div>
 
                     <div className="flex justify-between items-center pt-1.5 border-t border-dashed border-gray-200 dark:border-zinc-800 gap-2">
-                      <div className="font-mono text-zinc-500 dark:text-zinc-500 font-medium min-w-0 flex-1 break-all text-[11px]">
+                      <div className="inline-flex items-center gap-1 font-mono text-zinc-500 dark:text-zinc-500 font-medium min-w-0 flex-1 break-all text-[11px]">
+                        <ScanBarcode className="w-3.5 h-3.5 text-gray-400 shrink-0" />
                         {book.lpn || book.isbn}
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
-                        <span className={`inline-flex px-2 py-0.5 rounded-full font-bold text-[10px] whitespace-nowrap shrink-0 ${
-                          book.status === "APPROVED"
-                            ? "bg-green-50 text-green-600 dark:bg-green-950/20 dark:text-green-400"
-                            : book.status === "REJECTED"
-                            ? "bg-rose-50 text-rose-600 dark:bg-rose-950/20 dark:text-rose-400"
-                            : "bg-yellow-50 text-yellow-600 dark:bg-yellow-950/20 dark:text-yellow-400"
-                        }`}>
+                        <Badge
+                          variant={
+                            book.status === "APPROVED"
+                              ? "success"
+                              : book.status === "REJECTED"
+                              ? "destructive"
+                              : "warning"
+                          }
+                        >
                           {book.status === "APPROVED" ? "입고 완료" : book.status === "REJECTED" ? "반려" : "검수 중"}
-                        </span>
+                        </Badge>
                         <span className="text-[10px] text-gray-400 dark:text-zinc-500 whitespace-nowrap shrink-0">
                           {new Date(book.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </span>
@@ -317,10 +330,10 @@ export default function WorkerInboundPage() {
                                 }
                               }}
                               disabled={book.status === "PROCESSING"}
-                              className={`p-1.5 rounded-lg transition-colors ${
+                              className={`p-1.5 rounded-lg transition-colors duration-200 ${
                                 book.status === "PROCESSING"
                                   ? "text-gray-300 dark:text-zinc-700 cursor-not-allowed"
-                                  : "text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30"
+                                  : "text-gray-400 hover:text-primary hover:bg-primary/10"
                               }`}
                               title={book.status === "PROCESSING" ? "검수 진행 중에는 출력할 수 없습니다." : "라벨 출력"}
                             >

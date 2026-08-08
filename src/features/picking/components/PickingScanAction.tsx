@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { ScanBarcode } from 'lucide-react';
 import { BarcodeScanner } from '@/components/ui/barcode-scanner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -64,7 +65,8 @@ export function PickingScanAction({ orderId, item }: PickingScanActionProps) {
           type="button"
           variant={isScannerActive ? 'outline' : 'default'}
           onClick={() => setIsScannerActive((prev) => !prev)}
-          className="flex-1 rounded-full"
+          size="lg"
+          className="flex-1 h-11 rounded-full"
         >
           {isScannerActive ? '스캐너 일시정지' : '스캐너 켜기'}
         </Button>
@@ -72,29 +74,35 @@ export function PickingScanAction({ orderId, item }: PickingScanActionProps) {
           type="button"
           variant="outline"
           onClick={() => setIsManualEntryOpen((prev) => !prev)}
-          className="flex-1 rounded-full"
+          size="lg"
+          className="flex-1 h-11 rounded-full"
         >
+          <ScanBarcode className="w-4 h-4" />
           바코드 직접 입력
         </Button>
       </div>
 
       {isManualEntryOpen && (
         <div className="flex items-center gap-2">
-          <Input
-            type="text"
-            value={manualBarcode}
-            onChange={(e) => setManualBarcode(e.target.value)}
-            placeholder="ISBN 또는 LPN 바코드 입력"
-            className="flex-1"
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') handleManualSubmit();
-            }}
-          />
+          <div className="relative flex-1">
+            <ScanBarcode className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <Input
+              type="text"
+              value={manualBarcode}
+              onChange={(e) => setManualBarcode(e.target.value)}
+              placeholder="ISBN 또는 LPN 바코드 입력"
+              className="pl-9 font-mono"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleManualSubmit();
+              }}
+            />
+          </div>
           <Button
             type="button"
             onClick={handleManualSubmit}
             disabled={scanMutation.isPending || !manualBarcode.trim()}
-            className="rounded-full"
+            size="lg"
+            className="h-11 rounded-full"
           >
             확인
           </Button>

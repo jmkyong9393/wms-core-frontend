@@ -10,7 +10,7 @@ export default function WorkerOutboundPage() {
       <div className="flex items-center shrink-0">
         <Link
           href="/worker"
-          className="inline-flex items-center gap-1 text-xs font-bold text-gray-500 hover:text-gray-700"
+          className="inline-flex items-center gap-1 text-xs font-bold text-gray-500 hover:text-gray-700 dark:hover:text-zinc-200 transition-colors duration-200"
         >
           <ChevronLeft className="w-4 h-4" />
           작업 선택으로 돌아가기
@@ -30,10 +30,10 @@ export default function WorkerOutboundPage() {
         {/* Picking Redirect Card */}
         <Link
           href="/outbound/picking"
-          className="group block relative overflow-hidden bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 hover:border-orange-400 dark:hover:border-orange-500 rounded-3xl p-5 hover:shadow-md transition-all active:scale-[0.98]"
+          className="group block relative overflow-hidden rounded-xl border border-border bg-card p-5 shadow-sm transition-shadow duration-200 hover:border-orange-400 dark:hover:border-orange-500 hover:shadow-md active:scale-[0.98]"
         >
           <div className="flex items-center space-x-4">
-            <div className="bg-orange-50 dark:bg-orange-950/40 text-orange-600 dark:text-orange-400 p-3.5 rounded-2xl group-hover:scale-110 transition-transform">
+            <div className="bg-orange-50 dark:bg-orange-950/40 text-orange-600 dark:text-orange-400 p-3.5 rounded-2xl transition-transform duration-200 group-hover:scale-110">
               <ShoppingCart className="w-6 h-6" />
             </div>
             <div className="flex-1 space-y-0.5">

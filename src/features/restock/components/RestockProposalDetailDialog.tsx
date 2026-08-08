@@ -110,7 +110,7 @@ export function RestockProposalDetailDialog({
                       : getRestockStatusLabel(data.status)}
                   </span>
 
-                  <span className="rounded-full bg-violet-50 px-2 py-0.5 text-xs font-semibold text-violet-700 dark:bg-violet-950/30 dark:text-violet-300">
+                  <span className="rounded-full border border-ai-border bg-ai-muted px-2 py-0.5 text-xs font-semibold text-ai">
                     {getProposalTypeLabel(data.proposalSource)}
                   </span>
                 </div>

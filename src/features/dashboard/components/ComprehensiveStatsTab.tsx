@@ -42,6 +42,7 @@ import {
   getMockFlowTrend,
 } from '@/services/dashboardService';
 import { formatKstTime } from '@/lib/date';
+import { Card, CardContent } from '@/components/ui/card';
 import type {
   InspectionMetrics,
   WeeklyInsight,
@@ -223,7 +224,7 @@ export default function ComprehensiveStatsTab() {
   if (loading && !metrics) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] gap-3">
-        <RefreshCw className="animate-spin text-indigo-600 w-8 h-8" />
+        <RefreshCw className="animate-spin text-primary w-8 h-8" />
         <p className="text-muted-foreground font-medium text-sm">종합 대시보드 통계 데이터 분석 중...</p>
       </div>
     );
@@ -272,7 +273,7 @@ export default function ComprehensiveStatsTab() {
       {/* ─── 상단 요약 카드 행 (KPI Summary) ─── */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* KPI 1: 누적 인건비 절감액 */}
-        <div className="bg-card p-5 rounded-2xl border border-border shadow-sm flex items-center justify-between">
+        <Card className="p-5 flex-row items-center justify-between">
           <div className="space-y-1">
             <span className="text-xs font-bold text-muted-foreground block uppercase tracking-wider">
               주간 누적 인건비 절감액
@@ -284,13 +285,13 @@ export default function ComprehensiveStatsTab() {
               &nbsp;
             </span>
           </div>
-          <div className="bg-indigo-50 dark:bg-indigo-950/40 p-3 rounded-2xl text-indigo-600 dark:text-indigo-300">
+          <div className="bg-primary/10 p-3 rounded-xl text-primary">
             <Coins className="w-6 h-6" />
           </div>
-        </div>
+        </Card>
 
         {/* KPI 2: 자동화 처리 비중 */}
-        <div className="bg-card p-5 rounded-2xl border border-border shadow-sm flex items-center justify-between">
+        <Card className="p-5 flex-row items-center justify-between">
           <div className="space-y-1">
             <span className="text-xs font-bold text-muted-foreground block uppercase tracking-wider">
               AI 검수 자동 승인율
@@ -302,13 +303,13 @@ export default function ComprehensiveStatsTab() {
               총 {totalJobs}건 중 {approvedJobs + rejectedJobs}건 자동 판정
             </span>
           </div>
-          <div className="bg-emerald-50 dark:bg-emerald-950/40 p-3 rounded-2xl text-emerald-600 dark:text-emerald-300">
+          <div className="bg-emerald-50 dark:bg-emerald-950/40 p-3 rounded-xl text-emerald-600 dark:text-emerald-300">
             <Activity className="w-6 h-6" />
           </div>
-        </div>
+        </Card>
 
         {/* KPI 3: 예측 반품량 */}
-        <div className="bg-card p-5 rounded-2xl border border-border shadow-sm flex items-center justify-between">
+        <Card className="p-5 flex-row items-center justify-between">
           <div className="space-y-1">
             <span className="text-xs font-bold text-muted-foreground block uppercase tracking-wider">
               주간 예측 반품량
@@ -320,13 +321,13 @@ export default function ComprehensiveStatsTab() {
               &nbsp;
             </span>
           </div>
-          <div className="bg-amber-50 dark:bg-amber-950/40 p-3 rounded-2xl text-amber-600 dark:text-amber-300">
+          <div className="bg-amber-50 dark:bg-amber-950/40 p-3 rounded-xl text-amber-600 dark:text-amber-300">
             <TrendingUp className="w-6 h-6" />
           </div>
-        </div>
+        </Card>
 
         {/* KPI 4: FDS 활성 이상징후 */}
-        <div className="bg-card p-5 rounded-2xl border border-border shadow-sm flex items-center justify-between">
+        <Card className="p-5 flex-row items-center justify-between">
           <div className="space-y-1">
             <span className="text-xs font-bold text-muted-foreground block uppercase tracking-wider">
               FDS 실시간 이상거래 탐지
@@ -339,14 +340,14 @@ export default function ComprehensiveStatsTab() {
               위험군(Critical): {criticalFdsCount}건 / 요주의: {warningFdsCount}건
             </span>
           </div>
-          <div className="bg-rose-50 dark:bg-rose-950/40 p-3 rounded-2xl text-rose-600 dark:text-rose-300">
+          <div className="bg-rose-50 dark:bg-rose-950/40 p-3 rounded-xl text-rose-600 dark:text-rose-300">
             <ShieldAlert className="w-6 h-6" />
           </div>
-        </div>
+        </Card>
       </div>
 
       {/* ─── 중앙 차트 영역: 입출고 및 검수 속도 추이 (Double Axis ComposedChart) ─── */}
-      <div className="bg-card p-6 rounded-2xl border border-border shadow-sm">
+      <Card className="p-6">
         <div className="flex justify-between items-center mb-6">
           <div>
             <h3 className="text-base font-bold text-foreground">입출고 추이 및 AI 검수 처리 소요시간</h3>
@@ -369,10 +370,10 @@ export default function ComprehensiveStatsTab() {
             </ComposedChart>
           </ResponsiveContainer>
         </div>
-      </div>
+      </Card>
 
       {/* ─── FDS 이상 유저 리스트 영역 ─── */}
-      <div className="bg-card p-5 rounded-2xl border border-border shadow-sm flex flex-col">
+      <Card className="p-5 flex flex-col">
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mb-4">
           <div>
             <h3 className="text-base font-bold text-foreground">FDS 탐지 악성/의심 고객 리스트</h3>
@@ -381,7 +382,7 @@ export default function ComprehensiveStatsTab() {
           <div className="flex items-center gap-2">
             <button
               onClick={() => setIsPolicyOpen(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-indigo-600 dark:text-indigo-300 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/40 dark:hover:bg-indigo-950/60 rounded-lg transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-primary bg-primary/10 hover:bg-primary/20 rounded-lg transition-colors cursor-pointer"
             >
               <Settings className="w-3.5 h-3.5" />
               임계값 설정 조절
@@ -395,11 +396,11 @@ export default function ComprehensiveStatsTab() {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-border text-muted-foreground text-xs font-bold uppercase tracking-wider">
-                <th className="py-3 px-2">고객명</th>
-                <th className="py-3 px-2">위험 등급</th>
-                <th className="py-3 px-2">판정 근거 및 감지 룰</th>
-                <th className="py-3 px-2 text-right">감지 시각</th>
+              <tr className="bg-muted/40 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                <th className="py-2.5 px-3">고객명</th>
+                <th className="py-2.5 px-3">위험 등급</th>
+                <th className="py-2.5 px-3">판정 근거 및 감지 룰</th>
+                <th className="py-2.5 px-3 text-right">감지 시각</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border text-sm">
@@ -407,12 +408,12 @@ export default function ComprehensiveStatsTab() {
                 fdsReports.map((report) => {
                   const isCritical = report.fraud_score >= 90;
                   return (
-                    <tr key={report.id} className="hover:bg-accent/50 transition-colors">
-                      <td className="py-3.5 px-2 font-semibold text-foreground">
+                    <tr key={report.id} className="hover:bg-muted/50 transition-colors">
+                      <td className="py-2.5 px-3 font-semibold text-foreground">
                         {report.customer_name || '비공개'}
                         <span className="text-xs text-muted-foreground block font-normal mt-0.5">ID: {report.customer_id}</span>
                       </td>
-                      <td className="py-3.5 px-2">
+                      <td className="py-2.5 px-3">
                         <span
                           className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold ${
                             isCritical
@@ -424,10 +425,10 @@ export default function ComprehensiveStatsTab() {
                           {isCritical ? `Critical (${report.fraud_score}점)` : `Warning (${report.fraud_score}점)`}
                         </span>
                       </td>
-                      <td className="py-3.5 px-2 text-xs text-muted-foreground max-w-[250px] truncate" title={report.fraud_reason || ''}>
+                      <td className="py-2.5 px-3 text-xs text-muted-foreground max-w-[250px] truncate" title={report.fraud_reason || ''}>
                         {report.fraud_reason || '사유가 기록되지 않았습니다.'}
                       </td>
-                      <td className="py-3.5 px-2 text-right text-muted-foreground text-xs font-medium">
+                      <td className="py-2.5 px-3 text-right text-muted-foreground text-xs font-medium">
                         {formatKstTime(report.detected_at)}
                       </td>
                     </tr>
@@ -443,7 +444,7 @@ export default function ComprehensiveStatsTab() {
             </tbody>
           </table>
         </div>
-      </div>
+      </Card>
 
       {/* Slide-over Drawer for FDS Policy Config */}
       {isPolicyOpen && (
@@ -461,7 +462,7 @@ export default function ComprehensiveStatsTab() {
                 <div className="px-5 py-5 border-b border-border flex justify-between items-center bg-muted/50">
                   <div>
                     <h2 className="text-base font-bold text-foreground flex items-center gap-1.5" id="slide-over-title">
-                      <Settings className="w-4 h-4 text-indigo-500" />
+                      <Settings className="w-4 h-4 text-primary" />
                       FDS 룰셋 실시간 설정
                     </h2>
                     <p className="text-xs text-muted-foreground mt-0.5">이상거래 감지 임계값을 조절하여 룰을 수정합니다.</p>
@@ -488,7 +489,7 @@ export default function ComprehensiveStatsTab() {
                     return (
                       <div key={policy.policy_key} className="p-4 bg-muted rounded-xl space-y-2.5 border border-border">
                         <div>
-                          <span className="font-bold text-xs text-indigo-600 dark:text-indigo-400 block">
+                          <span className="font-bold text-xs text-primary block">
                             {POLICY_FRIENDLY_NAMES[policy.policy_key] || policy.policy_key}
                           </span>
                           <span className="text-[11px] text-muted-foreground leading-tight block mt-1">
@@ -499,7 +500,7 @@ export default function ComprehensiveStatsTab() {
                         <div className="flex items-center gap-2">
                           <input
                             type="number"
-                            className="w-full bg-card border border-border rounded-lg px-2.5 py-1.5 text-sm font-semibold text-foreground focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                            className="w-full bg-card border border-border rounded-lg px-2.5 py-1.5 text-sm font-semibold text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
                             value={currentValue}
                             onChange={(e) => handlePolicyChange(policy.policy_key, parseFloat(e.target.value) || 0)}
                             disabled={isUpdating}
@@ -511,7 +512,7 @@ export default function ComprehensiveStatsTab() {
                                 ? 'bg-emerald-500 text-white'
                                 : isUpdating
                                 ? 'bg-muted text-muted-foreground cursor-not-allowed'
-                                : 'bg-indigo-600 text-white hover:bg-indigo-700'
+                                : 'bg-primary text-primary-foreground hover:bg-primary/90'
                             }`}
                             onClick={() => handlePolicySubmit(policy.policy_key)}
                             disabled={isUpdating || isSuccess}
@@ -541,7 +542,7 @@ export default function ComprehensiveStatsTab() {
       {/* ─── 최하단 3분할 그리드: 분석 핫스팟 (Analytics Hotspots Grid) ─── */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* 출판사별 불량 비율 (Defective Publishers) */}
-        <div className="bg-card p-5 rounded-2xl border border-border shadow-sm flex flex-col h-[280px]">
+        <Card className="p-5 h-[280px]">
           <div>
             <h3 className="text-sm font-bold text-foreground">출판사별 불량 도서 비율</h3>
             <p className="text-[11px] text-muted-foreground mt-0.5">가장 오염/파손이 빈번한 출판사 집계</p>
@@ -561,10 +562,10 @@ export default function ComprehensiveStatsTab() {
               <div className="h-full flex items-center justify-center text-xs text-muted-foreground">데이터가 없습니다.</div>
             )}
           </div>
-        </div>
+        </Card>
 
         {/* 물류센터별 반품 집중도 (Logistics Hotspots PieChart) */}
-        <div className="bg-card p-5 rounded-2xl border border-border shadow-sm flex flex-col h-[280px]">
+        <Card className="p-5 h-[280px]">
           <div>
             <h3 className="text-sm font-bold text-foreground">물류센터별 반품 점유율</h3>
             <p className="text-[11px] text-muted-foreground mt-0.5">물류 유입 비중이 높은 상위 물류창고 정보</p>
@@ -595,10 +596,10 @@ export default function ComprehensiveStatsTab() {
               <div className="h-full flex items-center justify-center text-xs text-muted-foreground">데이터가 없습니다.</div>
             )}
           </div>
-        </div>
+        </Card>
 
         {/* 창고 로케이션 이상 구역 (Location Hotspots) */}
-        <div className="bg-card p-5 rounded-2xl border border-border shadow-sm flex flex-col h-[280px]">
+        <Card className="p-5 h-[280px]">
           <div>
             <h3 className="text-sm font-bold text-foreground">로케이션별 불량 집중 구역</h3>
             <p className="text-[11px] text-muted-foreground mt-0.5">반입된 도서 불량 중 적재된 구역의 위험 빈도 진단</p>
@@ -627,7 +628,7 @@ export default function ComprehensiveStatsTab() {
               <div className="h-full flex items-center justify-center text-xs text-muted-foreground">데이터가 없습니다.</div>
             )}
           </div>
-        </div>
+        </Card>
       </div>
     </div>
   );

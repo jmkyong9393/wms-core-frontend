@@ -5,8 +5,9 @@ import { useAtom } from "jotai";
 import { uploadQueueAtom } from "@/features/inbound/store/uploadQueueAtoms";
 import CameraScanner from "@/features/inbound/components/CameraScanner";
 import ReturnsInspector from "@/components/features/returns/ReturnsInspector";
-import { ToggleLeft, ToggleRight, Package, ShoppingCart } from "lucide-react";
+import { ToggleLeft, ToggleRight, Package, ShoppingCart, Check } from "lucide-react";
 import Link from "next/link";
+import { Badge } from "@/components/ui/badge";
 
 /**
  * InboundView — 반품 도서 검수 메인 화면
@@ -55,16 +56,16 @@ export default function InboundView() {
 
       {/* FE-3.8 바코드 스캐너 기능 이동 버튼 */}
       <div className="w-full max-w-md mb-4 flex gap-2">
-        <Link 
+        <Link
           href="/inbound/putaway"
-          className="flex-1 flex items-center justify-center gap-2 bg-blue-50 hover:bg-blue-100 text-blue-700 py-3 rounded-xl font-semibold transition-colors border border-blue-200"
+          className="flex-1 flex items-center justify-center gap-2 bg-primary/10 hover:bg-primary/15 text-primary py-3 rounded-xl font-semibold transition-colors duration-200 border border-primary/20"
         >
           <Package className="h-5 w-5" />
           입고 적치
         </Link>
-        <Link 
+        <Link
           href="/outbound/picking"
-          className="flex-1 flex items-center justify-center gap-2 bg-orange-50 hover:bg-orange-100 text-orange-700 py-3 rounded-xl font-semibold transition-colors border border-orange-200"
+          className="flex-1 flex items-center justify-center gap-2 bg-orange-50 hover:bg-orange-100 dark:bg-orange-950/30 dark:hover:bg-orange-950/50 text-orange-700 dark:text-orange-400 py-3 rounded-xl font-semibold transition-colors duration-200 border border-orange-200 dark:border-orange-900/50"
         >
           <ShoppingCart className="h-5 w-5" />
           출고 피킹
@@ -76,7 +77,7 @@ export default function InboundView() {
         <button
           type="button"
           onClick={() => setIsFullInspectionMode((prev) => !prev)}
-          className="w-full flex items-center justify-between bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl px-4 py-3 hover:border-indigo-400 transition-colors"
+          className="w-full flex items-center justify-between bg-card border border-border rounded-xl px-4 py-3 shadow-sm hover:border-ai-border transition-colors duration-200"
         >
           <span className="text-sm font-semibold text-gray-700 dark:text-zinc-300">
             전체 AI 검수 모드
@@ -84,8 +85,8 @@ export default function InboundView() {
           <div className="flex items-center gap-1.5 text-xs font-bold">
             {isFullInspectionMode ? (
               <>
-                <ToggleRight className="w-6 h-6 text-indigo-500" />
-                <span className="text-indigo-600 dark:text-indigo-400">ON</span>
+                <ToggleRight className="w-6 h-6 text-ai" />
+                <span className="text-ai">ON</span>
               </>
             ) : (
               <>
@@ -106,17 +107,17 @@ export default function InboundView() {
           <CameraScanner />
 
           {/* 낙관적 UI: 업로드 대기열 현황판 */}
-          <div className="w-full max-w-md mt-6 bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-gray-100 dark:border-zinc-800 p-4">
+          <div className="w-full max-w-md mt-6 bg-card rounded-xl shadow-sm border border-border p-4">
             <h3 className="text-sm font-semibold text-gray-700 dark:text-zinc-300 mb-3 flex items-center justify-between">
               <span>작업 진행 현황</span>
-              <span className="bg-blue-100 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400 py-0.5 px-2 rounded-full text-xs">
+              <Badge variant="default">
                 대기{" "}
                 {
                   uploadQueue.filter((t) => t.status !== "COMPLETED")
                     .length
                 }
                 건
-              </span>
+              </Badge>
             </h3>
 
             {uploadQueue.length === 0 ? (
@@ -148,11 +149,11 @@ export default function InboundView() {
                     </div>
                     <div className="flex items-center">
                       {task.status === "COMPLETED" ? (
-                        <span className="w-5 h-5 rounded-full bg-green-100 dark:bg-green-950/30 flex items-center justify-center text-green-600 dark:text-green-400 text-xs">
-                          ✓
+                        <span className="w-5 h-5 rounded-full bg-green-100 dark:bg-green-950/30 flex items-center justify-center text-green-600 dark:text-green-400">
+                          <Check className="w-3 h-3" />
                         </span>
                       ) : (
-                        <span className="w-4 h-4 rounded-full border-2 border-blue-500 border-t-transparent animate-spin" />
+                        <span className="w-4 h-4 rounded-full border-2 border-primary border-t-transparent animate-spin" />
                       )}
                     </div>
                   </div>

@@ -4,7 +4,8 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { isAxiosError } from 'axios';
-import { ArrowLeft, Loader2 } from 'lucide-react';
+import { ArrowLeft, Barcode, Loader2, MapPin } from 'lucide-react';
+import { Card } from '@/components/ui/card';
 import { usePickingInstructionQuery } from '@/features/picking/hooks/usePickingInstructionQuery';
 import { useConfirmShipmentMutation } from '@/features/picking/hooks/usePickingMutations';
 import { WaybillPreview } from '@/features/picking/components/WaybillPreview';
@@ -73,10 +74,10 @@ export function PickingStatusDetailView({ orderId }: PickingStatusDetailViewProp
 
       {isNotStartedYet && (
         <div className="space-y-4">
-          <div className="bg-card rounded-2xl border border-border shadow-sm p-5 space-y-1">
+          <Card className="p-5 space-y-1">
             <InfoRow label="주문번호" value={<span className="font-mono">{orderId}</span>} />
             <InfoRow label="상태" value={getOrderStatusLabel('PENDING')} />
-          </div>
+          </Card>
           <p className="text-sm text-muted-foreground text-center py-2">
             이 주문은 아직 피킹이 시작되지 않았습니다.
           </p>
@@ -90,12 +91,12 @@ export function PickingStatusDetailView({ orderId }: PickingStatusDetailViewProp
 
       {data && (
         <>
-          <div className="bg-card rounded-2xl border border-border shadow-sm p-5 space-y-1">
+          <Card className="p-5 space-y-1">
             <InfoRow label="주문번호" value={<span className="font-mono">{data.order_id}</span>} />
             <InfoRow label="상태" value={getOrderStatusLabel(data.status)} />
             <InfoRow label="총 금액" value={formatCurrencyKRW(data.total_price)} />
             <InfoRow label="추천 박스" value={data.recommended_box} />
-          </div>
+          </Card>
 
           <div className="space-y-2">
             <div className="flex items-center justify-between">
@@ -112,10 +113,12 @@ export function PickingStatusDetailView({ orderId }: PickingStatusDetailViewProp
                 className="flex items-center justify-between p-3 rounded-xl border border-border bg-card"
               >
                 <div className="min-w-0">
-                  <p className="font-medium text-foreground truncate">
+                  <p className="flex items-center gap-1 font-medium text-foreground truncate">
+                    <Barcode className="w-3.5 h-3.5 shrink-0 text-muted-foreground" />
                     {item.isbn ?? item.lpn_barcode ?? item.allocation_id}
                   </p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <MapPin className="w-3 h-3 shrink-0" />
                     {item.zone}-{item.rack}-{item.shelf}
                   </p>
                 </div>

@@ -10,7 +10,7 @@ import type { Role } from '@/features/auth/types/authTypes';
 const STAFF_ROLES: readonly Role[] = ['MASTER', 'ADMIN', 'WORKER'];
 
 const REDIRECTING_MESSAGE = (
-  <p className="p-8 text-center text-sm text-gray-400">페이지를 이동하고 있습니다...</p>
+  <p className="p-8 text-center text-sm text-gray-400 dark:text-zinc-500">페이지를 이동하고 있습니다...</p>
 );
 
 // QR 스캔 후 사용자 역할에 맞는 화면으로 분기
@@ -41,14 +41,14 @@ export default function ScanPage() {
   }, [shouldRedirectToCertificate, router, token]);
 
   if (!isClient || authSession.status === 'loading') {
-    return <p className="p-8 text-center text-sm text-gray-400">세션 확인 중...</p>;
+    return <p className="p-8 text-center text-sm text-gray-400 dark:text-zinc-500">세션 확인 중...</p>;
   }
 
   if (authSession.status === 'error') {
     return (
       <div className="p-8 text-center space-y-3">
-        <p className="text-sm text-red-600">세션 정보를 확인하지 못했습니다. 잠시 후 다시 시도해 주세요.</p>
-        <Button type="button" onClick={authSession.retry}>
+        <p className="text-sm text-red-600 dark:text-red-400">세션 정보를 확인하지 못했습니다. 잠시 후 다시 시도해 주세요.</p>
+        <Button type="button" onClick={authSession.retry} size="lg">
           다시 시도
         </Button>
       </div>
