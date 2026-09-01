@@ -4,6 +4,8 @@ on:
   pull_request:
     branches:
       - main
+  # 브랜치에서 게이트를 직접 돌려볼 수 있게 수동 실행을 허용한다.
+  workflow_dispatch:
 
 jobs:
   test:
