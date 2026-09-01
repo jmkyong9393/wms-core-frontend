@@ -17,11 +17,12 @@ export const BOOK_GRADES = ['MINT', 'EXCELLENT', 'NORMAL', 'REJECT'] as const;
 
 export type BookGrade = (typeof BOOK_GRADES)[number];
 
-// 백엔드 검수 처리 상태
+// 백엔드 검수 처리 상태 (ReturnJobStatus 7종과 동일 — types/returnTypes.ts와 정합 유지)
 export const INSPECTION_STATUSES = [
   'PENDING',
   'PROCESSING',
   'HITL_REQUIRED',
+  'RECHECK_REQUIRED',
   'APPROVED',
   'REJECTED',
   'FAILED',
