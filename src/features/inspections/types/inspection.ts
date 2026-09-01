@@ -1,6 +1,14 @@
 // AI 검수 단계별 로그 타입
 
-export type AgentName = 'Vision' | 'Policy' | 'Critic' | 'Report';
+// 백엔드 extract_agent_steps가 내보내는 전체 에이전트 이름과 동기화
+export type AgentName =
+  | 'Supervisor'
+  | 'Vision'
+  | 'Policy'
+  | 'Critic'
+  | 'AutoRefund'
+  | 'Report'
+  | 'Human';
 
 export type StepExecutionStatus = 'COMPLETED' | 'SKIPPED';
 
