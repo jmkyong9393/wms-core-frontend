@@ -26,6 +26,7 @@ function buildItem(
     reasonCodes: [],
     reviewerId: null,
     reviewerEmployeeId: null,
+    reviewerName: null,
     reviewStartedAt: null,
     createdAt: '2026-08-06T00:00:00',
     updatedAt: '2026-08-06T00:00:00',

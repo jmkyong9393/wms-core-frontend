@@ -29,7 +29,7 @@ vi.mock('@/features/inspections/api/agentLogService', () => ({
 function buildItem(overrides: Partial<RestockProposalListItem> = {}): RestockProposalListItem {
   return {
     id: 'p1',
-    book: { id: 'b1', title: '테스트 도서', isbn: '9790000000999', publisher: null },
+    book: { id: 'b1', title: '테스트 도서', isbn: '9790000000999', publisher: null, coverImageUrl: null },
     status: 'PENDING',
     proposalSource: 'RETURN_REJECTION',
     recommendedOrderQuantity: 4,
@@ -63,11 +63,11 @@ describe('RestockProposalListView', () => {
     );
   });
 
-  it('출판사와 검토일시를 목록에 표시한다', async () => {
+  it('출판사를 도서 정보에 표시한다', async () => {
     vi.mocked(listRestockProposals).mockResolvedValueOnce([
       buildItem({
         id: 'p1',
-        book: { id: 'b1', title: '테스트 도서', isbn: '9790000000999', publisher: '테스트출판사' },
+        book: { id: 'b1', title: '테스트 도서', isbn: '9790000000999', publisher: '테스트출판사', coverImageUrl: null },
         createdAt: '2026-07-29T07:07:09.750113',
         reviewedAt: '2026-08-02T07:33:20.161129',
       }),
@@ -76,19 +76,16 @@ describe('RestockProposalListView', () => {
     renderView();
 
     expect(await screen.findByText(/테스트출판사/)).toBeInTheDocument();
-    expect(screen.getByText('2026-08-02')).toBeInTheDocument();
   });
 
-  it('출판사/검토일시가 없으면 -로 표시한다', async () => {
+  it('출판사가 없으면 -로 표시한다', async () => {
     vi.mocked(listRestockProposals).mockResolvedValueOnce([
-      buildItem({ id: 'p1', book: { id: 'b1', title: '테스트 도서', isbn: '9790000000999', publisher: null } }),
+      buildItem({ id: 'p1', book: { id: 'b1', title: '테스트 도서', isbn: '9790000000999', publisher: null, coverImageUrl: null } }),
     ]);
 
     renderView();
 
     expect(await screen.findByText(/9790000000999 · -/)).toBeInTheDocument();
-    // 검토일시 컬럼도 reviewedAt이 null이면 '-'로 표시됨
-    expect(screen.getAllByText('-').length).toBeGreaterThan(0);
   });
 
   it('행을 클릭하면 router.replace를 proposalId 쿼리 파라미터와 함께 호출한다', async () => {

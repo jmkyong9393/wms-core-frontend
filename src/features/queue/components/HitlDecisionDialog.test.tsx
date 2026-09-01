@@ -36,6 +36,7 @@ const item: HitlQueueItem = {
   finalGrade: 'EXCELLENT',
   reasonCodes: [],
   reviewerId: null,
+  reviewerName: null,
   reviewerEmployeeId: null,
   reviewStartedAt: null,
   createdAt: '2026-08-06T00:00:00',

@@ -535,7 +535,12 @@ describe('useNotificationStream', () => {
       vi.mocked(issueNotificationStreamTicket)
         .mockRejectedValueOnce(unauthorizedError())
         .mockResolvedValueOnce({ ticket: 'ticket-after-refresh', expiresIn: 300 });
-      vi.mocked(refreshAccessToken).mockResolvedValueOnce({ access_token: 'new-token' });
+      vi.mocked(refreshAccessToken).mockResolvedValueOnce({
+        access_token: 'new-token',
+        token_type: 'bearer',
+        expires_in: 1800,
+        must_change_password: false,
+      });
 
       const { store } = setupHook();
       await act(async () => {
@@ -599,7 +604,12 @@ describe('useNotificationStream', () => {
       vi.mocked(issueNotificationStreamTicket)
         .mockRejectedValueOnce(unauthorizedError())
         .mockRejectedValueOnce(unauthorizedError());
-      vi.mocked(refreshAccessToken).mockResolvedValueOnce({ access_token: 'new-token' });
+      vi.mocked(refreshAccessToken).mockResolvedValueOnce({
+        access_token: 'new-token',
+        token_type: 'bearer',
+        expires_in: 1800,
+        must_change_password: false,
+      });
 
       const { store } = setupHook();
       await act(async () => {
@@ -621,7 +631,12 @@ describe('useNotificationStream', () => {
         .mockRejectedValueOnce(unauthorizedError())
         .mockRejectedValueOnce(networkError())
         .mockResolvedValueOnce({ ticket: 'ticket-after-second-retry', expiresIn: 300 });
-      vi.mocked(refreshAccessToken).mockResolvedValueOnce({ access_token: 'new-token' });
+      vi.mocked(refreshAccessToken).mockResolvedValueOnce({
+        access_token: 'new-token',
+        token_type: 'bearer',
+        expires_in: 1800,
+        must_change_password: false,
+      });
 
       const { store } = setupHook();
       await act(async () => {

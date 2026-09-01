@@ -4,7 +4,9 @@ import { useCamera } from "./useCamera";
 
 describe("useCamera Hook", () => {
   let mockStreamInstance: {
-    getTracks: ReturnType<typeof vi.fn>;
+    getTracks: ReturnType<
+      typeof vi.fn<() => Array<{ stop: ReturnType<typeof vi.fn> }>>
+    >;
   };
 
   beforeEach(() => {

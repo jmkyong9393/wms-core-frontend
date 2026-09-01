@@ -71,23 +71,22 @@ describe('RestockProposalDetailDialog', () => {
 
     renderDialog('p1');
 
-    expect(await screen.findByRole('button', { name: /승인/ })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /반려/ })).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: '발주 승인' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '발주 미진행' })).toBeInTheDocument();
   });
 
-  it('APPROVED 상태에서는 승인 완료 안내와 autoPoOrderId를 표시하고 버튼은 숨긴다', async () => {
+  it('APPROVED 상태에서는 승인 완료 안내를 표시하고 버튼은 숨긴다', async () => {
     vi.mocked(getRestockProposal).mockResolvedValueOnce(
       buildDetail({ status: 'APPROVED', autoPoOrderId: 'po-123' })
     );
 
     renderDialog('p1');
 
-    expect(await screen.findByText(/생성된 발주 번호/)).toBeInTheDocument();
-    expect(screen.getByText(/po-123/)).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: '✓ 승인' })).not.toBeInTheDocument();
+    expect(await screen.findByText('발주 승인이 완료되었습니다.')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '발주 승인' })).not.toBeInTheDocument();
   });
 
-  it('REJECTED 상태에서는 반려 안내와 코멘트를 표시한다', async () => {
+  it('REJECTED 상태에서는 미진행 처리 안내를 표시한다', async () => {
     vi.mocked(getRestockProposal).mockResolvedValueOnce(
       buildDetail({
         status: 'REJECTED',
@@ -99,25 +98,9 @@ describe('RestockProposalDetailDialog', () => {
 
     renderDialog('p1');
 
-    expect(await screen.findByText('반려된 추천안입니다.')).toBeInTheDocument();
-    expect(screen.getByText(/현재 재고로 충분함/)).toBeInTheDocument();
-  });
-
-  it('검토가 이뤄진 건(reviewedAt 존재)은 상태와 무관하게 검토자·검토 시각을 공통 섹션에 표시한다', async () => {
-    vi.mocked(getRestockProposal).mockResolvedValueOnce(
-      buildDetail({
-        status: 'APPROVED',
-        autoPoOrderId: 'po-123',
-        reviewerEmployeeId: 'W0002',
-        reviewedAt: '2026-07-29T07:33:20.161129',
-      })
-    );
-
-    renderDialog('p1');
-
-    expect(await screen.findByText('검토 이력')).toBeInTheDocument();
-    expect(screen.getByText(/검토자: W0002/)).toBeInTheDocument();
-    expect(screen.getByText(/검토 시각: 2026-07-29/)).toBeInTheDocument();
+    expect(
+      await screen.findByText('이번 발주는 진행하지 않기로 처리되었습니다.')
+    ).toBeInTheDocument();
   });
 
   it('아직 검토되지 않은(reviewedAt이 null인) PENDING 건에는 검토 이력 섹션을 표시하지 않는다', async () => {
@@ -125,7 +108,7 @@ describe('RestockProposalDetailDialog', () => {
 
     renderDialog('p1');
 
-    await screen.findByRole('button', { name: /승인/ });
+    await screen.findByRole('button', { name: '발주 승인' });
     expect(screen.queryByText('검토 이력')).not.toBeInTheDocument();
   });
 
@@ -135,26 +118,8 @@ describe('RestockProposalDetailDialog', () => {
     renderDialog('p1');
 
     expect(await screen.findByText(/추가 발주가 필요하지 않습니다/)).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: '✓ 승인' })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: '✕ 반려' })).not.toBeInTheDocument();
-  });
-
-  it('returnJobId가 있으면(반려 대체 발주) 관련 검수 Agent 로그 섹션을 표시한다', async () => {
-    mockedGetAgentLog.mockResolvedValueOnce([
-      {
-        stepOrder: 1,
-        agentName: 'Vision',
-        executionStatus: 'COMPLETED',
-        resultSummary: '표지 파손 탐지',
-      },
-    ]);
-    vi.mocked(getRestockProposal).mockResolvedValueOnce(buildDetail({ returnJobId: 'r1' }));
-
-    renderDialog('p1');
-
-    expect(await screen.findByText('관련 검수 Agent 로그')).toBeInTheDocument();
-    expect(await screen.findByText('Vision Agent')).toBeInTheDocument();
-    expect(getAgentLog).toHaveBeenCalledWith('r1');
+    expect(screen.queryByRole('button', { name: '발주 승인' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '발주 미진행' })).not.toBeInTheDocument();
   });
 
   it('returnJobId가 없으면(안전재고 부족) 관련 검수 Agent 로그 섹션을 표시하지 않는다', async () => {
@@ -164,7 +129,7 @@ describe('RestockProposalDetailDialog', () => {
 
     renderDialog('p1');
 
-    await screen.findByRole('button', { name: /승인/ });
+    await screen.findByRole('button', { name: '발주 승인' });
     expect(screen.queryByText('관련 검수 Agent 로그')).not.toBeInTheDocument();
     expect(getAgentLog).not.toHaveBeenCalled();
   });

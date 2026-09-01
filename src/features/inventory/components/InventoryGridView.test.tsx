@@ -28,7 +28,7 @@ function makeRow(id: string, title: string, overrides: Partial<InventoryRow> = {
   return {
     id,
     stock_type: "USED_ITEM",
-    book: { title, isbn: "9780000000000" },
+    book: { title, isbn: "9780000000000", cover_image_url: null },
     grade: "EXCELLENT",
     zone: "A-1-1",
     quantity: 5,
