@@ -47,10 +47,28 @@ describe("getPresignedUrl", () => {
     vi.mocked(axios.post).mockResolvedValueOnce({ data: mockData });
 
     const res = await getPresignedUrl("test.jpg", "image/jpeg");
-    expect(axios.post).toHaveBeenCalledWith("/api/upload/url", {
-      filename: "test.jpg",
-      contentType: "image/jpeg",
-    });
+    expect(axios.post).toHaveBeenCalledWith(
+      "/api/upload/url",
+      { filename: "test.jpg", contentType: "image/jpeg" },
+      undefined
+    );
     expect(res).toEqual(mockData);
+  });
+
+  // presign 라우트는 S3 쓰기 권한을 발급하므로 서버가 토큰을 요구한다.
+  it("attaches the access token when logged in", async () => {
+    localStorage.setItem("wms_mock_mode", "false");
+    localStorage.setItem("wms_auth_token", "token-abc");
+    vi.mocked(axios.post).mockResolvedValueOnce({
+      data: { uploadUrl: "u", publicUrl: "p" },
+    });
+
+    await getPresignedUrl("test.jpg", "image/jpeg");
+
+    expect(axios.post).toHaveBeenCalledWith(
+      "/api/upload/url",
+      { filename: "test.jpg", contentType: "image/jpeg" },
+      { headers: { Authorization: "Bearer token-abc" } }
+    );
   });
 });
