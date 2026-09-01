@@ -1,4 +1,5 @@
 import axios from "axios";
+import { AUTH_TOKEN_STORAGE_KEY } from "@/features/auth/store/authAtoms";
 
 const MOCK_MODE_KEY = "wms_mock_mode";
 
@@ -25,9 +26,16 @@ export async function getPresignedUrl(
     };
   }
   // 로컬 Next.js API Route를 호출합니다.
-  const res = await axios.post<PresignedUrlResponse>("/api/upload/url", {
-    filename,
-    contentType,
-  });
+  // 이 라우트는 S3 쓰기 권한을 발급하므로 Access Token을 함께 보내 인증받는다.
+  const token =
+    typeof window !== "undefined"
+      ? localStorage.getItem(AUTH_TOKEN_STORAGE_KEY)
+      : null;
+
+  const res = await axios.post<PresignedUrlResponse>(
+    "/api/upload/url",
+    { filename, contentType },
+    token ? { headers: { Authorization: `Bearer ${token}` } } : undefined
+  );
   return res.data;
 }
