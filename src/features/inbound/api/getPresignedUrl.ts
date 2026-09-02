@@ -25,8 +25,7 @@ export async function getPresignedUrl(
       publicUrl: `https://mock-s3.example.com/public/${filename}`,
     };
   }
-  // 로컬 Next.js API Route를 호출합니다.
-  // 이 라우트는 S3 쓰기 권한을 발급하므로 Access Token을 함께 보내 인증받는다.
+  // 이 라우트는 S3 쓰기 권한을 발급하므로 Access Token을 함께 보낸다.
   const token =
     typeof window !== "undefined"
       ? localStorage.getItem(AUTH_TOKEN_STORAGE_KEY)

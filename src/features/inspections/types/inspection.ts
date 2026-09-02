@@ -1,6 +1,6 @@
 // AI 검수 단계별 로그 타입
 
-// 백엔드 extract_agent_steps가 내보내는 전체 에이전트 이름과 동기화
+// 백엔드 extract_agent_steps가 내보내는 에이전트 이름
 export type AgentName =
   | 'Supervisor'
   | 'Vision'
@@ -25,7 +25,7 @@ export const BOOK_GRADES = ['MINT', 'EXCELLENT', 'NORMAL', 'REJECT'] as const;
 
 export type BookGrade = (typeof BOOK_GRADES)[number];
 
-// 백엔드 검수 처리 상태 (ReturnJobStatus 7종과 동일 — types/returnTypes.ts와 정합 유지)
+// 백엔드 ReturnJobStatus 7종과 동일
 export const INSPECTION_STATUSES = [
   'PENDING',
   'PROCESSING',
